@@ -42,6 +42,9 @@ public class notebounce extends ApplicationAdapter {
 
 	Matrix4 debugMatrix;
 
+	boolean drawBall = false;
+	boolean ballCreated = false;
+
 	public notebounce(int width, int height) {
 		ScreenWidth  = width;
 		ScreenHeight = height;
@@ -60,6 +63,31 @@ public class notebounce extends ApplicationAdapter {
 		ground.createFixture(groundFixtureDef);
 		edgeShape.dispose();
 	}
+
+	public Sprite createBall(float x, float y) {
+		Sprite newBall = new Sprite(new Texture("ball.png"));
+		newBall.setCenter(x, y);
+		newBall.setOriginCenter();
+		float scale = 0.2f;
+		newBall.setScale(scale);
+
+		BodyDef ballBodyDef = new BodyDef();
+		ballBodyDef.type = BodyDef.BodyType.DynamicBody;
+		ballBodyDef.position.set((newBall.getX() + newBall.getOriginX()) / PIXELS2METERS,
+				(newBall.getY() + newBall.getOriginY()) / PIXELS2METERS);
+		ballBody = world.createBody(ballBodyDef);
+		CircleShape circleShape = new CircleShape();
+		circleShape.setRadius(((newBall.getWidth() * scale)/2) / PIXELS2METERS);
+		FixtureDef ballFixtureDef = new FixtureDef();
+		ballFixtureDef.shape = circleShape;
+		ballFixtureDef.density = 0.5f;
+		ballFixtureDef.friction = 0.4f;
+		ballFixtureDef.restitution = 0.6f; // Make it bounce a little bit
+		ballBody.createFixture(ballFixtureDef);
+		circleShape.dispose();
+
+		return newBall;
+	}
 	
 	@Override
 	public void create () {
@@ -75,38 +103,18 @@ public class notebounce extends ApplicationAdapter {
 		debugMessage = new BitmapFont();
 
 		gun = new Sprite(new Texture("gun.png"));
-		gun.setCenter(ScreenWidth / 2, ScreenHeight / 2);
+		gun.setCenter(1, 1);
 		gun.setOriginCenter();
-		gun.setScale(0.8f);
-
-		ball = new Sprite(new Texture("ball.png"));
-		ball.setCenter(ScreenWidth / 2, ScreenHeight / 2);
-		ball.setOriginCenter();
-		ball.setScale(0.3f);
+		gun.setScale(0.6f);
 
 		world = new World(new Vector2(0, -5f), true);
 
-		BodyDef ballBodyDef = new BodyDef();
-		ballBodyDef.type = BodyDef.BodyType.DynamicBody;
-		ballBodyDef.position.set((ball.getX() + ball.getOriginX()) / PIXELS2METERS,
-				                 (ball.getY() + ball.getOriginY()) / PIXELS2METERS);
-		ballBody = world.createBody(ballBodyDef);
-		CircleShape circleShape = new CircleShape();
-		circleShape.setRadius(((ball.getWidth() * 0.3f)/2) / PIXELS2METERS);
-		FixtureDef ballFixtureDef = new FixtureDef();
-		ballFixtureDef.shape = circleShape;
-		ballFixtureDef.density = 0.5f;
-		ballFixtureDef.friction = 0.4f;
-		ballFixtureDef.restitution = 0.9f; // Make it bounce a little bit
-		ballBody.createFixture(ballFixtureDef);
-		circleShape.dispose();
-
-		createLine(0.0f, 0.1f, ScreenWidth/PIXELS2METERS, 0.1f); // BOTTOM
-		createLine(0.1f, 0.0f, 0.1f, ScreenHeight/PIXELS2METERS); //RIGHT
-		createLine((ScreenWidth/PIXELS2METERS) - 0.1f, 0.0f, // LEFT
-				   (ScreenWidth/PIXELS2METERS) - 0.1f, ScreenHeight/PIXELS2METERS);
-		createLine(0.0f, (ScreenHeight/PIXELS2METERS) - 0.1f, // TOP
-				   ScreenWidth/PIXELS2METERS, (ScreenHeight/PIXELS2METERS) - 0.1f);
+		createLine(0.0f, 0.0f, ScreenWidth/PIXELS2METERS, 0.0f); // BOTTOM
+		createLine(0.0f, 0.0f, 0.0f, ScreenHeight/PIXELS2METERS); //RIGHT
+		createLine((ScreenWidth/PIXELS2METERS) - 0.0f, 0.0f, // LEFT
+				   (ScreenWidth/PIXELS2METERS) - 0.0f, ScreenHeight/PIXELS2METERS);
+		createLine(0.0f, (ScreenHeight/PIXELS2METERS) - 0.0f, // TOP
+				   ScreenWidth/PIXELS2METERS, (ScreenHeight/PIXELS2METERS) - 0.0f);
 
 	}
 
@@ -122,16 +130,13 @@ public class notebounce extends ApplicationAdapter {
 			debugClearClock = 0.0f;
 		}
 
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-
 		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
 		boolean click = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
 
 		float graphicsY = ScreenHeight - mouse.y;
 
-		// TODO(alex): We need to set the rotation point relative to the gun's center
-		// todo relative to the screen coordinates. Can't be ScreenHeight/2, ScreenWidth/2
-		float angle = (float)Math.atan2(graphicsY - ScreenHeight/2, mouse.x - ScreenWidth/2);
+		float angle = (float)Math.atan2(graphicsY - (gun.getY() + gun.getHeight()/2),
+				                        mouse.x   - (gun.getX() + gun.getWidth()/2));
 		angle *= (180/Math.PI);
 
 		if(angle < 0) {
@@ -141,9 +146,6 @@ public class notebounce extends ApplicationAdapter {
 				     " | inY: " + mouse.y +
 				     " (" + graphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
 				     " | Click: " + click;
-
-		ball.setPosition((ballBody.getPosition().x * PIXELS2METERS) - ball.getOriginX(),
-				(ballBody.getPosition().y * PIXELS2METERS) - ball.getOriginY());
 
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
@@ -155,15 +157,42 @@ public class notebounce extends ApplicationAdapter {
 
 		gun.setRotation(angle);
 		gun.draw(batch);
-		batch.draw(ball,
-				   ball.getX(),       ball.getY(),
-				   ball.getOriginX(), ball.getOriginY(),
-				   ball.getWidth(),   ball.getHeight(),
-				   ball.getScaleX(),  ball.getScaleY(),
-				   ball.getRotation());
+		if(drawBall) {
+			batch.draw(ball,
+					ball.getX(), ball.getY(),
+					ball.getOriginX(), ball.getOriginY(),
+					ball.getWidth(), ball.getHeight(),
+					ball.getScaleX(), ball.getScaleY(),
+					ball.getRotation());
+		}
 		batch.end();
 
+		if(click && !ballCreated) {
+			ball = createBall(gun.getX() + gun.getWidth()/2, gun.getY() + gun.getHeight()/2);
+			drawBall = true;
+			ballCreated = true;
+			float mXDir = (float)Math.cos(angle * Math.PI / 180);
+			float mYDir = (float)Math.sin(angle * Math.PI / 180);
+			float power = 2;
+			Vector2 impulse = new Vector2((float)(mXDir * power / 8), (float)(mYDir * power / 8));
+			ballBody.applyLinearImpulse(impulse, ballBody.getWorldCenter(), true);
+		}
+
+		if(ballCreated) {
+			ball.setPosition((ballBody.getPosition().x * PIXELS2METERS) - ball.getOriginX(),
+					(ballBody.getPosition().y * PIXELS2METERS) - ball.getOriginY());
+		}
+
 		world.step(Gdx.graphics.getDeltaTime(), 6, 2);
+		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		box2DDebugRenderer.render(world, debugMatrix);
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballCreated) {
+			drawBall = false;
+			ball.getTexture().dispose();
+			ballBody.destroyFixture(ballBody.getFixtureList().first());
+			ball = null;
+			ballCreated = false;
+		}
 	}
 }
