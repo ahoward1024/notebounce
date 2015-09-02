@@ -3,12 +3,11 @@ package com.esw.notebounce;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -33,7 +32,14 @@ public class notebounce extends ApplicationAdapter {
     Box bluebox;
     Box greenbox;
     Box yellowbox;
+
     Box goal;
+    static Music goalNoise; // Must be music because file size is > 1 MB (Android limitation)
+    static long goalNoiseID;
+    static boolean goalNoisePlaying = false;
+    static boolean goalHit = false;
+    boolean goalWasHit = false;
+    float goalTextTimer = 0.0f;
 
 	static World world; // Static so we can pass it easily
 
@@ -41,8 +47,7 @@ public class notebounce extends ApplicationAdapter {
 	String fpsDebug = "FPS: ";
 
 	float deltaTime = 0.0f;
-    float goalTextTimer = 0.0f;
-    static boolean goalHit = false;
+
 
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 
@@ -110,6 +115,9 @@ public class notebounce extends ApplicationAdapter {
         greenbox = new Box(ScreenWidth - 50.0f, 220.0f, Box.BoxType.green);
         yellowbox = new Box(550.0f, ScreenHeight - 50.0f, Box.BoxType.yellow);
         goal = new Box(ScreenWidth, 0.0f, Box.BoxType.goal);
+
+        goalNoise = Gdx.audio.newMusic(Gdx.files.internal("goal.mp3"));
+        goalNoise.setVolume(0.8f); // No use in shattering eardrums :)
 	}
 
 	@Override
@@ -170,9 +178,10 @@ public class notebounce extends ApplicationAdapter {
 
         // Draw debug inputs last so they are always on top
         if(goalHit) {
+            goalWasHit = true;
             debugMessage.setColor(Color.RED);
             debugMessage.draw(batch, "GOAL!", ScreenWidth/2, ScreenHeight/2);
-            if(goalTextTimer > 2.0f) {
+            if(goalTextTimer > 5.0f) { // Keep the text up for 5 seconds
                 goalHit = false;
                 goalTextTimer = 0.0f;
             }
@@ -212,12 +221,20 @@ public class notebounce extends ApplicationAdapter {
 		}
 
 		// Destroy the current ball in the world (if there is one) so another can be shot
+        // Stop any sound (if it was playing)
+        // This essentially "resets" the level
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballCreated) {
 			drawBall = false;
 			ball.sprite().getTexture().dispose();
 			ball.body().destroyFixture(ball.body().getFixtureList().first());
 			ball = null;
 			ballCreated = false;
+
+            if(goalWasHit) {
+                if(goalNoisePlaying) goalNoise.stop();
+                goalNoisePlaying = false;
+                goalWasHit = false;
+            }
 		}
 	}
 
@@ -228,5 +245,11 @@ public class notebounce extends ApplicationAdapter {
 	}
     public static void hitGoal() {
         goalHit = true;
+
+        // Play the goal noise if it was not already playing
+        if(!goalNoisePlaying) {
+            goalNoise.play();
+            goalNoisePlaying = true;
+        }
     }
 }
