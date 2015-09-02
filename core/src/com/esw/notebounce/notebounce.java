@@ -195,7 +195,9 @@ public class notebounce extends ApplicationAdapter {
 
 		batch.end(); // Stop the batch drawing
 
-		world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
+        else if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
+        else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
 		// The copy the camera's projection and scale it to the size of the Box2D world
 		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
