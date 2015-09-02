@@ -30,6 +30,10 @@ public class notebounce extends ApplicationAdapter {
 	SpriteBatch batch;
 	Gun gun;
 	Ball ball;
+    Box bluebox;
+    Box greenbox;
+    Box yellowbox;
+    Box goal;
 
 	static World world; // Static so we can pass it easily
 
@@ -37,6 +41,8 @@ public class notebounce extends ApplicationAdapter {
 	String fpsDebug = "FPS: ";
 
 	float deltaTime = 0.0f;
+    float goalTextTimer = 0.0f;
+    static boolean goalHit = false;
 
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 
@@ -61,7 +67,7 @@ public class notebounce extends ApplicationAdapter {
 		edgeShape.set(x1, y1, x2, y2);
 		groundFixtureDef.shape = edgeShape;
 		ground = world.createBody(groundBodyDef);
-		ground.createFixture(groundFixtureDef);
+		ground.createFixture(groundFixtureDef).setUserData("boundary");
 		edgeShape.dispose();
 	}
 	
@@ -87,17 +93,23 @@ public class notebounce extends ApplicationAdapter {
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit.
 		// 100 gives a good balance.
-		world = new World(new Vector2(0, -100.0f), true);
+		world = new World(new Vector2(0, -200.0f), true);
+        world.setContactListener(new Contacts());
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
-		createLine(0.0f, 0.0f, ScreenWidth/PIXELS2METERS, 0.0f); // BOTTOM
+		createLine(0.0f, 0.0f, ScreenWidth / PIXELS2METERS, 0.0f); // BOTTOM
 		createLine(0.0f, 0.0f, 0.0f, ScreenHeight / PIXELS2METERS); //RIGHT
 		createLine((ScreenWidth / PIXELS2METERS) - 0.0f, 0.0f, // LEFT
 				(ScreenWidth / PIXELS2METERS) - 0.0f, ScreenHeight / PIXELS2METERS);
 		createLine(0.0f, (ScreenHeight / PIXELS2METERS) - 0.0f, // TOP
-				ScreenWidth / PIXELS2METERS, (ScreenHeight/PIXELS2METERS) - 0.0f);
+                ScreenWidth / PIXELS2METERS, (ScreenHeight / PIXELS2METERS) - 0.0f);
 
+        // Create some boxes for the ball to interact with
+        bluebox = new Box(ScreenWidth/2.0f, ScreenHeight/2.0f - 300, 2.5f, Box.BoxType.blue);
+        greenbox = new Box(ScreenWidth - 50.0f, 220.0f, Box.BoxType.green);
+        yellowbox = new Box(550.0f, ScreenHeight - 50.0f, Box.BoxType.yellow);
+        goal = new Box(ScreenWidth, 0.0f, Box.BoxType.goal);
 	}
 
 	@Override
@@ -134,12 +146,6 @@ public class notebounce extends ApplicationAdapter {
 
 		camera.update(); // Update the camera just before drawing
 		batch.begin();  // Start the batch drawing
-		// Draw debug inputs first so they are always on top
-		debugMessage.setColor(Color.GREEN);
-		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
-		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-				ScreenWidth - 60, ScreenHeight - 10);
 
 		// Draw the ball only if it has been shot
 		if(drawBall) {
@@ -155,9 +161,32 @@ public class notebounce extends ApplicationAdapter {
 		// Now draw the gun so it is over the ball
 		gun.sprite().setRotation(angle);
 		gun.sprite().draw(batch);
+        // Draw environment pieces
+        // TODO(alex): These need to be in an array!!!
+        bluebox.sprite().draw(batch);
+        greenbox.sprite().draw(batch);
+        yellowbox.sprite().draw(batch);
+        goal.sprite().draw(batch);
+
+        // Draw debug inputs last so they are always on top
+        if(goalHit) {
+            debugMessage.setColor(Color.RED);
+            debugMessage.draw(batch, "GOAL!", ScreenWidth/2, ScreenHeight/2);
+            if(goalTextTimer > 2.0f) {
+                goalHit = false;
+                goalTextTimer = 0.0f;
+            }
+            goalTextTimer += deltaTime;
+        }
+        debugMessage.setColor(Color.GREEN);
+        debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
+        debugMessage.setColor(Color.YELLOW);
+        debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
+                ScreenWidth - 60, ScreenHeight - 10);
+
 		batch.end(); // Stop the batch drawing
 
-		world.step(1.0f/300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
+		world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
 		// The copy the camera's projection and scale it to the size of the Box2D world
 		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
@@ -197,4 +226,7 @@ public class notebounce extends ApplicationAdapter {
 	public static World getWorld() {
 		return world;
 	}
+    public static void hitGoal() {
+        goalHit = true;
+    }
 }

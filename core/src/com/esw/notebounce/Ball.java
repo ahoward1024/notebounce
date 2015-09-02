@@ -11,13 +11,13 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 /**
  * Created by Alex on 9/1/2015.
  */
-public class Ball extends Sprite {
+public class Ball {
 
     // This is REALLY convenient! Why doesn't LibGDX already do this for sprites??
     private Vector2 center;
 
-    Body body;
     Sprite sprite;
+    Body body;
 
     Ball(float x, float y, float scale) {
         sprite = new Sprite(new Texture("ball.png"));
@@ -42,15 +42,11 @@ public class Ball extends Sprite {
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 0.4f;
         fixtureDef.restitution = 0.6f;
-        body.createFixture(fixtureDef);
+        body.createFixture(fixtureDef).setUserData("ball");
         circleShape.dispose();
     }
 
-    public Sprite sprite() {
-        return sprite;
-    }
+    public Sprite sprite() { return sprite; }
 
-    public Body body() {
-        return body;
-    }
+    public Body body() { return body; }
 }
