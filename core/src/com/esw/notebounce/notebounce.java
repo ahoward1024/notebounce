@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,7 +14,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
-public class notebounce extends ApplicationAdapter {
+public class notebounce extends ApplicationAdapter implements ContactListener {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
@@ -34,12 +35,19 @@ public class notebounce extends ApplicationAdapter {
     Box yellowbox;
 
     Box goal;
-    static Music goalNoise; // Must be music because file size is > 1 MB (Android limitation)
-    static long goalNoiseID;
-    static boolean goalNoisePlaying = false;
-    static boolean goalHit = false;
+    Sound goalNoise;
+	long goalNoiseID;
+    boolean goalNoisePlaying = false;
+    boolean goalHit = false;
     boolean goalWasHit = false;
     float goalTextTimer = 0.0f;
+
+	Sound[] notes = new Sound[8];
+	int notePtr = 0;
+	float timeSinceLastBlueNote = 0.0f;
+	float timeSinceLastGreenNote = 0.0f;
+	float timeSinceLastYellowNote = 0.0f;
+	boolean playNotes = true;
 
 	static World world; // Static so we can pass it easily
 
@@ -47,7 +55,6 @@ public class notebounce extends ApplicationAdapter {
 	String fpsDebug = "FPS: ";
 
 	float deltaTime = 0.0f;
-
 
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 
@@ -99,7 +106,7 @@ public class notebounce extends ApplicationAdapter {
 		// like it is in space after it slows down quite a bit.
 		// 100 gives a good balance.
 		world = new World(new Vector2(0, -200.0f), true);
-        world.setContactListener(new Contacts());
+        world.setContactListener(this);
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
@@ -116,8 +123,18 @@ public class notebounce extends ApplicationAdapter {
         yellowbox = new Box(550.0f, ScreenHeight - 50.0f, Box.BoxType.yellow);
         goal = new Box(ScreenWidth, 0.0f, Box.BoxType.goal);
 
-        goalNoise = Gdx.audio.newMusic(Gdx.files.internal("goal.mp3"));
-        goalNoise.setVolume(0.8f); // No use in shattering eardrums :)
+        goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
+
+		notes[0] = Gdx.audio.newSound(Gdx.files.internal("notes/C4.mp3"));
+		notes[1] = Gdx.audio.newSound(Gdx.files.internal("notes/D4.mp3"));
+		notes[2] = Gdx.audio.newSound(Gdx.files.internal("notes/E4.mp3"));
+		notes[3] = Gdx.audio.newSound(Gdx.files.internal("notes/F4.mp3"));
+		notes[4] = Gdx.audio.newSound(Gdx.files.internal("notes/G4.mp3"));
+		notes[5] = Gdx.audio.newSound(Gdx.files.internal("notes/A4.mp3"));
+		notes[6] = Gdx.audio.newSound(Gdx.files.internal("notes/B4.mp3"));
+		notes[7] = Gdx.audio.newSound(Gdx.files.internal("notes/C5.mp3"));
+
+		notePtr = 0;
 	}
 
 	@Override
@@ -126,6 +143,9 @@ public class notebounce extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
+		timeSinceLastBlueNote += deltaTime;
+		timeSinceLastGreenNote += deltaTime;
+		timeSinceLastYellowNote += deltaTime;
 
 		// Grab mouse input
 		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
@@ -236,6 +256,7 @@ public class notebounce extends ApplicationAdapter {
                 if(goalNoisePlaying) goalNoise.stop();
                 goalNoisePlaying = false;
                 goalWasHit = false;
+				playNotes = true;
             }
 		}
 	}
@@ -245,13 +266,73 @@ public class notebounce extends ApplicationAdapter {
 	public static World getWorld() {
 		return world;
 	}
-    public static void hitGoal() {
-        goalHit = true;
 
-        // Play the goal noise if it was not already playing
-        if(!goalNoisePlaying) {
-            goalNoise.play();
-            goalNoisePlaying = true;
-        }
-    }
+	boolean flipsies = true;
+
+	// Implemented from ContactListener
+	// Handles all the collision detection
+	public void beginContact(Contact c) {
+		Fixture fa = c.getFixtureA(); // Usually a static object
+		Fixture fb = c.getFixtureB(); // Usually a dynamic object
+
+		// Test if goal was hit
+		if(fa.getUserData() == "goal") {
+			goalHit = true;
+			// Play the goal noise if it was not already playing
+			if(!goalNoisePlaying) {
+				goalNoise.play();
+				goalNoisePlaying = true;
+				playNotes = false;
+			}
+		}
+
+		if(playNotes) {
+			if (fa.getUserData() == "bluebox" && timeSinceLastBlueNote > 0.2f) {
+				if (notePtr == notes.length - 1) notePtr = 0;
+				else notePtr++;
+				notes[notePtr].play();
+				timeSinceLastBlueNote = 0.0f;
+			}
+
+			if (fa.getUserData() == "greenbox" && timeSinceLastGreenNote > 0.2f) {
+				if (notePtr == 0) notePtr = notes.length - 1;
+				else notePtr--;
+				notes[notePtr].play();
+				timeSinceLastGreenNote = 0.0f;
+			}
+
+			if (fa.getUserData() == "yellowbox" && timeSinceLastYellowNote > 0.2f) {
+				if (flipsies) {
+					flipsies = !flipsies;
+					notePtr += 4;
+					if (notePtr > notes.length - 1) {
+						int i = notePtr - (notes.length - 1);
+						notePtr = 0;
+						notePtr += i;
+					}
+					notes[notePtr].play();
+				} else {
+					flipsies = !flipsies;
+					notePtr -= 4;
+					if (notePtr < 0) {
+						notePtr = Math.abs(notePtr);
+					}
+					notes[notePtr].play();
+				}
+				timeSinceLastYellowNote = 0.0f;
+			}
+		}
+	}
+
+	public void endContact(Contact c) {
+
+	}
+
+	public void preSolve(Contact c, Manifold m) {
+
+	}
+
+	public void postSolve(Contact c, ContactImpulse ci) {
+
+	}
 }
