@@ -3,13 +3,15 @@ package com.esw.notebounce;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -30,11 +32,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	SpriteBatch batch;
 	Gun gun;
 	Ball ball;
-    Box bluebox;
-    Box greenbox;
-    Box yellowbox;
 
-    Box goal;
     Sound goalNoise;
     boolean goalNoisePlaying = false;
     boolean goalHit = false;
@@ -58,7 +56,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 
 	boolean drawBall = false;
-	boolean ballCreated = false;
+	boolean ballShot = false;
+
+	TmxMapLoader mapLoader;
+	TiledMap map;
+	OrthogonalTiledMapRenderer renderer;
 
 	// Yes it is not capitalized. Come fight me, bro.
 	public NoteBounce(int width, int height) {
@@ -98,14 +100,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		debugMessage = new BitmapFont();
 
-		gun = new Gun(20, 20, 0.8f); // TODO(alex): better size for gun?
-
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit.
 		// 100 gives a good balance.
 		world = new World(new Vector2(0, -200.0f), true);
-        world.setContactListener(this);
+		world.setContactListener(this);
+
+		gun = new Gun(20, 20, 0.8f); // TODO(alex): better size for gun?
+		ball = new Ball(gun.getCenterX(), gun.getCenterY());
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
@@ -116,28 +119,28 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		createLine(0.0f, (ScreenHeight / PIXELS2METERS) - 0.0f, // TOP
                 ScreenWidth / PIXELS2METERS, (ScreenHeight / PIXELS2METERS) - 0.0f);
 
-        // Create some boxes for the ball to interact with
-        bluebox = new Box(ScreenWidth/2.0f, ScreenHeight/2.0f - 300, 2.5f, Box.BoxType.blue);
-        greenbox = new Box(ScreenWidth - 50.0f, 220.0f, Box.BoxType.green);
-        yellowbox = new Box(550.0f, ScreenHeight - 50.0f, Box.BoxType.yellow);
-        goal = new Box(ScreenWidth, 0.0f, Box.BoxType.goal);
-
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
 
-		notes[0] = Gdx.audio.newSound(Gdx.files.internal("notes/C4.mp3"));
-		notes[1] = Gdx.audio.newSound(Gdx.files.internal("notes/D4.mp3"));
-		notes[2] = Gdx.audio.newSound(Gdx.files.internal("notes/E4.mp3"));
-		notes[3] = Gdx.audio.newSound(Gdx.files.internal("notes/F4.mp3"));
-		notes[4] = Gdx.audio.newSound(Gdx.files.internal("notes/G4.mp3"));
-		notes[5] = Gdx.audio.newSound(Gdx.files.internal("notes/A4.mp3"));
-		notes[6] = Gdx.audio.newSound(Gdx.files.internal("notes/B4.mp3"));
-		notes[7] = Gdx.audio.newSound(Gdx.files.internal("notes/C5.mp3"));
+		notes[0] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/C4.mp3"));
+		notes[1] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/D4.mp3"));
+		notes[2] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/E4.mp3"));
+		notes[3] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/F4.mp3"));
+		notes[4] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/G4.mp3"));
+		notes[5] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/A4.mp3"));
+		notes[6] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/B4.mp3"));
+		notes[7] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/C5.mp3"));
 
 		notePtr = 0;
+
+		mapLoader = new TmxMapLoader();
+		map = mapLoader.load("tmx/level0.tmx");
+		renderer = new OrthogonalTiledMapRenderer(map);
 	}
 
 	@Override
 	public void render () {
+
+		renderer.setView(camera);
 		// OpenGL
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -146,9 +149,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		timeSinceLastGreenNote += deltaTime;
 		timeSinceLastYellowNote += deltaTime;
 
+		renderer.render();
+
 		// Grab mouse input
 		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-		boolean click = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+		boolean lclick = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
 
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
@@ -169,38 +174,30 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		inputDebug = "inX: " + mouse.x +
 				     " | inY: " + mouse.y +
 				     " (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
-				" | Click: " + click;
+				" | Click: " + lclick;
 
 		camera.update(); // Update the camera just before drawing
 		batch.begin();  // Start the batch drawing
 
-		// Draw the ball only if it has been shot
-		if(drawBall) {
-			// We have to set ALL of the ball's sprite's parameters because we are
-			// using the batch to draw it, not drawing it in the batch.
-			batch.draw(ball.sprite(),
-					ball.sprite().getX(), ball.sprite().getY(),
-					ball.sprite().getOriginX(), ball.sprite().getOriginY(),
-					ball.sprite().getWidth(), ball.sprite().getHeight(),
-					ball.sprite().getScaleX(), ball.sprite().getScaleY(),
-					ball.sprite().getRotation());
-		}
+		// We have to set ALL of the ball's sprite's parameters because we are
+		// using the batch to draw it, not drawing it in the batch.
+		batch.draw(ball.sprite(),
+				   ball.sprite().getX(), ball.sprite().getY(),
+				   ball.sprite().getOriginX(), ball.sprite().getOriginY(),
+				   ball.sprite().getWidth(), ball.sprite().getHeight(),
+				   ball.sprite().getScaleX(), ball.sprite().getScaleY(),
+				   ball.sprite().getRotation());
+
 		// Now draw the gun so it is over the ball
 		gun.sprite().setRotation(angle);
 		gun.sprite().draw(batch);
-        // Draw environment pieces
-        // TODO(alex): These need to be in an array!!!
-        bluebox.sprite().draw(batch);
-        greenbox.sprite().draw(batch);
-        yellowbox.sprite().draw(batch);
-        goal.sprite().draw(batch);
 
         // Draw debug inputs last so they are always on top
         if(goalHit) {
             goalWasHit = true;
             debugMessage.setColor(Color.RED);
             debugMessage.draw(batch, "GOAL!", ScreenWidth/2, ScreenHeight/2);
-            if(goalTextTimer > 5.0f) { // Keep the text up for 5 seconds
+            if(goalTextTimer > 10.0f) { // Keep the text up for 10 seconds
                 goalHit = false;
                 goalTextTimer = 0.0f;
             }
@@ -210,7 +207,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
         debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
         debugMessage.setColor(Color.YELLOW);
         debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-                ScreenWidth - 60, ScreenHeight - 10);
+				          ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
@@ -222,10 +219,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
 		// Create a ball if the mouse has been clicked and there is not already a ball in the world
-		if(click && !ballCreated) {
-			ball = new Ball(gun.getCenterX(), gun.getCenterY(), 0.3f);
+		if(lclick && !ballShot) {
 			drawBall = true;
-			ballCreated = true;
+			ballShot = true;
+			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
 			float mXDir = (float)Math.cos(angle * Math.PI / 180);
 			float mYDir = (float)Math.sin(angle * Math.PI / 180);
 			float power = 20;
@@ -234,24 +231,22 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
-		if(ballCreated) {
-			ball.sprite().setPosition((ball.body().getPosition().x * PIXELS2METERS)
-							- ball.sprite().getOriginX(),
-					(ball.body().getPosition().y * PIXELS2METERS)
-							- ball.sprite().getOriginY());
+		if(ballShot) {
+			ball.sprite().setPosition((ball.body().getPosition().x * PIXELS2METERS) -
+							           ball.sprite().getOriginX(),
+					                  (ball.body().getPosition().y * PIXELS2METERS) -
+							           ball.sprite().getOriginY());
 		}
 
 		// Destroy the current ball in the world (if there is one) so another can be shot
         // Stop any sound (if it was playing)
         // This essentially "resets" the level
-		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballCreated) {
-			drawBall = false;
+		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
 			ball.sprite().getTexture().dispose();
 			ball.body().destroyFixture(ball.body().getFixtureList().first());
-			ball = null;
-			ballCreated = false;
-
-            if(goalWasHit) {
+			ballShot = false;
+			ball = new Ball(gun.getCenterX(), gun.getCenterY());
+			if(goalWasHit) {
                 if(goalNoisePlaying) goalNoise.stop();
                 goalNoisePlaying = false;
                 goalWasHit = false;
