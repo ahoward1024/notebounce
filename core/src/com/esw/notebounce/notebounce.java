@@ -9,10 +9,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -135,6 +138,26 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		mapLoader = new TmxMapLoader();
 		map = mapLoader.load("tmx/level0.tmx");
 		renderer = new OrthogonalTiledMapRenderer(map);
+
+		BodyDef bodyDef = new BodyDef();
+		PolygonShape shape = new PolygonShape();
+		FixtureDef fixtureDef = new FixtureDef();
+		Body body;
+
+		for(int i = 1; i < map.getLayers().getCount(); i++) {
+			for (MapObject object : map.getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
+				Rectangle rect = ((RectangleMapObject) object).getRectangle();
+				bodyDef.type = BodyDef.BodyType.StaticBody;
+				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
+						(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
+				body = world.createBody(bodyDef);
+				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS, (rect.getHeight() / 2) / PIXELS2METERS);
+				fixtureDef.shape = shape;
+				body.createFixture(fixtureDef).setUserData(map.getLayers().get(i).getName());
+			}
+		}
+
+		shape.dispose();
 	}
 
 	@Override
@@ -225,7 +248,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
 			float mXDir = (float)Math.cos(angle * Math.PI / 180);
 			float mYDir = (float)Math.sin(angle * Math.PI / 180);
-			float power = 20;
+			float power = 23;
 			Vector2 impulse = new Vector2(mXDir * power / 8, mYDir * power / 8);
 			ball.body().applyLinearImpulse(impulse, ball.body().getWorldCenter(), true);
 		}
@@ -270,7 +293,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
 		// Test if goal was hit
-		if(fa.getUserData() == "goal") {
+		if(fa.getUserData().equals("goal")) {
 			goalHit = true;
 			// Play the goal noise if it was not already playing
 			if(!goalNoisePlaying) {
@@ -281,21 +304,21 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 
 		if(playNotes) {
-			if (fa.getUserData() == "bluebox" && timeSinceLastBlueNote > 0.2f) {
+			if (fa.getUserData().equals("blue") && timeSinceLastBlueNote > 0.2f) {
 				if (notePtr == notes.length - 1) notePtr = 0;
 				else notePtr++;
 				notes[notePtr].play();
 				timeSinceLastBlueNote = 0.0f;
 			}
 
-			if (fa.getUserData() == "greenbox" && timeSinceLastGreenNote > 0.2f) {
+			if (fa.getUserData().equals("green") && timeSinceLastGreenNote > 0.2f) {
 				if (notePtr == 0) notePtr = notes.length - 1;
 				else notePtr--;
 				notes[notePtr].play();
 				timeSinceLastGreenNote = 0.0f;
 			}
 
-			if (fa.getUserData() == "yellowbox" && timeSinceLastYellowNote > 0.2f) {
+			if (fa.getUserData().equals("yellow") && timeSinceLastYellowNote > 0.2f) {
 				if (flipsies) {
 					flipsies = !flipsies;
 					notePtr += 4;

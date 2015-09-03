@@ -71,7 +71,7 @@ public class Box {
         sprite.setScale(scale);
 
         center = new Vector2(sprite.getX() + sprite.getWidth() / 2,
-                             sprite.getY() + sprite.getHeight() / 2);
+                sprite.getY() + sprite.getHeight() / 2);
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;

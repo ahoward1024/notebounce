@@ -1,8 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="1">
- <layer name="Tile Layer 1" width="16" height="9">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="16">
+ <tileset firstgid="1" name="tilemap" tilewidth="120" tileheight="120" tilecount="6">
+  <image source="../tilemap.png" width="360" height="241"/>
+ </tileset>
+ <layer name="tiles" width="16" height="9">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo4B8AAACQAAB
+   eJxjYCAfsKHxWbCoYaXAfFLMYkZiM1HRTmSzkO2gpr8YcbDxuYUeANktyHGLHA4APIwAMA==
   </data>
  </layer>
+ <objectgroup name="blue">
+  <object id="13" x="120" y="720" width="120" height="120"/>
+  <object id="14" x="480" y="720" width="120" height="120"/>
+  <object id="15" x="840" y="960" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="green">
+  <object id="10" x="600" y="360" width="120" height="120"/>
+  <object id="11" x="960" y="480" width="120" height="120"/>
+  <object id="12" x="1320" y="720" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="yellow">
+  <object id="7" x="240" y="360" width="120" height="120"/>
+  <object id="8" x="1320" y="480" width="120" height="120"/>
+  <object id="9" x="1560" y="960" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="cyan">
+  <object id="5" x="360" y="120" width="120" height="120"/>
+  <object id="6" x="1200" y="960" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="magenta">
+  <object id="2" x="960" y="120" width="120" height="120"/>
+  <object id="3" x="1320" y="240" width="120" height="120"/>
+  <object id="4" x="1680" y="480" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="goal">
+  <object id="1" x="1800" y="0" width="120" height="120"/>
+ </objectgroup>
 </map>
