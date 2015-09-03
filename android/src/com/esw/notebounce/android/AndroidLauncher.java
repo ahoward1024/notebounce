@@ -4,7 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.esw.notebounce.notebounce;
+import com.esw.notebounce.NoteBounce;
 
 public class AndroidLauncher extends AndroidApplication {
 	public static int ScreenWidth  = 960;
@@ -14,6 +14,6 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		initialize(new notebounce(ScreenWidth, ScreenHeight), config);
+		initialize(new NoteBounce(ScreenWidth, ScreenHeight), config);
 	}
 }

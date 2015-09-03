@@ -2,7 +2,7 @@ package com.esw.notebounce.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.esw.notebounce.notebounce;
+import com.esw.notebounce.NoteBounce;
 
 public class DesktopLauncher {
 
@@ -14,6 +14,6 @@ public class DesktopLauncher {
 		config.width  = ScreenWidth;
 		config.height = ScreenHeight;
 		config.resizable = false;
-		new LwjglApplication(new notebounce(ScreenWidth, ScreenHeight), config);
+		new LwjglApplication(new NoteBounce(ScreenWidth, ScreenHeight), config);
 	}
 }

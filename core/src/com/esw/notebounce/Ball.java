@@ -30,18 +30,18 @@ public class Ball {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(center.x / notebounce.PIXELS2METERS, center.y / notebounce.PIXELS2METERS);
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = notebounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.getWorld().createBody(bodyDef);
 
         CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(((sprite.getWidth() * scale) / 2) / notebounce.PIXELS2METERS);
+        circleShape.setRadius(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS);
         // NOTE(alex): maybe set these as parameters in the future?
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = circleShape;
         fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.6f;
+        fixtureDef.friction = 0.7f;
+        fixtureDef.restitution = 0.5f;
         body.createFixture(fixtureDef).setUserData("ball");
         circleShape.dispose();
     }

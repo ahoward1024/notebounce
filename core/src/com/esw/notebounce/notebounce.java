@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
-public class notebounce extends ApplicationAdapter implements ContactListener {
+public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
@@ -36,7 +36,6 @@ public class notebounce extends ApplicationAdapter implements ContactListener {
 
     Box goal;
     Sound goalNoise;
-	long goalNoiseID;
     boolean goalNoisePlaying = false;
     boolean goalHit = false;
     boolean goalWasHit = false;
@@ -62,7 +61,7 @@ public class notebounce extends ApplicationAdapter implements ContactListener {
 	boolean ballCreated = false;
 
 	// Yes it is not capitalized. Come fight me, bro.
-	public notebounce(int width, int height) {
+	public NoteBounce(int width, int height) {
 		ScreenWidth  = width;
 		ScreenHeight = height;
 	}
@@ -99,7 +98,7 @@ public class notebounce extends ApplicationAdapter implements ContactListener {
 
 		debugMessage = new BitmapFont();
 
-		gun = new Gun(2, 2, 0.8f); // TODO(alex): better size for gun?
+		gun = new Gun(20, 20, 0.8f); // TODO(alex): better size for gun?
 
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
@@ -154,12 +153,12 @@ public class notebounce extends ApplicationAdapter implements ContactListener {
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
 		// while the input's (0,0) is at the _top_ left
-		float graphicsY = ScreenHeight - mouse.y;
+		float mouseGraphicsY = ScreenHeight - mouse.y;
 
 		// Find the angle for the gun and ball's projection arc based on where the mouse
 		// is located on the screen. Works best if the gun's texture is defaulted to point
 		// towards the right.
-		float angle = (float)Math.atan2(graphicsY - gun.getCenterX(), mouse.x - gun.getCenterY());
+		float angle = (float)Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
 		angle *= (180/Math.PI);
 
 		// Reset the angle if it goes negative
@@ -169,7 +168,7 @@ public class notebounce extends ApplicationAdapter implements ContactListener {
 		// Update the input debug string to hold input
 		inputDebug = "inX: " + mouse.x +
 				     " | inY: " + mouse.y +
-				     " (" + graphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
+				     " (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
 				" | Click: " + click;
 
 		camera.update(); // Update the camera just before drawing

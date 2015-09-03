@@ -75,13 +75,13 @@ public class Box {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.position.set(center.x / notebounce.PIXELS2METERS, center.y / notebounce.PIXELS2METERS);
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = notebounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.getWorld().createBody(bodyDef);
 
         PolygonShape polygonShape = new PolygonShape();
-        polygonShape.setAsBox(((sprite.getWidth() / 2) * scale) / notebounce.PIXELS2METERS,
-                ((sprite.getHeight() / 2) * scale) / notebounce.PIXELS2METERS);
+        polygonShape.setAsBox(((sprite.getWidth() / 2) * scale) / NoteBounce.PIXELS2METERS,
+                ((sprite.getHeight() / 2) * scale) / NoteBounce.PIXELS2METERS);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = polygonShape;
