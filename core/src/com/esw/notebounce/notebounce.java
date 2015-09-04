@@ -47,6 +47,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	float timeSinceLastBlueNote = 0.0f;
 	float timeSinceLastGreenNote = 0.0f;
 	float timeSinceLastYellowNote = 0.0f;
+	float timeSinceLastBoundNote = 0.0f;
+	float timeSinceLastCyanNote = 0.0f;
 	boolean playNotes = true;
 
 	static World world; // Static so we can pass it easily
@@ -153,6 +155,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 				body = world.createBody(bodyDef);
 				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS, (rect.getHeight() / 2) / PIXELS2METERS);
 				fixtureDef.shape = shape;
+				fixtureDef.density = 1.0f;
+				fixtureDef.restitution = 0.0f;
 				body.createFixture(fixtureDef).setUserData(map.getLayers().get(i).getName());
 			}
 		}
@@ -171,6 +175,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		timeSinceLastBlueNote += deltaTime;
 		timeSinceLastGreenNote += deltaTime;
 		timeSinceLastYellowNote += deltaTime;
+		timeSinceLastBoundNote += deltaTime;
+		timeSinceLastCyanNote += deltaTime;
 
 		renderer.render();
 
@@ -284,11 +290,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		return world;
 	}
 
-	boolean flipsies = true;
-
+	boolean noteFlip = true;
+	boolean boundaryFlip = true;
+	Fixture last;
+	int boostcount = 0;
+	final float lastNoteTime = 0.5f;
 	// Implemented from ContactListener
 	// Handles all the collision detection
 	public void beginContact(Contact c) {
+
 		Fixture fa = c.getFixtureA(); // Usually a static object
 		Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
@@ -304,23 +314,42 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 
 		if(playNotes) {
-			if (fa.getUserData().equals("blue") && timeSinceLastBlueNote > 0.2f) {
+
+			if(fa.getUserData().equals("boundary")) {
+				if(last != null) {
+					// Takes care of notes incessantly playing while the ball rolls
+					// TODO(alex): ball doesn't make any noise if it hits a vert wall while rolling, fix
+					if (Math.abs(ball.body().getLinearVelocity().y) > 4.0f) {
+						if (boundaryFlip) notes[1].play();
+						else notes[6].play();
+						boundaryFlip = !boundaryFlip;
+						timeSinceLastBoundNote = 0.0f;
+					}
+				} else {
+					if (boundaryFlip) notes[1].play();
+					else notes[6].play();
+					boundaryFlip = !boundaryFlip;
+					timeSinceLastBoundNote = 0.0f;
+				}
+			}
+
+			if (fa.getUserData().equals("blue") && timeSinceLastBlueNote > lastNoteTime) {
 				if (notePtr == notes.length - 1) notePtr = 0;
 				else notePtr++;
 				notes[notePtr].play();
 				timeSinceLastBlueNote = 0.0f;
 			}
 
-			if (fa.getUserData().equals("green") && timeSinceLastGreenNote > 0.2f) {
+			if (fa.getUserData().equals("green") && timeSinceLastGreenNote > lastNoteTime) {
 				if (notePtr == 0) notePtr = notes.length - 1;
 				else notePtr--;
 				notes[notePtr].play();
 				timeSinceLastGreenNote = 0.0f;
 			}
 
-			if (fa.getUserData().equals("yellow") && timeSinceLastYellowNote > 0.2f) {
-				if (flipsies) {
-					flipsies = !flipsies;
+			if (fa.getUserData().equals("yellow") && timeSinceLastYellowNote > lastNoteTime) {
+				if (noteFlip) {
+					noteFlip = !noteFlip;
 					notePtr += 4;
 					if (notePtr > notes.length - 1) {
 						int i = notePtr - (notes.length - 1);
@@ -329,7 +358,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 					}
 					notes[notePtr].play();
 				} else {
-					flipsies = !flipsies;
+					noteFlip = !noteFlip;
 					notePtr -= 4;
 					if (notePtr < 0) {
 						notePtr = Math.abs(notePtr);
@@ -337,7 +366,32 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 					notes[notePtr].play();
 				}
 				timeSinceLastYellowNote = 0.0f;
+
+				if(ball.body().getWorldCenter().y > (fa.getBody().getWorldCenter().y +
+						                             fa.getShape().getRadius()) + 0.7) {
+					System.out.println(boostcount + " boost"); boostcount++;
+					System.out.println(ball.body().getLinearVelocity());
+					ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0);
+					ball.body().applyLinearImpulse(new Vector2(0, 1.5f),
+							ball.body().getWorldCenter(), true);
+				}
 			}
+
+			if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > 0.2f) {
+				notes[0].play();
+				notes[2].play();
+				notes[6].play();
+				timeSinceLastCyanNote = 0.0f;
+			}
+
+			if(fa.getUserData().equals("magenta") && timeSinceLastCyanNote > 0.2f) {
+				notes[2].play();
+				notes[4].play();
+				notes[6].play();
+				timeSinceLastCyanNote = 0.0f;
+			}
+
+			last = fa;
 		}
 	}
 
