@@ -1,12 +1,14 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
@@ -44,11 +46,12 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	Sound[] notes = new Sound[8];
 	int notePtr = 0;
-	float timeSinceLastBlueNote = 0.0f;
-	float timeSinceLastGreenNote = 0.0f;
-	float timeSinceLastYellowNote = 0.0f;
-	float timeSinceLastBoundNote = 0.0f;
-	float timeSinceLastCyanNote = 0.0f;
+	float timeSinceLastBlueNote    = 0.0f;
+	float timeSinceLastGreenNote   = 0.0f;
+	float timeSinceLastYellowNote  = 0.0f;
+	float timeSinceLastBoundNote   = 0.0f;
+	float timeSinceLastCyanNote    = 0.0f;
+	float timeSinceLastMagentaNote = 0.0f;
 	boolean playNotes = true;
 
 	static World world; // Static so we can pass it easily
@@ -75,7 +78,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	// This is called to create the Edge Lines for the boundaries of the screen
 	// so the ball will stay within the screen's bounds
-	public void createLine(float x1, float y1, float x2, float y2) {
+	public void createLine(float x1, float y1, float x2, float y2, boolean bottom) {
 		Body ground;
 		BodyDef groundBodyDef = new BodyDef();
 		groundBodyDef.type = BodyDef.BodyType.StaticBody;
@@ -85,7 +88,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		edgeShape.set(x1, y1, x2, y2);
 		groundFixtureDef.shape = edgeShape;
 		ground = world.createBody(groundBodyDef);
-		ground.createFixture(groundFixtureDef).setUserData("boundary");
+		if(bottom) ground.createFixture(groundFixtureDef).setUserData("boundaryBot");
+		else ground.createFixture(groundFixtureDef).setUserData("boundary");
 		edgeShape.dispose();
 	}
 	
@@ -117,12 +121,12 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
-		createLine(0.0f, 0.0f, ScreenWidth / PIXELS2METERS, 0.0f); // BOTTOM
-		createLine(0.0f, 0.0f, 0.0f, ScreenHeight / PIXELS2METERS); //RIGHT
+		createLine(0.0f, 0.0f, ScreenWidth / PIXELS2METERS, 0.0f, true); // BOTTOM
+		createLine(0.0f, 0.0f, 0.0f, ScreenHeight / PIXELS2METERS, false); //RIGHT
 		createLine((ScreenWidth / PIXELS2METERS) - 0.0f, 0.0f, // LEFT
-				(ScreenWidth / PIXELS2METERS) - 0.0f, ScreenHeight / PIXELS2METERS);
+				(ScreenWidth / PIXELS2METERS) - 0.0f, ScreenHeight / PIXELS2METERS, false);
 		createLine(0.0f, (ScreenHeight / PIXELS2METERS) - 0.0f, // TOP
-                ScreenWidth / PIXELS2METERS, (ScreenHeight / PIXELS2METERS) - 0.0f);
+				ScreenWidth / PIXELS2METERS, (ScreenHeight / PIXELS2METERS) - 0.0f, false);
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
 
@@ -147,13 +151,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		Body body;
 
 		for(int i = 1; i < map.getLayers().getCount(); i++) {
-			for (MapObject object : map.getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
+			for (MapObject object :
+					map.getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
 				Rectangle rect = ((RectangleMapObject) object).getRectangle();
 				bodyDef.type = BodyDef.BodyType.StaticBody;
 				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
 						(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
 				body = world.createBody(bodyDef);
-				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS, (rect.getHeight() / 2) / PIXELS2METERS);
+				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
+						       (rect.getHeight() / 2) / PIXELS2METERS);
 				fixtureDef.shape = shape;
 				fixtureDef.density = 1.0f;
 				fixtureDef.restitution = 0.0f;
@@ -162,6 +168,20 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 
 		shape.dispose();
+
+		Pixmap pm = new Pixmap(Gdx.files.internal("crosshair.png"));
+		Gdx.input.setCursorImage(pm, pm.getWidth() /2, pm.getHeight() / 2);
+	}
+
+	public Vector2 impulse(float angle) {
+		float mXDir = (float)Math.cos(angle * Math.PI / 180);
+		float mYDir = (float)Math.sin(angle * Math.PI / 180);
+		// Power set to 24 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
+		// barely hit the top right corner if the gun is in the bottom left corner
+		float power = 24;
+		Vector2 impulse = new Vector2(mXDir * power / 8, mYDir * power / 8);
+
+		return impulse;
 	}
 
 	@Override
@@ -172,11 +192,12 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
-		timeSinceLastBlueNote += deltaTime;
-		timeSinceLastGreenNote += deltaTime;
-		timeSinceLastYellowNote += deltaTime;
-		timeSinceLastBoundNote += deltaTime;
-		timeSinceLastCyanNote += deltaTime;
+		timeSinceLastBlueNote    += deltaTime;
+		timeSinceLastGreenNote   += deltaTime;
+		timeSinceLastYellowNote  += deltaTime;
+		timeSinceLastBoundNote   += deltaTime;
+		timeSinceLastCyanNote    += deltaTime;
+		timeSinceLastMagentaNote += deltaTime;
 
 		renderer.render();
 
@@ -247,16 +268,14 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
+
+
 		// Create a ball if the mouse has been clicked and there is not already a ball in the world
 		if(lclick && !ballShot) {
 			drawBall = true;
 			ballShot = true;
 			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
-			float mXDir = (float)Math.cos(angle * Math.PI / 180);
-			float mYDir = (float)Math.sin(angle * Math.PI / 180);
-			float power = 23;
-			Vector2 impulse = new Vector2(mXDir * power / 8, mYDir * power / 8);
-			ball.body().applyLinearImpulse(impulse, ball.body().getWorldCenter(), true);
+			ball.body().applyLinearImpulse(impulse(angle), ball.body().getWorldCenter(), true);
 		}
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
@@ -290,10 +309,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		return world;
 	}
 
-	boolean noteFlip = true;
-	boolean boundaryFlip = true;
-	Fixture last;
-	int boostcount = 0;
+	boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
+	boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
+	boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
+	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
 	final float lastNoteTime = 0.5f;
 	// Implemented from ContactListener
 	// Handles all the collision detection
@@ -316,16 +335,14 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		if(playNotes) {
 
 			if(fa.getUserData().equals("boundary")) {
-				if(last != null) {
-					// Takes care of notes incessantly playing while the ball rolls
-					// TODO(alex): ball doesn't make any noise if it hits a vert wall while rolling, fix
-					if (Math.abs(ball.body().getLinearVelocity().y) > 4.0f) {
-						if (boundaryFlip) notes[1].play();
-						else notes[6].play();
-						boundaryFlip = !boundaryFlip;
-						timeSinceLastBoundNote = 0.0f;
-					}
-				} else {
+				if (boundaryFlip) notes[1].play();
+				else notes[6].play();
+				boundaryFlip = !boundaryFlip;
+				timeSinceLastBoundNote = 0.0f;
+			}
+
+			if(fa.getUserData().equals("boundaryBot")) {
+				if (Math.abs(ball.body().getLinearVelocity().y) > 4.0f) {
 					if (boundaryFlip) notes[1].play();
 					else notes[6].play();
 					boundaryFlip = !boundaryFlip;
@@ -348,8 +365,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			}
 
 			if (fa.getUserData().equals("yellow") && timeSinceLastYellowNote > lastNoteTime) {
-				if (noteFlip) {
-					noteFlip = !noteFlip;
+				if (yellowFlip) {
+					yellowFlip = !yellowFlip;
 					notePtr += 4;
 					if (notePtr > notes.length - 1) {
 						int i = notePtr - (notes.length - 1);
@@ -358,7 +375,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 					}
 					notes[notePtr].play();
 				} else {
-					noteFlip = !noteFlip;
+					yellowFlip = !yellowFlip;
 					notePtr -= 4;
 					if (notePtr < 0) {
 						notePtr = Math.abs(notePtr);
@@ -369,8 +386,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 				if(ball.body().getWorldCenter().y > (fa.getBody().getWorldCenter().y +
 						                             fa.getShape().getRadius()) + 0.7) {
-					System.out.println(boostcount + " boost"); boostcount++;
-					System.out.println(ball.body().getLinearVelocity());
+
 					ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0);
 					ball.body().applyLinearImpulse(new Vector2(0, 1.5f),
 							ball.body().getWorldCenter(), true);
@@ -378,20 +394,38 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			}
 
 			if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > 0.2f) {
-				notes[0].play();
-				notes[2].play();
-				notes[6].play();
+				if(cyanFlip) {
+					// C Major
+					notes[0].play();
+					notes[2].play();
+					notes[6].play();
+					cyanFlip = !cyanFlip;
+				} else {
+					// A minor 2nd inv.
+					notes[2].play();
+					notes[5].play();
+					notes[7].play();
+					cyanFlip = !cyanFlip;
+				}
 				timeSinceLastCyanNote = 0.0f;
 			}
 
 			if(fa.getUserData().equals("magenta") && timeSinceLastCyanNote > 0.2f) {
-				notes[2].play();
-				notes[4].play();
-				notes[6].play();
-				timeSinceLastCyanNote = 0.0f;
+				if(cyanFlip) {
+					// D minor
+					notes[2].play();
+					notes[4].play();
+					notes[6].play();
+					cyanFlip = !cyanFlip;
+				} else {
+					// G Major 2nd. inv
+					notes[1].play();
+					notes[4].play();
+					notes[6].play();
+					cyanFlip = !cyanFlip;
+				}
+				timeSinceLastMagentaNote = 0.0f;
 			}
-
-			last = fa;
 		}
 	}
 

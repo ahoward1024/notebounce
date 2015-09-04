@@ -7,8 +7,8 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.esw.notebounce.NoteBounce;
 
 public class AndroidLauncher extends AndroidApplication {
-	public static int ScreenWidth  = 960;
-	public static int ScreenHeight = 540;
+	public static int ScreenWidth  = 1920;
+	public static int ScreenHeight = 1080;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {

@@ -35,4 +35,6 @@ public class Gun {
     public float getCenterY() {
         return center.y;
     }
+
+    public Vector2 getCenter() { return center; }
 }
