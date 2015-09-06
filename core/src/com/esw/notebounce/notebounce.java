@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,12 +17,14 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 
-public class NoteBounce extends ApplicationAdapter implements ContactListener {
+public class NoteBounce extends ApplicationAdapter implements ContactListener, InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
@@ -57,6 +60,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	static World world; // Static so we can pass it easily
 
 	String inputDebug = "Input debug: ";
+	String inputDebug2 = "Input debug: ";
 	String fpsDebug = "FPS: ";
 
 	float deltaTime = 0.0f;
@@ -173,17 +177,24 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		Gdx.input.setCursorImage(pm, pm.getWidth() /2, pm.getHeight() / 2);
 	}
 
-	public Vector2 impulse(float angle) {
+	float power = 0.0f;
+	public Vector2 impulse(float angle, Vector2 touchStart, Vector2 touchEnd) {
 		float mXDir = (float)Math.cos(angle * Math.PI / 180);
 		float mYDir = (float)Math.sin(angle * Math.PI / 180);
+		power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
+				       Math.pow((touchEnd.y - touchStart.y), 2.0)) / 25.0f;
+		if(power > 25) power = 25;
 		// Power set to 24 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
 		// barely hit the top right corner if the gun is in the bottom left corner
-		float power = 24;
 		Vector2 impulse = new Vector2(mXDir * power / 8, mYDir * power / 8);
 
 		return impulse;
 	}
 
+	boolean wasClicked = false;
+	boolean shoot = false;
+	Vector2 mouseClick = new Vector2(0, 0);
+	Vector2 mouseUnClick = new Vector2(0, 0);
 	@Override
 	public void render () {
 
@@ -203,7 +214,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		// Grab mouse input
 		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-		boolean lclick = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+		boolean lclick = Gdx.input.isButtonPressed(Input.Keys.LEFT);
 
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
@@ -220,14 +231,27 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		if(angle < 0) {
 			angle = 360 - (-angle);
 		}
+
+		if(lclick && !wasClicked) {
+			mouseClick = mouse;
+			wasClicked = true;
+		}
+
+		if(!lclick && wasClicked) {
+			mouseUnClick = mouse;
+			wasClicked = false;
+			shoot = true;
+		}
+
 		// Update the input debug string to hold input
-		inputDebug = "inX: " + mouse.x +
-				     " | inY: " + mouse.y +
-				     " (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
-				" | Click: " + lclick;
+		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
+				     " (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
+
+		inputDebug2 = "mouseClick: " + mouseClick + " | mouseUnClick: " + mouseUnClick +
+					  "Power: " + power;
 
 		camera.update(); // Update the camera just before drawing
-		batch.begin();  // Start the batch drawing
+		batch.begin();   // Start the batch drawing
 
 		// We have to set ALL of the ball's sprite's parameters because we are
 		// using the batch to draw it, not drawing it in the batch.
@@ -255,7 +279,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
         }
         debugMessage.setColor(Color.GREEN);
         debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
-        debugMessage.setColor(Color.YELLOW);
+		debugMessage.draw(batch, inputDebug2, 10, ScreenHeight - 40);
+		debugMessage.setColor(Color.YELLOW);
         debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
 				          ScreenWidth - 60, ScreenHeight - 10);
 
@@ -266,16 +291,17 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
         else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
 		// The copy the camera's projection and scale it to the size of the Box2D world
 		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
-
+		//box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
 
 		// Create a ball if the mouse has been clicked and there is not already a ball in the world
-		if(lclick && !ballShot) {
+		if(shoot && !ballShot) {
+			shoot = false;
 			drawBall = true;
 			ballShot = true;
 			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
-			ball.body().applyLinearImpulse(impulse(angle), ball.body().getWorldCenter(), true);
+			ball.body().applyLinearImpulse(impulse(angle, mouseClick, mouseUnClick),
+					ball.body().getWorldCenter(), true);
 		}
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
@@ -410,19 +436,19 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 				timeSinceLastCyanNote = 0.0f;
 			}
 
-			if(fa.getUserData().equals("magenta") && timeSinceLastCyanNote > 0.2f) {
+			if(fa.getUserData().equals("magenta") && timeSinceLastMagentaNote > 0.2f) {
 				if(cyanFlip) {
 					// D minor
 					notes[2].play();
 					notes[4].play();
 					notes[6].play();
-					cyanFlip = !cyanFlip;
+					magentaFlip = !magentaFlip;
 				} else {
 					// G Major 2nd. inv
 					notes[1].play();
 					notes[4].play();
 					notes[6].play();
-					cyanFlip = !cyanFlip;
+					magentaFlip = !magentaFlip;
 				}
 				timeSinceLastMagentaNote = 0.0f;
 			}
@@ -439,5 +465,37 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	public void postSolve(Contact c, ContactImpulse ci) {
 
+	}
+
+	public boolean keyDown (int keycode) {
+		return false;
+	}
+
+	public boolean keyUp (int keycode) {
+		return false;
+	}
+
+	public boolean keyTyped (char character) {
+		return false;
+	}
+
+	public boolean touchDown (int x, int y, int pointer, int button) {
+		return false;
+	}
+
+	public boolean touchUp (int x, int y, int pointer, int button) {
+		return false;
+	}
+
+	public boolean touchDragged (int x, int y, int pointer) {
+		return false;
+	}
+
+	public boolean mouseMoved (int x, int y) {
+		return false;
+	}
+
+	public boolean scrolled (int amount) {
+		return false;
 	}
 }
