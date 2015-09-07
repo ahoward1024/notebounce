@@ -13,20 +13,35 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
  */
 public class Ball {
 
-    // This is REALLY convenient! Why doesn't LibGDX already do this for sprites??
     private Vector2 center;
+    private Sprite sprite;
+    private Body body;
 
-    Sprite sprite;
-    Body body;
-
+    /**
+     * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
+     * @param x The x position for the center of the ball.
+     * @param y The y position for the center of the ball.
+     */
     Ball(float x, float y) {
         create(x, y, 1);
     }
 
+    /**
+     * Calls the create method to create a ball at point (x, y) with a scale of: scale.
+     * @param x The x position for the center of the ball.
+     * @param y The y position for the center of the ball.
+     * @param scale The scale size of the ball.
+     */
     Ball(float x, float y, float scale) {
         create(x, y, scale);
     }
 
+    /**
+     * Create a ball at point (x,y) with scale of: scale.
+     * @param x The x position for the center of the ball.
+     * @param y The y position for the center of the ball.
+     * @param scale The scale size of the ball.
+     */
     private void create(float x, float y, float scale) {
         sprite = new Sprite(new Texture("ball.png"));
         sprite.setCenter(x, y);
@@ -54,12 +69,23 @@ public class Ball {
         circleShape.dispose();
     }
 
+    /**
+     * Sets the sprite's position to the body's position.
+     */
     public void setSpriteToBodyPosition() {
         sprite.setPosition((body.getPosition().x * NoteBounce.PIXELS2METERS) - sprite.getOriginX(),
                            (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
     }
 
+    /**
+     * Gets the sprite of the ball.
+     * @return The sprite of the ball.
+     */
     public Sprite sprite() { return sprite; }
 
+    /**
+     * Gets the body of the ball.
+     * @return The body of the ball.
+     */
     public Body body() { return body; }
 }
