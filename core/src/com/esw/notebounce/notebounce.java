@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -58,8 +57,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	static World world; // Static so we can pass it easily
 
-	String inputDebug = "Input debug: ";
-	String inputDebug2 = "Input debug: ";
+	String inputDebug = "";
+	String mouseClickDebug = "";
+	String ballPositionDebug = "";
+	String gunPositionDebug = "";
 	String fpsDebug = "FPS: ";
 
 	float deltaTime = 0.0f;
@@ -245,19 +246,19 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		// If the mouse was clicked, not clicked before, and the ball has not been shot
 		// we need to snap where the mouse position is currently and set wasClicked to true.
-		if (lclick && !wasClicked && !ballShot) {
+		if (lclick && !wasClicked && !ballShot && !moveBall) {
 			mouseClick = mouse;
 			wasClicked = true;
 		}
 
-		if(lclick) {
+		if(lclick && !moveBall) {
 			power = shotPower(mouseClick, mouse);
 		}
 
 		// If the mouse is not currently clicked, but it _was_ clicked and the ball has not
 		// been shot; we will snap where the mouse position is and set was clicked to false
 		// and tell the gun it is okay to shoot.
-		if (!lclick && wasClicked && !ballShot) {
+		if (!lclick && wasClicked && !ballShot && !moveBall) {
 			mouseUnClick = mouse;
 			wasClicked = false;
 			shoot = true;
@@ -267,8 +268,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
 				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
 
-		inputDebug2 = "mouseClick: " + mouseClick + " | mouseUnClick: " + mouseUnClick +
-				"Power: " + power;
+		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
+				          mouseUnClick + "Power: " + power;
+
+		ballPositionDebug = "Ball X: " + ball.body().getPosition().x +
+				" | Ball Y:" + ball.body().getPosition().y;
+
+		gunPositionDebug = "Gun X: " + gun.getCenterX() + "(" + (gun.getCenterX() / PIXELS2METERS) + ")"
+				           + " | Gun Y: " + gun.getCenterY() + "(" + (gun.getCenterY() / PIXELS2METERS)
+		                   + ")";
 
 		camera.update(); // Update the camera just before drawing
 		batch.begin();   // Start the batch drawing
@@ -298,7 +306,9 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 		debugMessage.setColor(Color.GREEN);
 		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
-		debugMessage.draw(batch, inputDebug2, 10, ScreenHeight - 40);
+		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
+		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
+		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.setColor(Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
 				ScreenWidth - 60, ScreenHeight - 10);
@@ -315,7 +325,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
 		// then we update the angle to the gun. This prevents the gun from rotating while the player is
 		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if (!ballShot && !wasClicked && !shoot) {
+		if (!ballShot && !wasClicked && !shoot && !moveBall) {
 			// Find the angle for the gun and ball's projection arc based on where the mouse is located
 			// on the screen. Works best if the gun's texture is defaulted to point towards the right.
 			angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
@@ -341,10 +351,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
-			ball.sprite().setPosition((ball.body().getPosition().x * PIXELS2METERS) -
-							           ball.sprite().getOriginX(),
-					                  (ball.body().getPosition().y * PIXELS2METERS) -
-							           ball.sprite().getOriginY());
+			ball.setSpriteToBodyPosition();
 		}
 
 		// Destroy the current ball in the world (if there is one) so another can be shot
@@ -353,12 +360,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
 			ballShot = false;
 			ball.body().setType(BodyDef.BodyType.StaticBody);
-			ball.body().setTransform(gun.getCenterX() / PIXELS2METERS,
-					gun.getCenterY() / PIXELS2METERS, 0.0f);
-			ball.sprite().setPosition((ball.body().getPosition().x * PIXELS2METERS) -
-							ball.sprite().getOriginX(),
-					(ball.body().getPosition().y * PIXELS2METERS) -
-							ball.sprite().getOriginY());
+
 			moveBall = true;
 			if(goalWasHit) {
                 if(goalNoisePlaying) goalNoise.stop();
@@ -366,6 +368,24 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
                 goalWasHit = false;
 				playNotes = true;
             }
+		}
+
+		if(moveBall) {
+			ball.body().setTransform(lerp(ball.body.getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+							deltaTime * 10),
+					lerp(ball.body.getPosition().y, (gun.getCenterY() / PIXELS2METERS),
+							deltaTime * 10),
+					0.0f);
+			ball.setSpriteToBodyPosition();
+			shoot = false;
+			if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
+			   (ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+			{
+				ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
+						                 (gun.getCenterY() / PIXELS2METERS), 0.0f);
+				ball.setSpriteToBodyPosition();
+				moveBall = false;
+			}
 		}
 	}
 

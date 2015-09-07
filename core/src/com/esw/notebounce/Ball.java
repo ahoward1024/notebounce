@@ -54,6 +54,11 @@ public class Ball {
         circleShape.dispose();
     }
 
+    public void setSpriteToBodyPosition() {
+        sprite.setPosition((body.getPosition().x * NoteBounce.PIXELS2METERS) - sprite.getOriginX(),
+                           (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
+    }
+
     public Sprite sprite() { return sprite; }
 
     public Body body() { return body; }
