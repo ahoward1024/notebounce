@@ -24,7 +24,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 
-public class NoteBounce extends ApplicationAdapter implements ContactListener, InputProcessor {
+public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
@@ -191,6 +191,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		return impulse;
 	}
 
+	float angle = 0.0f;
 	boolean wasClicked = false;
 	boolean shoot = false;
 	Vector2 mouseClick = new Vector2(0, 0);
@@ -198,19 +199,19 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	@Override
 	public void render () {
 
-		renderer.setView(camera);
+		renderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
 		// OpenGL
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
-		timeSinceLastBlueNote    += deltaTime;
-		timeSinceLastGreenNote   += deltaTime;
-		timeSinceLastYellowNote  += deltaTime;
-		timeSinceLastBoundNote   += deltaTime;
-		timeSinceLastCyanNote    += deltaTime;
+		timeSinceLastBlueNote += deltaTime;
+		timeSinceLastGreenNote += deltaTime;
+		timeSinceLastYellowNote += deltaTime;
+		timeSinceLastBoundNote += deltaTime;
+		timeSinceLastCyanNote += deltaTime;
 		timeSinceLastMagentaNote += deltaTime;
 
-		renderer.render();
+		renderer.render(); // Render the level built with Tiled.
 
 		// Grab mouse input
 		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
@@ -221,23 +222,17 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// while the input's (0,0) is at the _top_ left
 		float mouseGraphicsY = ScreenHeight - mouse.y;
 
-		// Find the angle for the gun and ball's projection arc based on where the mouse
-		// is located on the screen. Works best if the gun's texture is defaulted to point
-		// towards the right.
-		float angle = (float)Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
-		angle *= (180/Math.PI);
-
-		// Reset the angle if it goes negative
-		if(angle < 0) {
-			angle = 360 - (-angle);
-		}
-
-		if(lclick && !wasClicked) {
+		// If the mouse was clicked, not clicked before, and the ball has not been shot
+		// we need to snap where the mouse position is currently and set wasClicked to true.
+		if (lclick && !wasClicked && !ballShot) {
 			mouseClick = mouse;
 			wasClicked = true;
 		}
 
-		if(!lclick && wasClicked) {
+		// If the mouse is not currently clicked, but it _was_ clicked and the ball has not
+		// been shot; we will snap where the mouse position is and set was clicked to false
+		// and tell the gun it is okay to shoot.
+		if (!lclick && wasClicked && !ballShot) {
 			mouseUnClick = mouse;
 			wasClicked = false;
 			shoot = true;
@@ -245,10 +240,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 		// Update the input debug string to hold input
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
-				     " (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
+				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
 
 		inputDebug2 = "mouseClick: " + mouseClick + " | mouseUnClick: " + mouseUnClick +
-					  "Power: " + power;
+				"Power: " + power;
 
 		camera.update(); // Update the camera just before drawing
 		batch.begin();   // Start the batch drawing
@@ -256,43 +251,58 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// We have to set ALL of the ball's sprite's parameters because we are
 		// using the batch to draw it, not drawing it in the batch.
 		batch.draw(ball.sprite(),
-				   ball.sprite().getX(), ball.sprite().getY(),
-				   ball.sprite().getOriginX(), ball.sprite().getOriginY(),
-				   ball.sprite().getWidth(), ball.sprite().getHeight(),
-				   ball.sprite().getScaleX(), ball.sprite().getScaleY(),
-				   ball.sprite().getRotation());
+				ball.sprite().getX(), ball.sprite().getY(),
+				ball.sprite().getOriginX(), ball.sprite().getOriginY(),
+				ball.sprite().getWidth(), ball.sprite().getHeight(),
+				ball.sprite().getScaleX(), ball.sprite().getScaleY(),
+				ball.sprite().getRotation());
 
 		// Now draw the gun so it is over the ball
-		gun.sprite().setRotation(angle);
 		gun.sprite().draw(batch);
 
-        // Draw debug inputs last so they are always on top
-        if(goalHit) {
-            goalWasHit = true;
-            debugMessage.setColor(Color.RED);
-            debugMessage.draw(batch, "GOAL!", ScreenWidth/2, ScreenHeight/2);
-            if(goalTextTimer > 10.0f) { // Keep the text up for 10 seconds
-                goalHit = false;
-                goalTextTimer = 0.0f;
-            }
-            goalTextTimer += deltaTime;
-        }
-        debugMessage.setColor(Color.GREEN);
-        debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
+		// Draw debug inputs last so they are always on top
+		if (goalHit) {
+			goalWasHit = true;
+			debugMessage.setColor(Color.RED);
+			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
+			if (goalTextTimer > 10.0f) { // Keep the text up for 10 seconds
+				goalHit = false;
+				goalTextTimer = 0.0f;
+			}
+			goalTextTimer += deltaTime;
+		}
+		debugMessage.setColor(Color.GREEN);
+		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
 		debugMessage.draw(batch, inputDebug2, 10, ScreenHeight - 40);
 		debugMessage.setColor(Color.YELLOW);
-        debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-				          ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
+				ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
-        else if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
-        else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is terrible... (no 1/60)
-		// The copy the camera's projection and scale it to the size of the Box2D world
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
+		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
+		else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is bad... (no 1/60)
+		// Copy the camera's projection and scale it to the size of the Box2D world
+		//debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		//box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
+		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
+		// then we update the angle to the gun. This prevents the gun from rotating while the player is
+		// dragging to set the power and prevents is from further rotation when the ball has been shot
+		if (!ballShot && !wasClicked && !shoot) {
+			// Find the angle for the gun and ball's projection arc based on where the mouse is located
+			// on the screen. Works best if the gun's texture is defaulted to point towards the right.
+			angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
+			angle *= (180 / Math.PI);
+
+			// Reset the angle if it goes negative
+			if (angle < 0) {
+				angle = 360 - (-angle);
+			}
+
+			gun.sprite().setRotation(angle);
+		}
 
 		// Create a ball if the mouse has been clicked and there is not already a ball in the world
 		if(shoot && !ballShot) {
@@ -465,37 +475,5 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 	public void postSolve(Contact c, ContactImpulse ci) {
 
-	}
-
-	public boolean keyDown (int keycode) {
-		return false;
-	}
-
-	public boolean keyUp (int keycode) {
-		return false;
-	}
-
-	public boolean keyTyped (char character) {
-		return false;
-	}
-
-	public boolean touchDown (int x, int y, int pointer, int button) {
-		return false;
-	}
-
-	public boolean touchUp (int x, int y, int pointer, int button) {
-		return false;
-	}
-
-	public boolean touchDragged (int x, int y, int pointer) {
-		return false;
-	}
-
-	public boolean mouseMoved (int x, int y) {
-		return false;
-	}
-
-	public boolean scrolled (int amount) {
-		return false;
 	}
 }
