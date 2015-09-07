@@ -1,16 +1,16 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -22,7 +22,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
@@ -73,6 +72,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	TmxMapLoader mapLoader;
 	TiledMap map;
 	OrthogonalTiledMapRenderer renderer;
+
+	Sprite test;
 
 	// Yes it is not capitalized. Come fight me, bro.
 	public NoteBounce(int width, int height) {
@@ -177,13 +178,32 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		Gdx.input.setCursorImage(pm, pm.getWidth() /2, pm.getHeight() / 2);
 	}
 
+	float smoothstep(float begin, float end, float x) {
+		x = MathUtils.clamp((x - begin) / (end - begin), 0.0f, 1.0f);
+		return x * x * (3 - 2*x);
+	}
+
+	float smootherstep(float begin, float end, float x) {
+		x = MathUtils.clamp((x - begin) / (end - begin), 0.0f, 1.0f);
+		return x*x*x*(x*(x*6 - 15) + 10);
+	}
+
+	float lerp(float begin, float end, float t) {
+		return (1-t)*begin + t*end;
+	}
+
 	float power = 0.0f;
-	public Vector2 impulse(float angle, Vector2 touchStart, Vector2 touchEnd) {
+	float shotPower(Vector2 touchStart, Vector2 touchEnd) {
+		float power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
+				Math.pow((touchEnd.y - touchStart.y), 2.0)) / 25.0f;
+		if(power > 25) power = 25;
+
+		return power;
+	}
+
+	Vector2 shot(float angle) {
 		float mXDir = (float)Math.cos(angle * Math.PI / 180);
 		float mYDir = (float)Math.sin(angle * Math.PI / 180);
-		power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
-				       Math.pow((touchEnd.y - touchStart.y), 2.0)) / 25.0f;
-		if(power > 25) power = 25;
 		// Power set to 24 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
 		// barely hit the top right corner if the gun is in the bottom left corner
 		Vector2 impulse = new Vector2(mXDir * power / 8, mYDir * power / 8);
@@ -196,6 +216,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	boolean shoot = false;
 	Vector2 mouseClick = new Vector2(0, 0);
 	Vector2 mouseUnClick = new Vector2(0, 0);
+	boolean moveBall = false;
 	@Override
 	public void render () {
 
@@ -227,6 +248,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		if (lclick && !wasClicked && !ballShot) {
 			mouseClick = mouse;
 			wasClicked = true;
+		}
+
+		if(lclick) {
+			power = shotPower(mouseClick, mouse);
 		}
 
 		// If the mouse is not currently clicked, but it _was_ clicked and the ball has not
@@ -284,8 +309,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
 		else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is bad... (no 1/60)
 		// Copy the camera's projection and scale it to the size of the Box2D world
-		//debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		//box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
 		// then we update the angle to the gun. This prevents the gun from rotating while the player is
@@ -300,7 +325,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			if (angle < 0) {
 				angle = 360 - (-angle);
 			}
-
+			// Only set the rotation if the ball is not shot
 			gun.sprite().setRotation(angle);
 		}
 
@@ -310,7 +335,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			drawBall = true;
 			ballShot = true;
 			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
-			ball.body().applyLinearImpulse(impulse(angle, mouseClick, mouseUnClick),
+			ball.body().applyLinearImpulse(shot(angle),
 					ball.body().getWorldCenter(), true);
 		}
 
@@ -326,10 +351,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
         // Stop any sound (if it was playing)
         // This essentially "resets" the level
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
-			ball.sprite().getTexture().dispose();
-			ball.body().destroyFixture(ball.body().getFixtureList().first());
 			ballShot = false;
-			ball = new Ball(gun.getCenterX(), gun.getCenterY());
+			ball.body().setType(BodyDef.BodyType.StaticBody);
+			ball.body().setTransform(gun.getCenterX() / PIXELS2METERS,
+					gun.getCenterY() / PIXELS2METERS, 0.0f);
+			ball.sprite().setPosition((ball.body().getPosition().x * PIXELS2METERS) -
+							ball.sprite().getOriginX(),
+					(ball.body().getPosition().y * PIXELS2METERS) -
+							ball.sprite().getOriginY());
+			moveBall = true;
 			if(goalWasHit) {
                 if(goalNoisePlaying) goalNoise.stop();
                 goalNoisePlaying = false;
