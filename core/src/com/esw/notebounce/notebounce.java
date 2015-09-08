@@ -8,13 +8,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -36,6 +39,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	SpriteBatch batch;
 	Gun gun;
 	Ball ball;
+	Sprite ripple;
 
     Sound goalNoise;
     boolean goalNoisePlaying = false;
@@ -71,6 +75,23 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	TmxMapLoader mapLoader;
 	TiledMap map;
 	OrthogonalTiledMapRenderer renderer;
+
+	float angle = 0.0f;
+	boolean wasClicked = false;
+	boolean shoot = false;
+	Vector2 mouseClick = new Vector2(0, 0);
+	Vector2 mouseUnClick = new Vector2(0, 0);
+	boolean moveBall = false;
+
+	float power = 0.0f;
+
+	boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
+	boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
+	boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
+	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
+	final float lastNoteTime = 0.5f; // The minimum time between two notes
+
+	boolean playRipple = false;
 
 	/**
 	 * Create a new NoteBounce level and set the ScreenWidth and ScreenHeight.
@@ -112,7 +133,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	 * Creates the game world.
 	 */
 	@Override
-	public void create () {
+	public void create() {
 		Box2D.init(); // MUST initialize Box2D before using it!
 		box2DDebugRenderer = new Box2DDebugRenderer();
 
@@ -201,16 +222,44 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	/**
 	 * A simple linear interpolation function (https://en.wikipedia.org/wiki/Linear_interpolation).
-	 * @param begin The starting point of the interpolation.
-	 * @param end The ending point to interpolate to.
-	 * @param t The timestep of the interpolation.
-	 * @return The point on the interpolation line the number should be after the given timestep.
+	 * @param edge0 The beginning interpolation value
+	 * @param edge1 The ending interpolation value
+	 * @param t The timestep of interpolation
+	 * @return The point on the interpolation line the number should be after the given timestep
 	 */
-	float lerp(float begin, float end, float t) {
-		return (1 - t) * begin + t * end;
+	float lerp(float edge0, float edge1, float t) {
+		return (1 - t) * edge0 + t * edge1;
 	}
 
-	float power = 0.0f; // !!! This will eventually go to the top as a member variable
+	/**
+	 * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep)
+	 * @param edge0 The beginning interpolation value
+	 * @param edge1 The ending interpolation value
+	 * @param t The timestep of interpolation
+	 * @return The point on the interpolation line the number should be after the given timestep
+	 */
+	float smoothstep(float edge0, float edge1, float t)
+	{
+		// Scale, bias and saturate x to 0..1 range
+		t = MathUtils.clamp((t - edge0)/(edge1 - edge0), 0.0f, 1.0f);
+		// Evaluate polynomial
+		return t * t * (3 - (2 * t));
+	}
+
+	/**
+	 * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep#Variations)
+	 * @param edge0 The beginning interpolation value
+	 * @param edge1 The ending interpolation value
+	 * @param t The timestep of interpolation
+	 * @return The point on the interpolation line the number should be after the given timestep
+	 */
+	float smootherstep(float edge0, float edge1, float t)
+	{
+		// Scale, and clamp x to 0..1 range
+		t = MathUtils.clamp((t - edge0)/(edge1 - edge0), 0.0f, 1.0f);
+		// Evaluate polynomial
+		return t * t * t * (t * ((t * 6) - 15) + 10);
+	}
 
 	/**
 	 * This takes two mouse position Vector2s (the first at the place the mouse was clicked, the second
@@ -224,7 +273,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		float power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
 				Math.pow((touchEnd.y - touchStart.y), 2.0)) / 25.0f;
 		if(power > 25) power = 25;
-
+		// Power's max is set to 25 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
+		// barely hit the top right corner if the gun is in the bottom left corner.
 		return power;
 	}
 
@@ -234,32 +284,27 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	 * @return The Vector2 impulse.
 	 */
 	Vector2 shot(float angle) {
-		float x = (float)Math.cos(angle * Math.PI / 180); // !!!
-		float y = (float)Math.sin(angle * Math.PI / 180); // !!!
-		// Power set to 25 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
-		// barely hit the top right corner if the gun is in the bottom left corner
+		float x = (float)Math.cos(angle * Math.PI / 180); //
+		float y = (float)Math.sin(angle * Math.PI / 180); //
 		return new Vector2(x * power / 8, y * power / 8);
 	}
 
-	// !!! Eventually all of these will go to the top as member variables
-	float angle = 0.0f;
-	boolean wasClicked = false;
-	boolean shoot = false;
-	Vector2 mouseClick = new Vector2(0, 0);
-	Vector2 mouseUnClick = new Vector2(0, 0);
-	boolean moveBall = false;
-
 	/**
-	 * Render all of the objects in the game world.
+	 * Update all of the variables needed to simulate physics
 	 */
-	@Override
-	public void render () {
+	public void updatePhysics() {
+		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
+		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
+		else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is bad... (no 1/60)
+		// Copy the camera's projection and scale it to the size of the Box2D world
+	}
 
-		renderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
-		// OpenGL
-		Gdx.gl.glClearColor(1, 1, 1, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		deltaTime = Gdx.graphics.getDeltaTime();
+	Vector2 mouse = new Vector2(0,0); // !!! Need to move
+	float mouseGraphicsY = 0;
+	/**
+	 * Update all of the variables needed to calculate sprite positioning
+	 */
+	public void update() {
 		timeSinceLastBlueNote += deltaTime;
 		timeSinceLastGreenNote += deltaTime;
 		timeSinceLastYellowNote += deltaTime;
@@ -267,16 +312,14 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		timeSinceLastCyanNote += deltaTime;
 		timeSinceLastMagentaNote += deltaTime;
 
-		renderer.render(); // Render the level built with Tiled.
-
 		// Grab mouse position
-		Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+		mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
 		boolean lclick = Gdx.input.isButtonPressed(Input.Keys.LEFT);
 
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
 		// while the input's (0,0) is at the _top_ left
-		float mouseGraphicsY = ScreenHeight - mouse.y;
+		mouseGraphicsY = ScreenHeight - mouse.y;
 
 		// If the mouse was clicked, not clicked before, and the ball has not been shot
 		// we need to snap where the mouse position is currently and set wasClicked to true.
@@ -298,6 +341,97 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			shoot = true;
 		}
 
+		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
+		// then we update the angle to the gun. This prevents the gun from rotating while the player is
+		// dragging to set the power and prevents is from further rotation when the ball has been shot
+		if(!ballShot && !wasClicked && !shoot && !moveBall) {
+			// Find the angle for the gun and ball's projection arc based on where the mouse is located
+			// on the screen. Works best if the gun's texture is defaulted to point towards the right.
+			angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
+			angle *= (180 / Math.PI);
+
+			// Reset the angle if it goes negative
+			if (angle < 0) {
+				angle = 360 - (-angle);
+			}
+			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
+
+		}
+
+		// Create a ball if the mouse has been clicked and there is not already a ball in the world
+		if(shoot && !ballShot) {
+			shoot = false;
+			drawBall = true;
+			ballShot = true;
+			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
+			ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
+		}
+
+		// Set the ball's sprite position the the same position as the ball's Box2D body position
+		if(ballShot) {
+			ball.setSpriteToBodyPosition();
+		}
+
+		// Destroy the current ball in the world (if there is one) so another can be shot
+		// Stop any sound (if it was playing)
+		// This essentially "resets" the level
+		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
+			ballShot = false;
+			ball.body().setType(BodyDef.BodyType.StaticBody);
+
+			moveBall = true;
+			if(goalWasHit) {
+				if(goalNoisePlaying) goalNoise.stop();
+				goalNoisePlaying = false;
+				goalWasHit = false;
+				playNotes = true;
+			}
+		}
+
+		if(moveBall) {
+			ball.body().setTransform(lerp(ball.body().getPosition().x,
+					                     (gun.getCenterX() / PIXELS2METERS),
+					                      deltaTime * 10),
+				                     lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+			ball.setSpriteToBodyPosition();
+			shoot = false;
+			if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
+				(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+			{
+				ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
+					(gun.getCenterY() / PIXELS2METERS), 0.0f);
+				ball.setSpriteToBodyPosition();
+				moveBall = false;
+			}
+		}
+
+		if(playRipple) {
+			ripple.setScale(ripple.getScaleX() + 0.1f, ripple.getScaleY() + 0.1f);
+			if(ripple.getScaleX() >= 1 && ripple.getScaleY() >= 1) {
+				ripple.getTexture().dispose();
+				ripple = null;
+				playRipple = false;
+			}
+		}
+	}
+
+	/**
+	 * Render all of the objects in the game world.
+	 */
+	@Override
+	public void render() {
+		renderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
+		// OpenGL
+		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
+		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		deltaTime = Gdx.graphics.getDeltaTime();
+
+		renderer.render(); // Render the level built with Tiled first
+
+		// Update all of the sprites
+		update();
+
 		// Update the debug strings
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
 				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
@@ -312,14 +446,19 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		camera.update(); // Update the camera just before drawing
 		batch.begin();   // Start the batch drawing
 
+		// Draw the ripple before the ball so it does not cover the ball
+		if(playRipple) {
+			batch.draw(ripple, ripple.getX(), ripple.getY(), ripple.getOriginX(), ripple.getOriginY(),
+				ripple.getWidth(), ripple.getHeight(), ripple.getScaleX(), ripple.getScaleY(),
+				ripple.getRotation());
+		}
+
 		// We have to set ALL of the ball's sprite's parameters because we are
 		// using the batch to draw it, not drawing it in the batch.
-		batch.draw(ball.sprite(),
-				ball.sprite().getX(), ball.sprite().getY(),
-				ball.sprite().getOriginX(), ball.sprite().getOriginY(),
-				ball.sprite().getWidth(), ball.sprite().getHeight(),
-				ball.sprite().getScaleX(), ball.sprite().getScaleY(),
-				ball.sprite().getRotation());
+		batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(), ball.sprite().getOriginX(),
+			       ball.sprite().getOriginY(), ball.sprite().getWidth(), ball.sprite().getHeight(),
+				   ball.sprite().getScaleX(), ball.sprite().getScaleY(), ball.sprite().getRotation());
+
 
 		// Now draw the gun so it is over the ball
 		gun.sprite().draw(batch);
@@ -346,80 +485,13 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		batch.end(); // Stop the batch drawing
 
-		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
-		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
-		else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is bad... (no 1/60)
-		// Copy the camera's projection and scale it to the size of the Box2D world
+		// Simulate Box2D physics
+		updatePhysics();
+
+		// DEBUG: draw Box2D debug lines
 		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
-
-		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
-		// then we update the angle to the gun. This prevents the gun from rotating while the player is
-		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if(!ballShot && !wasClicked && !shoot && !moveBall) {
-			// Find the angle for the gun and ball's projection arc based on where the mouse is located
-			// on the screen. Works best if the gun's texture is defaulted to point towards the right.
-			angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
-			angle *= (180 / Math.PI);
-
-			// Reset the angle if it goes negative
-			if (angle < 0) {
-				angle = 360 - (-angle);
-			}
-			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
-
-		}
-
-		// Create a ball if the mouse has been clicked and there is not already a ball in the world
-		if(shoot && !ballShot) {
-			shoot = false;
-			drawBall = true;
-			ballShot = true;
-			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
-			ball.body().applyLinearImpulse(shot(angle),
-					ball.body().getWorldCenter(), true);
-		}
-
-		// Set the ball's sprite position the the same position as the ball's Box2D body position
-		if(ballShot) {
-			ball.setSpriteToBodyPosition();
-		}
-
-		// Destroy the current ball in the world (if there is one) so another can be shot
-        // Stop any sound (if it was playing)
-        // This essentially "resets" the level
-		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
-			ballShot = false;
-			ball.body().setType(BodyDef.BodyType.StaticBody);
-
-			moveBall = true;
-			if(goalWasHit) {
-                if(goalNoisePlaying) goalNoise.stop();
-                goalNoisePlaying = false;
-                goalWasHit = false;
-				playNotes = true;
-            }
-		}
-
-		if(moveBall) {
-			ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS),
-							deltaTime * 10),
-					lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS),
-							deltaTime * 10),
-					0.0f);
-			ball.setSpriteToBodyPosition();
-			shoot = false;
-			if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
-			   (ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
-			{
-				ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
-						                 (gun.getCenterY() / PIXELS2METERS), 0.0f);
-				ball.setSpriteToBodyPosition();
-				moveBall = false;
-			}
-		}
 	}
-
 
 	/**
 	 * Gets the Box2D physics world for the game.
@@ -429,13 +501,6 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		return world;
 	}
 
-	// !!! These will eventually go to the top as member variables
-	boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
-	boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
-	boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
-	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
-	final float lastNoteTime = 0.5f; // The minimum time between two notes
-
 	/**
 	 * Handles the beginning of a Box2D collision.
 	 * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
@@ -443,7 +508,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	public void beginContact(Contact c) {
 
 		Fixture fa = c.getFixtureA(); // Usually a static object
-		//Fixture fb = c.getFixtureB(); // Usually a dynamic object // DEBUG: commented for now
+		Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
 		// Test if goal was hit
 		if(fa.getUserData().equals("goal")) {
@@ -453,6 +518,18 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 				goalNoise.play();
 				goalNoisePlaying = true;
 				playNotes = false;
+			}
+		}
+
+		if(fb.getUserData().equals("ball") &&
+			(!fa.getUserData().equals("boundary") || !fa.getUserData().equals("boundaryBot"))) {
+			if(Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f &&
+			   Math.abs(fb.getBody().getLinearVelocity().x) > 2.0f) {
+				playRipple = true;
+				ripple = new Sprite(new Texture(Gdx.files.internal("ripple.png")));
+				ripple.setCenter((fb.getBody().getPosition().x * PIXELS2METERS),
+					             (fb.getBody().getPosition().y * PIXELS2METERS));
+				ripple.setScale(0.1f, 0.1f);
 			}
 		}
 
@@ -469,7 +546,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 			// Boundary Edge collision (only for the bottom edge)
 			if(fa.getUserData().equals("boundaryBot")) {
-				if (Math.abs(ball.body().getLinearVelocity().y) > 4.0f) {
+				if (Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f) {
 					if (boundaryFlip) notes[1].play();
 					else notes[6].play();
 					boundaryFlip = !boundaryFlip;

@@ -9,7 +9,7 @@ public class DesktopLauncher {
 	public static int ScreenWidth  = 1920;
 	public static int ScreenHeight = 1080;
 
-	public static void main (String[] arg) {
+	public static void main(String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width  = ScreenWidth;
 		config.height = ScreenHeight;
