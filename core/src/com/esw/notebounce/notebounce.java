@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 
 public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
@@ -73,8 +74,9 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	boolean ballShot = false;
 
 	TmxMapLoader mapLoader;
-	TiledMap map;
-	OrthogonalTiledMapRenderer renderer;
+	TiledMap map[] = new TiledMap[4];
+	OrthogonalTiledMapRenderer mapRenderer;
+	int levelPtr = 0;
 
 	float angle = 0.0f;
 	boolean wasClicked = false;
@@ -168,7 +170,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
 
-		// Create the array to hold of of the notes for the note blocks
+		// Create the bodyArray to hold of of the notes for the note blocks
 		notes[0] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/C4.mp3"));
 		notes[1] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/D4.mp3"));
 		notes[2] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/E4.mp3"));
@@ -180,9 +182,30 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		notePtr = 0;
 
-		mapLoader = new TmxMapLoader(); // Loader object to load the level created in Tiled
-		map = mapLoader.load("tmx/level0.tmx"); // Load the level
-		renderer = new OrthogonalTiledMapRenderer(map); // Create a renderer for the level
+		// Load a pixmap to be used as the mouse cursor. NOTE: Pixmaps MUST be powers of 2
+		Pixmap pm = new Pixmap(Gdx.files.internal("crosshair.png"));
+		Gdx.input.setCursorImage(pm, pm.getWidth() / 2, pm.getHeight() / 2);
+
+		createLevelArray();
+		loadLevel(0);
+
+		System.out.println(map.length);
+	}
+
+	void createLevelArray() {
+		mapLoader = new TmxMapLoader();
+		int i = 0;
+		System.out.println("Map length: " + map.length);
+		for(i = 0; i < map.length; i++) {
+			System.out.println("Load: tmx/level" + i + ".tmx");
+			map[i] =  mapLoader.load("tmx/level" + i + ".tmx");
+		}
+		System.out.println("Create Level Array: " +  i);
+	}
+
+	void loadLevel(int level) {
+		System.out.println("Load Level: " + level);
+		mapRenderer = new OrthogonalTiledMapRenderer(map[level]); // Create a mapRenderer for the level
 
 		// These are used to create the bodies and fixtures for all of the note blocks in the level.
 		BodyDef bodyDef = new BodyDef();
@@ -196,28 +219,25 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		// an object layer with the same name of the corresponding block it goes around (blue, green,
 		// yellow, etc.) We must create rectangles around all of the object layers and create
 		// static fixtures so the ball has something to collide with.
-		for(int i = 1; i < map.getLayers().getCount(); i++) {
+		for(int i = 1; i < map[level].getLayers().getCount(); i++) {
 			for (MapObject object :
-					map.getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
+				map[level].getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
+
 				Rectangle rect = ((RectangleMapObject) object).getRectangle();
 				bodyDef.type = BodyDef.BodyType.StaticBody;
 				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
-						(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
+					(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
 				body = world.createBody(bodyDef);
 				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
-						       (rect.getHeight() / 2) / PIXELS2METERS);
+					(rect.getHeight() / 2) / PIXELS2METERS);
 				fixtureDef.shape = shape;
 				fixtureDef.density = 1.0f;
 				fixtureDef.restitution = 0.0f;
-				body.createFixture(fixtureDef).setUserData(map.getLayers().get(i).getName());
+				body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
 			}
 		}
 
 		shape.dispose(); // Make sure to dispose of the shape to free some now unused memory.
-
-		// Load a pixmap to be used as the mouse cursor. NOTE: Pixmaps MUST be powers of 2
-		Pixmap pm = new Pixmap(Gdx.files.internal("crosshair.png"));
-		Gdx.input.setCursorImage(pm, pm.getWidth() /2, pm.getHeight() / 2);
 	}
 
 	/**
@@ -300,7 +320,9 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	}
 
 	Vector2 mouse = new Vector2(0,0); // !!! Need to move
-	float mouseGraphicsY = 0;
+	float lastUsedAngle = 45.0f; // !!!
+	float lastUsedPower = 12.5f;
+	float mouseGraphicsY = 0; // !!!
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
@@ -329,7 +351,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		}
 
 		if(lclick && !moveBall) {
-			power = shotPower(mouseClick, mouse);
+			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
+				power = lastUsedPower;
+			} else {
+				power = shotPower(mouseClick, mouse);
+			}
 		}
 
 		// If the mouse is not currently clicked, but it _was_ clicked and the ball has not
@@ -344,27 +370,34 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
 		// then we update the angle to the gun. This prevents the gun from rotating while the player is
 		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if(!ballShot && !wasClicked && !shoot && !moveBall) {
-			// Find the angle for the gun and ball's projection arc based on where the mouse is located
-			// on the screen. Works best if the gun's texture is defaulted to point towards the right.
-			angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
-			angle *= (180 / Math.PI);
+		if(!ballShot && !wasClicked && !shoot) {
+			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG ???
+				angle = lastUsedAngle;
+			} else {
+				// Find the angle for the gun and ball's projection arc based on where the mouse is
+				// located on the screen. Works best if the gun's texture is defaulted to point towards
+				// the right.
+				angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
+				angle *= (180 / Math.PI);
 
-			// Reset the angle if it goes negative
-			if (angle < 0) {
-				angle = 360 - (-angle);
+				// Reset the angle if it goes negative
+				if(angle < 0) {
+					angle = 360 - (- angle);
+				}
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
-
 		}
 
-		// Create a ball if the mouse has been clicked and there is not already a ball in the world
+		// If we are going to shoot and the ball has not already been shot, shoot the ball.
+		// We also need to update the last angle and power calculations
 		if(shoot && !ballShot) {
 			shoot = false;
 			drawBall = true;
 			ballShot = true;
 			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
 			ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
+			lastUsedPower = power;
+			lastUsedAngle = angle;
 		}
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
@@ -376,33 +409,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		// Stop any sound (if it was playing)
 		// This essentially "resets" the level
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
-			ballShot = false;
-			ball.body().setType(BodyDef.BodyType.StaticBody);
-
-			moveBall = true;
-			if(goalWasHit) {
-				if(goalNoisePlaying) goalNoise.stop();
-				goalNoisePlaying = false;
-				goalWasHit = false;
-				playNotes = true;
-			}
+			resetLevel();
 		}
 
 		if(moveBall) {
-			ball.body().setTransform(lerp(ball.body().getPosition().x,
-					                     (gun.getCenterX() / PIXELS2METERS),
-					                      deltaTime * 10),
-				                     lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
-			ball.setSpriteToBodyPosition();
-			shoot = false;
-			if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
-				(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
-			{
-				ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
-					(gun.getCenterY() / PIXELS2METERS), 0.0f);
-				ball.setSpriteToBodyPosition();
-				moveBall = false;
-			}
+			moveBall();
 		}
 
 		if(playRipple) {
@@ -413,30 +424,87 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 				playRipple = false;
 			}
 		}
+
+		// Go to next level if goal was hit
+		if(goalHit || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) { // SPACE IS DEBUG
+			unloadLevel();
+			resetLevel();
+			if(levelPtr == map.length-1) levelPtr = 0;
+			else levelPtr++;
+			loadLevel(levelPtr);
+			goalHit = false;
+			showGoalHit = true;
+		}
+
 	}
 
+	Array<Body> bodyArray = new Array<Body>();
+	void unloadLevel() {
+		world.getBodies(bodyArray);
+		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
+		for(int i = 0; i < bodyArray.size; i++) {
+			if(! bodyArray.get(i).getFixtureList().first().getUserData().equals("ball") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundary") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundaryBot")) {
+				world.destroyBody(bodyArray.get(i));
+			}
+		}
+	}
+
+	void resetLevel() {
+		ballShot = false;
+		ball.body().setType(BodyDef.BodyType.StaticBody);
+		moveBall = true;
+		playNotes = true;
+
+		if(goalWasHit) {
+			if(goalNoisePlaying) goalNoise.stop();
+			goalNoisePlaying = false;
+			goalWasHit = false;
+		}
+	}
+
+	void moveBall() {
+		ball.body().setTransform(lerp(ball.body().getPosition().x,
+				(gun.getCenterX() / PIXELS2METERS),
+				deltaTime * 10),
+			lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.setSpriteToBodyPosition();
+		shoot = false;
+		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
+			(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+		{
+			ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
+				(gun.getCenterY() / PIXELS2METERS), 0.0f);
+			ball.setSpriteToBodyPosition();
+			moveBall = false;
+		}
+	}
+
+	boolean showGoalHit= false;// !!! Move
 	/**
 	 * Render all of the objects in the game world.
 	 */
 	@Override
 	public void render() {
-		renderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
+		mapRenderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
 		// OpenGL
 		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
 		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 
-		renderer.render(); // Render the level built with Tiled first
+		mapRenderer.render(); // Render the level built with Tiled first
 
 		// Update all of the sprites
 		update();
 
 		// Update the debug strings
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
-				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle);
+				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
+		        " | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
-				          mouseUnClick + "Power: " + power;
+				          mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
 		ballPositionDebug = "Ball X: " + ball.body().getPosition().x +
 				" | Ball Y:" + ball.body().getPosition().y;
 		gunPositionDebug = "Gun X: " + gun.getCenterX() + "(" + (gun.getCenterX() / PIXELS2METERS) + ")"
@@ -464,12 +532,12 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		gun.sprite().draw(batch);
 
 		// Draw debug inputs last so they are always on top
-		if (goalHit) {
+		if (showGoalHit) {
 			goalWasHit = true;
 			debugMessage.setColor(Color.RED);
 			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
-			if (goalTextTimer > 10.0f) { // Keep the text up for 10 seconds
-				goalHit = false;
+			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
+				showGoalHit = false;
 				goalTextTimer = 0.0f;
 			}
 			goalTextTimer += deltaTime;
@@ -479,6 +547,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
+		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
 				ScreenWidth - 60, ScreenHeight - 10);

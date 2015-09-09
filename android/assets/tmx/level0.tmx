@@ -5,26 +5,9 @@
  </tileset>
  <layer name="tiles" width="16" height="9">
   <data encoding="base64" compression="zlib">
-   eJxjYCANMCGx2UjUCwOMZOqjFmClkjnMNNDPQoQ+YtTQCwAAJQgAHQ==
+   eJxjYCAfsFGgdxQMDwAADlgABw==
   </data>
  </layer>
- <objectgroup name="blue">
-  <object id="28" x="1560" y="120" width="120" height="120"/>
- </objectgroup>
- <objectgroup name="green">
-  <object id="27" x="1440" y="0" width="120" height="120"/>
- </objectgroup>
- <objectgroup name="yellow">
-  <object id="25" x="1800" y="600" width="120" height="120"/>
-  <object id="29" x="1800" y="480" width="120" height="120"/>
- </objectgroup>
- <objectgroup name="cyan">
-  <object id="23" x="1560" y="720" width="120" height="120"/>
-  <object id="30" x="480" y="720" width="120" height="120"/>
- </objectgroup>
- <objectgroup name="magenta">
-  <object id="24" x="1560" y="360" width="120" height="120"/>
- </objectgroup>
  <objectgroup name="goal">
   <object id="26" x="1800" y="0" width="120" height="120"/>
  </objectgroup>
