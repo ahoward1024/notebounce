@@ -3,6 +3,7 @@ package com.esw.notebounce;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -24,7 +25,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
-public class NoteBounce extends ApplicationAdapter implements ContactListener {
+public class NoteBounce extends ApplicationAdapter implements ContactListener, InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
@@ -56,6 +57,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	float timeSinceLastBoundNote   = 0.0f;
 	float timeSinceLastCyanNote    = 0.0f;
 	float timeSinceLastMagentaNote = 0.0f;
+	final float lastNoteTime = 0.8f; // The minimum time between two notes
 	boolean playNotes = true;
 
 	static World world; // Static so we can pass it easily
@@ -79,7 +81,6 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	int levelPtr = 0;
 
 	float angle = 0.0f;
-	boolean wasClicked = false;
 	boolean shoot = false;
 	Vector2 mouseClick = new Vector2(0, 0);
 	Vector2 mouseUnClick = new Vector2(0, 0);
@@ -91,7 +92,6 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
 	boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
 	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
-	final float lastNoteTime = 0.5f; // The minimum time between two notes
 
 	boolean playRipple = false;
 
@@ -150,13 +150,15 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 		debugMessage = new BitmapFont();
 
+		Gdx.input.setInputProcessor(this);
+
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit. 200 gives a good balance.
 		world = new World(new Vector2(0, -200.0f), true);
 		world.setContactListener(this);
 
-		gun = new Gun(20.0f, 20.0f);
+		gun = new Gun(30.0f, 30.0f);
 		ball = new Ball(gun.getCenterX(), gun.getCenterY());
 
 		// Build the lines for the bouding box that makes it so the ball
@@ -194,17 +196,18 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	void createLevelArray() {
 		mapLoader = new TmxMapLoader();
-		int i = 0;
-		System.out.println("Map length: " + map.length);
+		int i; // DEBUG
+		System.out.println("Map length: " + map.length); // DEBUG
+		// Load each level in the tmx/ levels folder
 		for(i = 0; i < map.length; i++) {
 			System.out.println("Load: tmx/level" + i + ".tmx");
 			map[i] =  mapLoader.load("tmx/level" + i + ".tmx");
 		}
-		System.out.println("Create Level Array: " +  i);
+		System.out.println("Create Level Array: " +  i); // DEBUG
 	}
 
 	void loadLevel(int level) {
-		System.out.println("Load Level: " + level);
+		System.out.println("Load Level: " + level); // DEBUG
 		mapRenderer = new OrthogonalTiledMapRenderer(map[level]); // Create a mapRenderer for the level
 
 		// These are used to create the bodies and fixtures for all of the note blocks in the level.
@@ -322,11 +325,12 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 	Vector2 mouse = new Vector2(0,0); // !!! Need to move
 	float lastUsedAngle = 45.0f; // !!!
 	float lastUsedPower = 12.5f;
-	float mouseGraphicsY = 0; // !!!
+	float mouseGraphicsY = 0.0f; // !!!
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
 	public void update() {
+		// Snap the times
 		timeSinceLastBlueNote += deltaTime;
 		timeSinceLastGreenNote += deltaTime;
 		timeSinceLastYellowNote += deltaTime;
@@ -334,23 +338,18 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 		timeSinceLastCyanNote += deltaTime;
 		timeSinceLastMagentaNote += deltaTime;
 
-		// Grab mouse position
-		mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-		boolean lclick = Gdx.input.isButtonPressed(Input.Keys.LEFT);
-
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
 		// while the input's (0,0) is at the _top_ left
 		mouseGraphicsY = ScreenHeight - mouse.y;
 
-		// If the mouse was clicked, not clicked before, and the ball has not been shot
-		// we need to snap where the mouse position is currently and set wasClicked to true.
-		if (lclick && !wasClicked && !ballShot && !moveBall) {
-			mouseClick = mouse;
-			wasClicked = true;
-		}
+		// Grab mouse position
+		mouse.x = Gdx.input.getX();
+		mouse.y = Gdx.input.getY();
 
-		if(lclick && !moveBall) {
+		// If we have touched the screen or clicked we should update the power immediately
+		// based on where the mouse was clicked and the current mouse position
+		if(lclick) {
 			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
 				power = lastUsedPower;
 			} else {
@@ -358,26 +357,18 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 			}
 		}
 
-		// If the mouse is not currently clicked, but it _was_ clicked and the ball has not
-		// been shot; we will snap where the mouse position is and set was clicked to false
-		// and tell the gun it is okay to shoot.
-		if (!lclick && wasClicked && !ballShot && !moveBall) {
-			mouseUnClick = mouse;
-			wasClicked = false;
-			shoot = true;
-		}
-
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
 		// then we update the angle to the gun. This prevents the gun from rotating while the player is
 		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if(!ballShot && !wasClicked && !shoot) {
+		if(!shoot) {
 			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG ???
 				angle = lastUsedAngle;
 			} else {
 				// Find the angle for the gun and ball's projection arc based on where the mouse is
 				// located on the screen. Works best if the gun's texture is defaulted to point towards
 				// the right.
-				angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(), mouse.x - gun.getCenterX());
+				angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(),
+					                       mouse.x - gun.getCenterX());
 				angle *= (180 / Math.PI);
 
 				// Reset the angle if it goes negative
@@ -717,5 +708,62 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener {
 
 	public void postSolve(Contact c, ContactImpulse ci) {
 
+	}
+
+	public boolean keyDown (int keycode) {
+		return false;
+	}
+
+	public boolean keyUp (int keycode) {
+		return false;
+	}
+
+	public boolean keyTyped (char character) {
+		return false;
+	}
+
+	boolean lclick = false; // !!!
+	boolean reset = false; // !!!
+	public boolean touchDown (int x, int y, int pointer, int button) {
+		System.out.println("Touch down");
+		float botx = gun.sprite().getX();
+		float topx = gun.sprite().getX() + gun.sprite().getWidth();
+		float boty = gun.sprite().getY();
+		float topy = gun.sprite().getY() + gun.sprite().getHeight();
+
+		if( (x > botx && x < topx) && (mouseGraphicsY > boty && mouseGraphicsY < topy)) {
+			System.out.println("reset");
+			resetLevel();
+			reset = true;
+		} else {
+			mouseClick.x = x; mouseClick.y = y;
+			lclick = true;
+			reset = false;
+		}
+		return false;
+	}
+
+	public boolean touchUp (int x, int y, int pointer, int button) {
+		System.out.println("Touch up");
+		// If we are not doing a reset of the level (reset is true when we click inside of
+		// the gun's boundary
+		if(!reset) {
+			shoot = true;
+			lclick = false;
+			mouseUnClick.x = x; mouseUnClick.y = y;
+		}
+		return false;
+	}
+
+	public boolean touchDragged (int x, int y, int pointer) {
+		return false;
+	}
+
+	public boolean mouseMoved (int x, int y) {
+		return false;
+	}
+
+	public boolean scrolled (int amount) {
+		return false;
 	}
 }

@@ -13,7 +13,7 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width  = ScreenWidth;
 		config.height = ScreenHeight;
-		config.resizable = false;
+		//config.resizable = false; // Not needed! Everything seems to scale automagically!!! Yay!!
 		new LwjglApplication(new NoteBounce(ScreenWidth, ScreenHeight), config);
 	}
 }
