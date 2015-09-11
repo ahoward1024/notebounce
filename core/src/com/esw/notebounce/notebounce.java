@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -72,11 +73,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 
-	boolean drawBall = false;
 	boolean ballShot = false;
 
 	TmxMapLoader mapLoader;
-	TiledMap map[] = new TiledMap[4];
+	TiledMap map[] = new TiledMap[5];
 	OrthogonalTiledMapRenderer mapRenderer;
 	int levelPtr = 0;
 
@@ -94,6 +94,9 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
 
 	boolean playRipple = false;
+
+	Rectangle gunDebugRectangle;
+	ShapeRenderer debugShapeRenderer;
 
 	/**
 	 * Create a new NoteBounce level and set the ScreenWidth and ScreenHeight.
@@ -131,6 +134,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		edgeShape.dispose();
 	}
 
+	final float gravity = -200.0f;
 	/**
 	 * Creates the game world.
 	 */
@@ -138,6 +142,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	public void create() {
 		Box2D.init(); // MUST initialize Box2D before using it!
 		box2DDebugRenderer = new Box2DDebugRenderer();
+		debugShapeRenderer = new ShapeRenderer();
+		debugShapeRenderer.setAutoShapeType(true);
 
 		camera = new OrthographicCamera(ScreenWidth, ScreenHeight);
 		camera.position.set(ScreenWidth / 2, ScreenHeight / 2, 0.0f);
@@ -155,10 +161,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit. 200 gives a good balance.
-		world = new World(new Vector2(0, -200.0f), true);
+		world = new World(new Vector2(0, gravity), true);
 		world.setContactListener(this);
 
 		gun = new Gun(30.0f, 30.0f);
+		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball = new Ball(gun.getCenterX(), gun.getCenterY());
 
 		// Build the lines for the bouding box that makes it so the ball
@@ -203,7 +210,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 			System.out.println("Load: tmx/level" + i + ".tmx");
 			map[i] =  mapLoader.load("tmx/level" + i + ".tmx");
 		}
-		System.out.println("Create Level Array: " +  i); // DEBUG
+		System.out.println("Create Level Array: " + i); // DEBUG
 	}
 
 	void loadLevel(int level) {
@@ -261,6 +268,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	 * @param t The timestep of interpolation
 	 * @return The point on the interpolation line the number should be after the given timestep
 	 */
+	@SuppressWarnings("unused")
 	float smoothstep(float edge0, float edge1, float t)
 	{
 		// Scale, bias and saturate x to 0..1 range
@@ -276,6 +284,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	 * @param t The timestep of interpolation
 	 * @return The point on the interpolation line the number should be after the given timestep
 	 */
+	@SuppressWarnings("unused")
 	float smootherstep(float edge0, float edge1, float t)
 	{
 		// Scale, and clamp x to 0..1 range
@@ -284,6 +293,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		return t * t * t * (t * ((t * 6) - 15) + 10);
 	}
 
+	final float MAX_POWER = 25.0f;
 	/**
 	 * This takes two mouse position Vector2s (the first at the place the mouse was clicked, the second
 	 * at the place the mouse is released) to determine the power of the impulse force the gun
@@ -294,21 +304,21 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	 */
 	float shotPower(Vector2 touchStart, Vector2 touchEnd) {
 		float power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
-				Math.pow((touchEnd.y - touchStart.y), 2.0)) / 25.0f;
-		if(power > 25) power = 25;
+				             Math.pow((touchEnd.y - touchStart.y), 2.0)) / 5.0f;
+		if(power > MAX_POWER) power = MAX_POWER;
 		// Power's max is set to 25 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
 		// barely hit the top right corner if the gun is in the bottom left corner.
 		return power;
 	}
 
 	/**
-	 * Creates a Vector2 to be used as an impulse force on a Box2D body.
-	 * @param angle The angle of the gun from the X plane.
+	 * Creates a Vector2 to be sued as an impulse force on a Box2D body.
+	 * @param angle The angle of the gun.
 	 * @return The Vector2 impulse.
 	 */
 	Vector2 shot(float angle) {
-		float x = (float)Math.cos(angle * Math.PI / 180); //
-		float y = (float)Math.sin(angle * Math.PI / 180); //
+		float x = (float)Math.cos(angle * Math.PI / 180);
+		float y = (float)Math.sin(angle * Math.PI / 180);
 		return new Vector2(x * power / 8, y * power / 8);
 	}
 
@@ -322,10 +332,13 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// Copy the camera's projection and scale it to the size of the Box2D world
 	}
 
-	Vector2 mouse = new Vector2(0,0); // !!! Need to move
-	float lastUsedAngle = 45.0f; // !!!
-	float lastUsedPower = 12.5f;
-	float mouseGraphicsY = 0.0f; // !!!
+	Vector2 mouse = new Vector2(0,0); // !!! Move up
+	float lastUsedAngle = 45.0f; // !!! Move up
+	float lastUsedPower = 12.5f; // !!! Move up
+	float mouseGraphicsY = 0.0f; // !!! Move up
+
+	Vector2 gunEnd = new Vector2(0,0); // !!! Move to Gun
+	boolean drawBallOver = false;
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
@@ -349,7 +362,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 		// If we have touched the screen or clicked we should update the power immediately
 		// based on where the mouse was clicked and the current mouse position
-		if(lclick) {
+		if(touch) {
 			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
 				power = lastUsedPower;
 			} else {
@@ -360,7 +373,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
 		// then we update the angle to the gun. This prevents the gun from rotating while the player is
 		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if(!shoot) {
+		if(!shoot && !ballShot) {
 			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG ???
 				angle = lastUsedAngle;
 			} else {
@@ -371,21 +384,27 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 					                       mouse.x - gun.getCenterX());
 				angle *= (180 / Math.PI);
 
-				// Reset the angle if it goes negative
-				if(angle < 0) {
-					angle = 360 - (- angle);
-				}
+				// Reset the angle if it goes negative // !!! OLD
+				//if(angle < 0) {
+				//	angle = 360 - (- angle);
+				//}
+
+				// Only allow the gun to rotate between 0 and 90 degrees
+				if(angle > 90) angle = 90;
+				if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
+			float length = gun.sprite().getWidth() / 2;
+			gunEnd.x = (float)(gun.getCenterX()+(length * Math.cos(angle * Math.PI / 180)));
+			gunEnd.y = (float)(gun.getCenterY()+(length * Math.sin(angle * Math.PI / 180)));
 		}
 
 		// If we are going to shoot and the ball has not already been shot, shoot the ball.
 		// We also need to update the last angle and power calculations
 		if(shoot && !ballShot) {
 			shoot = false;
-			drawBall = true;
 			ballShot = true;
-			ball.body().setType(BodyDef.BodyType.DynamicBody); // Set the ball to dynamic so it moves
+			ball.body().setType(BodyDef.BodyType.DynamicBody);
 			ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
 			lastUsedPower = power;
 			lastUsedAngle = angle;
@@ -394,6 +413,10 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
+			if((ball.body().getPosition().x * PIXELS2METERS) > gunEnd.x &&
+				(ball.body().getPosition().y * PIXELS2METERS) > gunEnd.y) {
+				drawBallOver = true;
+			}
 		}
 
 		// Destroy the current ball in the world (if there is one) so another can be shot
@@ -447,7 +470,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		ball.body().setType(BodyDef.BodyType.StaticBody);
 		moveBall = true;
 		playNotes = true;
-
+		drawBallOver = false;
 		if(goalWasHit) {
 			if(goalNoisePlaying) goalNoise.stop();
 			goalNoisePlaying = false;
@@ -472,7 +495,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		}
 	}
 
-	boolean showGoalHit= false;// !!! Move
+	boolean showGoalHit= false;// !!! Move up
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -503,6 +526,16 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		                   + ")";
 
 		camera.update(); // Update the camera just before drawing
+
+		debugShapeRenderer.begin();
+		debugShapeRenderer.setColor(Color.RED);
+		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(), gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
+		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f, angle, 16);
+		debugShapeRenderer.setColor(Color.BLUE);
+		debugShapeRenderer.setColor(Color.GREEN);
+		debugShapeRenderer.circle(gunEnd.x, gunEnd.y, 3.0f);
+		debugShapeRenderer.end();
+
 		batch.begin();   // Start the batch drawing
 
 		// Draw the ripple before the ball so it does not cover the ball
@@ -514,13 +547,26 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 		// We have to set ALL of the ball's sprite's parameters because we are
 		// using the batch to draw it, not drawing it in the batch.
-		batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(), ball.sprite().getOriginX(),
-			       ball.sprite().getOriginY(), ball.sprite().getWidth(), ball.sprite().getHeight(),
-				   ball.sprite().getScaleX(), ball.sprite().getScaleY(), ball.sprite().getRotation());
+		if(drawBallOver) {
 
+			// Draw the gun first so it is under the ball
+			gun.sprite().draw(batch);
 
-		// Now draw the gun so it is over the ball
-		gun.sprite().draw(batch);
+			// Draw the ball second
+			batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(),
+				ball.sprite().getOriginX(), ball.sprite().getOriginY(), ball.sprite().getWidth(),
+				ball.sprite().getHeight(), ball.sprite().getScaleX(), ball.sprite().getScaleY(),
+				ball.sprite().getRotation());
+		} else {
+			// Draw the ball first so it is under the gun
+			batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(),
+				ball.sprite().getOriginX(), ball.sprite().getOriginY(), ball.sprite().getWidth(),
+				ball.sprite().getHeight(), ball.sprite().getScaleX(), ball.sprite().getScaleY(),
+				ball.sprite().getRotation());
+
+			// Now draw the gun so it is over the ball
+			gun.sprite().draw(batch);
+		}
 
 		// Draw debug inputs last so they are always on top
 		if (showGoalHit) {
@@ -540,8 +586,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-				ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
@@ -722,22 +767,18 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		return false;
 	}
 
-	boolean lclick = false; // !!!
-	boolean reset = false; // !!!
+	boolean touch = false; // !!! Move up
+	boolean reset = false; // !!! Move up
 	public boolean touchDown (int x, int y, int pointer, int button) {
 		System.out.println("Touch down");
-		float botx = gun.sprite().getX();
-		float topx = gun.sprite().getX() + gun.sprite().getWidth();
-		float boty = gun.sprite().getY();
-		float topy = gun.sprite().getY() + gun.sprite().getHeight();
 
-		if( (x > botx && x < topx) && (mouseGraphicsY > boty && mouseGraphicsY < topy)) {
+		if(ballShot) {
 			System.out.println("reset");
 			resetLevel();
 			reset = true;
 		} else {
 			mouseClick.x = x; mouseClick.y = y;
-			lclick = true;
+			touch = true;
 			reset = false;
 		}
 		return false;
@@ -749,7 +790,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// the gun's boundary
 		if(!reset) {
 			shoot = true;
-			lclick = false;
+			touch = false;
 			mouseUnClick.x = x; mouseUnClick.y = y;
 		}
 		return false;
