@@ -7,10 +7,12 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * Created by Alex on 9/1/2015.
  */
+@SuppressWarnings("unused")
 public class Gun {
 
     private Vector2 center;
     private Sprite sprite;
+    private Vector2 gunEnd;
 
     /**
      * Calls the create method to make a gun at (x, y) with a scale of 1.
@@ -74,4 +76,12 @@ public class Gun {
      * @return The Vector2 position of the center of the gun relative to the screen it is in.
      */
     public Vector2 getCenter() { return center; }
+
+    public float endX(float angle) {
+        return (float)(getCenterX()+((sprite.getHeight() / 2) * Math.cos(angle * Math.PI / 180)));
+    }
+
+    public float endY(float angle) {
+        return (float)(getCenterY()+((sprite.getWidth() / 2) * Math.sin(angle * Math.PI / 180)));
+    }
 }

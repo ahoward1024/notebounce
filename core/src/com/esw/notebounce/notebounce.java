@@ -26,42 +26,39 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
-public class NoteBounce extends ApplicationAdapter implements ContactListener, InputProcessor {
+public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
 	int ScreenWidth  = 0;
 	int ScreenHeight = 0;
 
-	Box2DDebugRenderer box2DDebugRenderer;
-
 	OrthographicCamera camera; // Orthographic because 2D
 
+	Box2DDebugRenderer box2DDebugRenderer;
 	BitmapFont debugMessage;
+	Rectangle gunDebugRectangle;
+	ShapeRenderer debugShapeRenderer;
 
 	SpriteBatch batch;
 	Gun gun;
-	Ball ball;
-	Sprite ripple;
+	static Ball ball;
+	static Sprite ripple;
 
-    Sound goalNoise;
-    boolean goalNoisePlaying = false;
-    boolean goalHit = false;
+	CollisionDetection collisionDetector;
+
+    static Sound goalNoise;
+
     boolean goalWasHit = false;
     float goalTextTimer = 0.0f;
 
-	Sound[] notes = new Sound[8];
-	int notePtr = 0;
-	float timeSinceLastBlueNote    = 0.0f;
-	float timeSinceLastGreenNote   = 0.0f;
-	float timeSinceLastYellowNote  = 0.0f;
-	float timeSinceLastBoundNote   = 0.0f;
-	float timeSinceLastCyanNote    = 0.0f;
-	float timeSinceLastMagentaNote = 0.0f;
-	final float lastNoteTime = 0.8f; // The minimum time between two notes
-	boolean playNotes = true;
-
 	static World world; // Static so we can pass it easily
+	static boolean playNotes = true;
+	static boolean goalHit = false;
+	static boolean goalNoisePlaying = false;
+	static boolean playRipple = false;
+	static Sound[] notes = new Sound[8];
+	static int notePtr = 0;
 
 	String inputDebug = "";        // DEBUG
 	String mouseClickDebug = "";   // DEBUG
@@ -86,17 +83,17 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 	Vector2 mouseUnClick = new Vector2(0, 0);
 	boolean moveBall = false;
 
+	Vector2 mouse = new Vector2(0,0);
+	float lastUsedAngle = 45.0f;
+	float lastUsedPower = 12.5f;
+	float mouseGraphicsY = 0.0f;
+
 	float power = 0.0f;
 
-	boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
-	boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
-	boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
-	boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
+	boolean showGoalHit= false;
 
-	boolean playRipple = false;
-
-	Rectangle gunDebugRectangle;
-	ShapeRenderer debugShapeRenderer;
+	boolean touch = false;
+	boolean reset = false;
 
 	/**
 	 * Create a new NoteBounce level and set the ScreenWidth and ScreenHeight.
@@ -162,7 +159,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit. 200 gives a good balance.
 		world = new World(new Vector2(0, gravity), true);
-		world.setContactListener(this);
+		collisionDetector = new CollisionDetection();
+		world.setContactListener(collisionDetector);
 
 		gun = new Gun(30.0f, 30.0f);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
@@ -332,24 +330,13 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// Copy the camera's projection and scale it to the size of the Box2D world
 	}
 
-	Vector2 mouse = new Vector2(0,0); // !!! Move up
-	float lastUsedAngle = 45.0f; // !!! Move up
-	float lastUsedPower = 12.5f; // !!! Move up
-	float mouseGraphicsY = 0.0f; // !!! Move up
-
-	Vector2 gunEnd = new Vector2(0,0); // !!! Move to Gun
 	boolean drawBallOver = false;
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
 	public void update() {
 		// Snap the times
-		timeSinceLastBlueNote += deltaTime;
-		timeSinceLastGreenNote += deltaTime;
-		timeSinceLastYellowNote += deltaTime;
-		timeSinceLastBoundNote += deltaTime;
-		timeSinceLastCyanNote += deltaTime;
-		timeSinceLastMagentaNote += deltaTime;
+		collisionDetector.updateTimes(deltaTime);
 
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
@@ -384,19 +371,11 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 					                       mouse.x - gun.getCenterX());
 				angle *= (180 / Math.PI);
 
-				// Reset the angle if it goes negative // !!! OLD
-				//if(angle < 0) {
-				//	angle = 360 - (- angle);
-				//}
-
 				// Only allow the gun to rotate between 0 and 90 degrees
 				if(angle > 90) angle = 90;
 				if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
-			float length = gun.sprite().getWidth() / 2;
-			gunEnd.x = (float)(gun.getCenterX()+(length * Math.cos(angle * Math.PI / 180)));
-			gunEnd.y = (float)(gun.getCenterY()+(length * Math.sin(angle * Math.PI / 180)));
 		}
 
 		// If we are going to shoot and the ball has not already been shot, shoot the ball.
@@ -413,8 +392,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			if((ball.body().getPosition().x * PIXELS2METERS) > gunEnd.x &&
-				(ball.body().getPosition().y * PIXELS2METERS) > gunEnd.y) {
+			if((ball.body().getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
+				(ball.body().getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
 				drawBallOver = true;
 			}
 		}
@@ -495,7 +474,6 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		}
 	}
 
-	boolean showGoalHit= false;// !!! Move up
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -529,11 +507,13 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 
 		debugShapeRenderer.begin();
 		debugShapeRenderer.setColor(Color.RED);
-		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(), gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
-		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f, angle, 16);
+		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
+			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
+		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2,
+			0.0f, angle, 16);
 		debugShapeRenderer.setColor(Color.BLUE);
 		debugShapeRenderer.setColor(Color.GREEN);
-		debugShapeRenderer.circle(gunEnd.x, gunEnd.y, 3.0f);
+		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
@@ -586,7 +566,8 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
+			ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
@@ -606,153 +587,52 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		return world;
 	}
 
-	/**
-	 * Handles the beginning of a Box2D collision.
-	 * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
-	 */
-	public void beginContact(Contact c) {
-
-		Fixture fa = c.getFixtureA(); // Usually a static object
-		Fixture fb = c.getFixtureB(); // Usually a dynamic object
-
-		// Test if goal was hit
-		if(fa.getUserData().equals("goal")) {
-			goalHit = true;
-			// Play the goal noise if it was not already playing
-			if(!goalNoisePlaying) {
-				goalNoise.play();
-				goalNoisePlaying = true;
-				playNotes = false;
-			}
-		}
-
-		if(fb.getUserData().equals("ball") &&
-			(!fa.getUserData().equals("boundary") || !fa.getUserData().equals("boundaryBot"))) {
-			if(Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f &&
-			   Math.abs(fb.getBody().getLinearVelocity().x) > 2.0f) {
-				playRipple = true;
-				ripple = new Sprite(new Texture(Gdx.files.internal("ripple.png")));
-				ripple.setCenter((fb.getBody().getPosition().x * PIXELS2METERS),
-					             (fb.getBody().getPosition().y * PIXELS2METERS));
-				ripple.setScale(0.1f, 0.1f);
-			}
-		}
-
-		// If notes are allowed to be played at this time then we handle all of the
-		// collisions involved with a note block.
-		if(playNotes) {
-			// Boundary Edge collision (not including bottom edge)
-			if(fa.getUserData().equals("boundary")) {
-				if (boundaryFlip) notes[1].play();
-				else notes[6].play();
-				boundaryFlip = !boundaryFlip;
-				timeSinceLastBoundNote = 0.0f;
-			}
-
-			// Boundary Edge collision (only for the bottom edge)
-			if(fa.getUserData().equals("boundaryBot")) {
-				if (Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f) {
-					if (boundaryFlip) notes[1].play();
-					else notes[6].play();
-					boundaryFlip = !boundaryFlip;
-					timeSinceLastBoundNote = 0.0f;
-				}
-			}
-
-			// Blue note block collision
-			if(fa.getUserData().equals("blue") && timeSinceLastBlueNote > lastNoteTime) {
-				if (notePtr == notes.length - 1) notePtr = 0;
-				else notePtr++;
-				notes[notePtr].play();
-				timeSinceLastBlueNote = 0.0f;
-			}
-
-			// Green note block collision
-			if(fa.getUserData().equals("green") && timeSinceLastGreenNote > lastNoteTime) {
-				if (notePtr == 0) notePtr = notes.length - 1;
-				else notePtr--;
-				notes[notePtr].play();
-				timeSinceLastGreenNote = 0.0f;
-			}
-
-			// Yellow note block collision
-			if(fa.getUserData().equals("yellow") && timeSinceLastYellowNote > lastNoteTime) {
-				if (yellowFlip) {
-					yellowFlip = false;
-					notePtr += 4;
-					if (notePtr > notes.length - 1) {
-						int i = notePtr - (notes.length - 1);
-						notePtr = 0;
-						notePtr += i;
-					}
-					notes[notePtr].play();
-				} else {
-					yellowFlip = true;
-					notePtr -= 4;
-					if (notePtr < 0) {
-						notePtr = Math.abs(notePtr);
-					}
-					notes[notePtr].play();
-				}
-				timeSinceLastYellowNote = 0.0f;
-
-				if(ball.body().getWorldCenter().y > (fa.getBody().getWorldCenter().y +
-						                             fa.getShape().getRadius()) + 0.7) {
-
-					ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0);
-					ball.body().applyLinearImpulse(new Vector2(0, 1.5f),
-							ball.body().getWorldCenter(), true);
-				}
-			}
-
-			// Cyan note block collision
-			if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > 0.2f) {
-				if(cyanFlip) {
-					// C Major
-					notes[0].play();
-					notes[2].play();
-					notes[6].play();
-					cyanFlip = !cyanFlip;
-				} else {
-					// A minor 2nd inv.
-					notes[2].play();
-					notes[5].play();
-					notes[7].play();
-					cyanFlip = !cyanFlip;
-				}
-				timeSinceLastCyanNote = 0.0f;
-			}
-
-			// Magenta note block collision
-			if(fa.getUserData().equals("magenta") && timeSinceLastMagentaNote > 0.2f) {
-				if(cyanFlip) {
-					// D minor
-					notes[2].play();
-					notes[4].play();
-					notes[6].play();
-					magentaFlip = !magentaFlip;
-				} else {
-					// G Major 2nd. inv
-					notes[1].play();
-					notes[4].play();
-					notes[6].play();
-					magentaFlip = !magentaFlip;
-				}
-				timeSinceLastMagentaNote = 0.0f;
-			}
-		}
+	public static void setGoalHit(boolean b) {
+		goalHit = b;
 	}
 
-	public void endContact(Contact c) {
-
+	public static boolean playNotes() {
+		return playNotes;
 	}
 
-	public void preSolve(Contact c, Manifold m) {
-
+	public static boolean goalNoisePlaying() {
+		return goalNoisePlaying;
 	}
 
-	public void postSolve(Contact c, ContactImpulse ci) {
+	public static void playGoalNoise() {
+		goalNoise.play();
+		goalNoisePlaying = true;
+		playNotes = false;
+	}
 
+	public static void playRipple(Fixture fb) {
+		playRipple = true;
+		ripple = new Sprite(new Texture(Gdx.files.internal("ripple.png")));
+		ripple.setCenter((fb.getBody().getPosition().x * PIXELS2METERS),
+			(fb.getBody().getPosition().y * PIXELS2METERS));
+		ripple.setScale(0.1f, 0.1f);
+	}
+
+	public static void playNote(int i) {
+		notes[i].play();
+	}
+
+	public static int getNotePtr() {
+		return notePtr;
+	}
+
+	public static int notesLength() {
+		return notes.length;
+	}
+
+	public static void addImpulseToBall(Fixture fa) {
+		if(ball.body().getWorldCenter().y > (fa.getBody().getWorldCenter().y +
+			fa.getShape().getRadius()) + 0.7) {
+
+			ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0);
+			ball.body().applyLinearImpulse(new Vector2(0, 1.5f),
+				ball.body().getWorldCenter(), true);
+		}
 	}
 
 	public boolean keyDown (int keycode) {
@@ -767,8 +647,7 @@ public class NoteBounce extends ApplicationAdapter implements ContactListener, I
 		return false;
 	}
 
-	boolean touch = false; // !!! Move up
-	boolean reset = false; // !!! Move up
+
 	public boolean touchDown (int x, int y, int pointer, int button) {
 		System.out.println("Touch down");
 
