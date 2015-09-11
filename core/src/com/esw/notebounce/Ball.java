@@ -77,6 +77,18 @@ public class Ball {
                            (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
     }
 
+    public float getCenterX() {
+        return center.x;
+    }
+
+    public float getCenterY() {
+        return center.y;
+    }
+
+    public Vector2 getCenter() {
+        return center;
+    }
+
     /**
      * Gets the sprite of the ball.
      * @return The sprite of the ball.
