@@ -52,6 +52,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
     boolean goalWasHit = false;
     float goalTextTimer = 0.0f;
 
+	float timestep = 300.0f;
+
 	static World world; // Static so we can pass it easily
 	static boolean playNotes = true;
 	static boolean goalHit = false;
@@ -291,7 +293,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		return t * t * t * (t * ((t * 6) - 15) + 10);
 	}
 
-	final float MAX_POWER = 25.0f;
+	final float MAX_POWER = 2.2f;
 	/**
 	 * This takes two mouse position Vector2s (the first at the place the mouse was clicked, the second
 	 * at the place the mouse is released) to determine the power of the impulse force the gun
@@ -302,7 +304,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	float shotPower(Vector2 touchStart, Vector2 touchEnd) {
 		float power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
-				             Math.pow((touchEnd.y - touchStart.y), 2.0)) / 5.0f;
+			Math.pow((touchEnd.y - touchStart.y), 2.0)) / 100.0f;
 		if(power > MAX_POWER) power = MAX_POWER;
 		// Power's max is set to 25 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
 		// barely hit the top right corner if the gun is in the bottom left corner.
@@ -310,7 +312,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	/**
-	 * Creates a Vector2 to be sued as an impulse force on a Box2D body.
+	 * Creates a Vector2 to be used as an impulse force on a Box2D body.
 	 * @param angle The angle of the gun.
 	 * @return The Vector2 impulse.
 	 */
@@ -324,12 +326,44 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Update all of the variables needed to simulate physics
 	 */
 	public void updatePhysics() {
-		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) world.step(1.0f / 3000.0f, 6, 2);
-		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) world.step(1.0f / 100.0f, 6, 2);
-		else world.step(1.0f / 300.0f, 6, 2); // 1/300 is great! Everything else is bad... (no 1/60)
+		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) timestep = 3000.0f;
+		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) timestep = 100.0f;
+		else timestep = 300.0f;
+
+		if(!sim) {
+			world.step(1.0f / timestep, 6, 2);
+		}
+
+		world.clearForces();
 		// Copy the camera's projection and scale it to the size of the Box2D world
+		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 	}
 
+	/**
+	 * Run a physics simulation that calculates where the ball would go if it were to be shot
+	 * with the current power and angle.
+	 */
+	void simulate() {
+		Ball b = new Ball(gun.getCenterX(), gun.getCenterY());
+		b.body().getFixtureList().first().setUserData("null");
+		b.body().setType(BodyDef.BodyType.DynamicBody);
+		b.sprite().getTexture().dispose();
+		b.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+		debugShapeRenderer.begin();
+		for(int i = 0; i < 50; i++) {
+			debugShapeRenderer.setColor(Color.BLUE);
+			world.step(1.0f / 100.0f, 6, 2);
+			debugShapeRenderer.circle(b.body().getPosition().x * PIXELS2METERS,
+				b.body().getPosition().y * PIXELS2METERS, ball.sprite().getWidth() / 2);
+			if(collisionDetector.isSimhit()) break;
+		}
+		debugShapeRenderer.end();
+		world.destroyBody(b.body());
+		world.clearForces();
+	}
+
+	Vector2 velocity = new Vector2(25,25);
 	boolean drawBallOver = false;
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
@@ -378,13 +412,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
 		}
 
+		velocity.setAngle(angle);
 		// If we are going to shoot and the ball has not already been shot, shoot the ball.
 		// We also need to update the last angle and power calculations
 		if(shoot && !ballShot) {
 			shoot = false;
 			ballShot = true;
 			ball.body().setType(BodyDef.BodyType.DynamicBody);
-			ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
+			//ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
+			ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
 			lastUsedPower = power;
 			lastUsedAngle = angle;
 		}
@@ -429,10 +465,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			showGoalHit = true;
 		}
 
+		if(sim) simulate();
 	}
 
-	Array<Body> bodyArray = new Array<Body>();
 	void unloadLevel() {
+		Array<Body> bodyArray = new Array<Body>();
 		world.getBodies(bodyArray);
 		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
 		for(int i = 0; i < bodyArray.size; i++) {
@@ -471,6 +508,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				(gun.getCenterY() / PIXELS2METERS), 0.0f);
 			ball.setSpriteToBodyPosition();
 			moveBall = false;
+			sim = true;
 		}
 	}
 
@@ -509,9 +547,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.setColor(Color.RED);
 		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
 			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
+		debugShapeRenderer.setColor(Color.ORANGE);
 		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2,
 			0.0f, angle, 16);
-		debugShapeRenderer.setColor(Color.BLUE);
 		debugShapeRenderer.setColor(Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.end();
@@ -566,17 +604,23 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-			ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
+		/*debugShapeRenderer.begin();
+		debugShapeRenderer.setColor(Color.PURPLE);
+		debugShapeRenderer.line(gun.getCenterX(), gun.getCenterY(), mouse.x, mouseGraphicsY);
+		if(!touch) {
+
+		} else {
+			debugShapeRenderer.line(gun.getCenterX(), gun.getCenterY(),
+				mouseClick.x, ScreenHeight - mouseClick.y);
+		}
+		debugShapeRenderer.end();*/
+
 		// Simulate Box2D physics
 		updatePhysics();
-
-		// DEBUG: draw Box2D debug lines
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 	}
 
 	/**
@@ -647,10 +691,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		return false;
 	}
 
-
+	boolean sim = true; // !!! Move up
 	public boolean touchDown (int x, int y, int pointer, int button) {
 		System.out.println("Touch down");
-
 		if(ballShot) {
 			System.out.println("reset");
 			resetLevel();
@@ -671,6 +714,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			shoot = true;
 			touch = false;
 			mouseUnClick.x = x; mouseUnClick.y = y;
+			sim = false;
 		}
 		return false;
 	}

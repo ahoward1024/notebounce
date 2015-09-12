@@ -84,4 +84,8 @@ public class Gun {
     public float endY(float angle) {
         return (float)(getCenterY()+((sprite.getWidth() / 2) * Math.sin(angle * Math.PI / 180)));
     }
+
+    public Vector2 end(float angle) {
+        return new Vector2(endX(angle), endY(angle));
+    }
 }

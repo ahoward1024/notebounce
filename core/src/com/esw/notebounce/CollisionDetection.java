@@ -11,18 +11,17 @@ import com.badlogic.gdx.physics.box2d.Manifold;
  */
 public class CollisionDetection implements ContactListener {
 
-    float timeSinceLastBlueNote    = 0.0f;
-    float timeSinceLastGreenNote   = 0.0f;
-    float timeSinceLastYellowNote  = 0.0f;
-    float timeSinceLastBoundNote   = 0.0f;
-    float timeSinceLastCyanNote    = 0.0f;
-    float timeSinceLastMagentaNote = 0.0f;
-    final float lastNoteTime = 0.8f; // The minimum time between two notes
+    private float timeSinceLastBlueNote    = 0.0f;
+    private float timeSinceLastGreenNote   = 0.0f;
+    private float timeSinceLastYellowNote  = 0.0f;
+    private float timeSinceLastBoundNote   = 0.0f;
+    private float timeSinceLastCyanNote    = 0.0f;
+    private float timeSinceLastMagentaNote = 0.0f;
 
-    boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
-    boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
-    boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
-    boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
+    private boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
+    private boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
+    private boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
+    private boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
 
     public void updateTimes(float deltaTime) {
         timeSinceLastBlueNote += deltaTime;
@@ -33,19 +32,31 @@ public class CollisionDetection implements ContactListener {
         timeSinceLastMagentaNote += deltaTime;
     }
 
+    private boolean simhit = false;
+    public boolean isSimhit() {
+        return simhit;
+    }
+
     /**
      * Handles the beginning of a Box2D collision.
      * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
      */
     public void beginContact(Contact c) {
+        final float lastNoteTime = 0.8f; // The minimum time between two notes
 
         Fixture fa = c.getFixtureA(); // Usually a static object
         Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
         int notePtr = NoteBounce.getNotePtr();
 
+        if(fb.getUserData().equals("null") && !fa.getUserData().equals("ball")) {
+            simhit = true;
+        } else {
+            simhit = false;
+        }
+
         // Test if goal was hit
-        if(fa.getUserData().equals("goal")) {
+        if(fa.getUserData().equals("goal") && fb.getUserData().equals("ball")) {
             NoteBounce.setGoalHit(true);
             // Play the goal noise if it was not already playing
             if(!NoteBounce.goalNoisePlaying()) {
@@ -64,9 +75,9 @@ public class CollisionDetection implements ContactListener {
 
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.
-        if(NoteBounce.playNotes()) {
+        if(NoteBounce.playNotes() && fb.getUserData().equals("ball")) {
             // Boundary Edge collision (not including bottom edge)
-            if(fa.getUserData().equals("boundary")) {
+            if(fa.getUserData().equals("boundary") && timeSinceLastBoundNote > lastNoteTime) {
                 if (boundaryFlip) NoteBounce.playNote(1);
                 else NoteBounce.playNote(6);
                 boundaryFlip = !boundaryFlip;
@@ -74,7 +85,7 @@ public class CollisionDetection implements ContactListener {
             }
 
             // Boundary Edge collision (only for the bottom edge)
-            if(fa.getUserData().equals("boundaryBot")) {
+            if(fa.getUserData().equals("boundaryBot") && timeSinceLastBoundNote > lastNoteTime) {
                 if (Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f) {
                     if (boundaryFlip) NoteBounce.playNote(1);
                     else NoteBounce.playNote(6);
