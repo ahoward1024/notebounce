@@ -5,7 +5,7 @@
  </tileset>
  <layer name="Tile Layer 1" width="16" height="9">
   <data encoding="base64" compression="zlib">
-   eJxjYBi5gG2gHQAEjFjwUAHMQAwADXwADw==
+   eJxjYBgFlAA2CvUzYsFDBTADMQAL5AAP
   </data>
  </layer>
  <objectgroup name="blue">
@@ -19,6 +19,6 @@
   <object id="6" x="1800" y="960" width="120" height="120"/>
  </objectgroup>
  <objectgroup name="goal">
-  <object id="7" x="1800" y="360" width="120" height="120"/>
+  <object id="7" x="0" y="600" width="120" height="120"/>
  </objectgroup>
 </map>
