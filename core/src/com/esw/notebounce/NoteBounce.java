@@ -100,6 +100,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private boolean touch = false; // Is the mouse clicked or the screen has been touched?
 	private boolean reset = false; // Toggle to reset level
 
+	Array<Vector2> simcoords = new Array<Vector2>();
+
 //=====================================================================================================//
 
 	/**
@@ -327,9 +329,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x,
-			(gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y,
-			(gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
 		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
@@ -386,14 +386,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	void simulate() {
 		Ball b = new Ball(gun.getCenterX(), gun.getCenterY(), true);
 		b.body().setLinearVelocity(velocity.x * power, velocity.y * power);
-		debugShapeRenderer.begin();
-		for(int i = 0; i < 1000; i++) {
-			debugShapeRenderer.setColor(Color.BLUE);
+		simcoords.clear();
+		for(int i = 0; i < 300; i++) {
 			simWorld.step(1.0f / timestep, velocityIterations, positionIterations);
-			debugShapeRenderer.circle(b.body().getPosition().x * PIXELS2METERS,
-				b.body().getPosition().y * PIXELS2METERS, ball.sprite().getWidth() / 2);
-			debugShapeRenderer.circle(b.body().getPosition().x * PIXELS2METERS,
-				b.body().getPosition().y * PIXELS2METERS, 1);
+			simcoords.add(new Vector2(b.body().getPosition().x * PIXELS2METERS, b.body().getPosition().y * PIXELS2METERS));
 			if(collisionDetector.isSimhit()) break;
 		}
 		debugShapeRenderer.end();
@@ -440,9 +436,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				else if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
+			simulate();
 		}
-
-		if(touch || ballShot) simulate();
 
 		velocity.setAngle(angle);
 		// If we are going to shoot and the ball has not already been shot, shoot the ball.
@@ -610,16 +605,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		batch.end(); // Stop the batch drawing
 
-		/*debugShapeRenderer.begin();
-		debugShapeRenderer.setColor(Color.PURPLE);
-		debugShapeRenderer.line(gun.getCenterX(), gun.getCenterY(), mouse.x, mouseGraphicsY);
-		if(!touch) {
-
-		} else {
-			debugShapeRenderer.line(gun.getCenterX(), gun.getCenterY(),
-				mouseClick.x, ScreenHeight - mouseClick.y);
+		debugShapeRenderer.begin();
+		debugShapeRenderer.setColor(Color.BLUE);
+		for(int i = 0; i < simcoords.size; i++) {
+			Vector2 tmp = simcoords.get(i);
+			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite().getWidth()/2);
 		}
-		debugShapeRenderer.end();*/
+		debugShapeRenderer.end();
 
 		// Simulate Box2D physics
 		updatePhysics();
