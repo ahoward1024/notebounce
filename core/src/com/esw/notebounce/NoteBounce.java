@@ -342,6 +342,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	int counter = 0;
 	/**
 	 * Update all of the variables needed to simulate physics
 	 */
@@ -384,17 +385,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * with the current power and angle.
 	 */
 	void simulate() {
-		Ball b = new Ball(gun.getCenterX(), gun.getCenterY(), true);
-		b.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+		ball.body().getFixtureList().first().setUserData("sim"); // TODO figure out collision detection
+		ball.body().setType(BodyDef.BodyType.DynamicBody);
+		ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
-		for(int i = 0; i < 300; i++) {
-			simWorld.step(1.0f / timestep, velocityIterations, positionIterations);
-			simcoords.add(new Vector2(b.body().getPosition().x * PIXELS2METERS, b.body().getPosition().y * PIXELS2METERS));
-			if(collisionDetector.isSimhit()) break;
+		for(int i = 0; i < 100; i++) {
+			world.step(1.0f / timestep, velocityIterations, positionIterations);
+			simcoords.add(new Vector2(ball.body().getPosition().x * PIXELS2METERS,
+				ball.body().getPosition().y * PIXELS2METERS));
+			if(collisionDetector.simhit) break; // TODO see above
 		}
-		debugShapeRenderer.end();
-		simWorld.destroyBody(b.body());
-		simWorld.clearForces();
+		collisionDetector.simhit = false;
+		ball.body().setType(BodyDef.BodyType.StaticBody);
+		ball.body().setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS,
+			gun.getCenterY() / NoteBounce.PIXELS2METERS, 0.0f);
+		ball.body().getFixtureList().first().setUserData("ball");
+		world.clearForces();
 	}
 
 	/**
@@ -436,7 +442,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				else if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
-			simulate();
 		}
 
 		velocity.setAngle(angle);
@@ -491,6 +496,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			goalHit = false;
 			showGoalHit = true;
 		}
+
+		if(touch) simulate();
 	}
 
 	/**
@@ -509,6 +516,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Update all of the sprites
 		update();
+		// Simulate Box2D physics
+		if(ballShot) updatePhysics();
 
 		// Update the debug strings
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
@@ -612,9 +621,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite().getWidth()/2);
 		}
 		debugShapeRenderer.end();
-
-		// Simulate Box2D physics
-		updatePhysics();
 	}
 
 	/**
@@ -628,6 +634,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	public static World getSimWorld() {
 		return simWorld;
 	}
+
+	public static Ball getBall() { return ball; }
 
 	public static void setGoalHit(boolean b) {
 		goalHit = b;
@@ -690,9 +698,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	public boolean touchDown (int x, int y, int pointer, int button) {
-		System.out.println("Touch down");
 		if(ballShot) {
-			System.out.println("reset");
 			resetLevel();
 			reset = true;
 		} else {
@@ -704,7 +710,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	public boolean touchUp (int x, int y, int pointer, int button) {
-		System.out.println("Touch up");
 		// If we are not doing a reset of the level (reset is true when we click inside of
 		// the gun's boundary
 		if(!reset) {

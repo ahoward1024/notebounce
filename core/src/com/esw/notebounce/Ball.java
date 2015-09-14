@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
@@ -16,28 +17,6 @@ public class Ball {
     private Vector2 center;
     private Sprite sprite;
     private Body body;
-
-    /**
-     * THIS CONSTRUCTOR IS ONLY TO BE USED FOR BALLS THAT ARE PART OF A TRAJECTORY SIMULATION
-     */
-    Ball(float x, float y, boolean sim) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody; //We set it to a static body first so it doesn't move
-        bodyDef.position.set(x / NoteBounce.PIXELS2METERS, y / NoteBounce.PIXELS2METERS);
-
-        body = NoteBounce.getSimWorld().createBody(bodyDef);
-
-        CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(1);
-        // NOTE(alex): maybe set these as parameters in the future?
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = circleShape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.7f;
-        fixtureDef.restitution = 0.5f;
-        body.createFixture(fixtureDef).setUserData("sim");
-        circleShape.dispose();
-    }
 
     /**
      * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
@@ -65,7 +44,7 @@ public class Ball {
      * @param scale The scale size of the ball.
      */
     private void create(float x, float y, float scale) {
-        sprite = new Sprite(new Texture("ball.png"));
+        sprite = new Sprite(new Texture(Gdx.files.internal("ball.png")));
         sprite.setCenter(x, y);
         sprite.setOriginCenter();
         sprite.setScale(scale);
@@ -74,14 +53,13 @@ public class Ball {
                 sprite.getY() + sprite.getHeight() / 2);
 
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody; //We set it to a static body first so it doesn't move
+        bodyDef.type = BodyDef.BodyType.StaticBody; // So it doesn't move immediately when created
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
         CircleShape circleShape = new CircleShape();
         circleShape.setRadius(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS);
-        // NOTE(alex): maybe set these as parameters in the future?
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = circleShape;
         fixtureDef.density = 0.5f;

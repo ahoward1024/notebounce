@@ -4,6 +4,7 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
 /**
@@ -32,11 +33,7 @@ public class CollisionDetection implements ContactListener {
         timeSinceLastMagentaNote += deltaTime;
     }
 
-    private boolean simhit = false;
-    public boolean isSimhit() {
-        return simhit;
-    }
-
+    public boolean simhit = false;
     /**
      * Handles the beginning of a Box2D collision.
      * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
@@ -49,11 +46,11 @@ public class CollisionDetection implements ContactListener {
 
         int notePtr = NoteBounce.getNotePtr();
 
-        if(fb.getUserData().equals("sim") && !fa.getUserData().equals("ball")) {
-            simhit = true;
-        } else {
-            simhit = false;
-        }
+        System.out.println("Begin");
+        System.out.println(fa.getUserData());
+        System.out.println(fb.getUserData());
+
+        if(fb.getUserData().equals("sim")) simhit = true;
 
         // Test if goal was hit
         if(fa.getUserData().equals("goal") && fb.getUserData().equals("ball")) {
@@ -173,7 +170,14 @@ public class CollisionDetection implements ContactListener {
     }
 
     public void endContact(Contact c) {
+        Fixture fa = c.getFixtureA();
+        Fixture fb = c.getFixtureB();
 
+        System.out.println("End");
+        System.out.println(fa.getUserData());
+        System.out.println(fb.getUserData());
+
+        if(fb.getUserData().equals("sim")) simhit = false;
     }
 
     public void preSolve(Contact c, Manifold m) {
