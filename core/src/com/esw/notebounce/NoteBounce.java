@@ -8,7 +8,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -30,38 +29,43 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 
-	int ScreenWidth  = 0;
-	int ScreenHeight = 0;
+//=====================================================================================================//
 
-	OrthographicCamera camera; // Orthographic because 2D
+	private static World world;
+	private static World simWorld;
+	private static boolean playNotes = true;
+	private static boolean goalHit = false;
+	private static boolean goalNoisePlaying = false;
+	private static boolean playRipple = false;
+	private static Sound[] notes = new Sound[8];
+	private static int notePtr = 0;
+	private static Sound goalNoise;
 
-	Box2DDebugRenderer box2DDebugRenderer;
-	BitmapFont debugMessage;
-	Rectangle gunDebugRectangle;
-	ShapeRenderer debugShapeRenderer;
+	final int velocityIterations = 6;
+	final int positionIterations = 2;
 
-	SpriteBatch batch;
-	Gun gun;
-	static Ball ball;
-	static Sprite ripple;
-	Sprite crosshair;
+	private int ScreenWidth  = 0;
+	private int ScreenHeight = 0;
 
-	CollisionDetection collisionDetector;
+	private OrthographicCamera camera; // Orthographic because 2D
 
-    static Sound goalNoise;
+	private Box2DDebugRenderer box2DDebugRenderer;
+	Matrix4 debugMatrix; // For Box2D's debug drawing projection
+	private BitmapFont debugMessage;
+	private Rectangle gunDebugRectangle;
+	private ShapeRenderer debugShapeRenderer;
 
-    boolean goalWasHit = false;
-    float goalTextTimer = 0.0f;
+	private SpriteBatch batch;
+	private Gun gun;
+	private static Ball ball;
+	private static Sprite ripple;
+	private Sprite crosshair;
 
+	private CollisionDetection collisionDetector;
+
+	private float goalTextTimer = 0.0f;
+	private float deltaTime = 0.0f;
 	float timestep = 300.0f;
-
-	static World world; // Static so we can pass it easily
-	static boolean playNotes = true;
-	static boolean goalHit = false;
-	static boolean goalNoisePlaying = false;
-	static boolean playRipple = false;
-	static Sound[] notes = new Sound[8];
-	static int notePtr = 0;
 
 	String inputDebug = "";        // DEBUG
 	String mouseClickDebug = "";   // DEBUG
@@ -69,33 +73,34 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String gunPositionDebug = "";  // DEBUG
 	String fpsDebug = "FPS: ";     // DEBUG
 
-	float deltaTime = 0.0f;
+	private boolean goalWasHit = false;
+	private boolean showGoalHit= false; // Show "GOAL!" text
 
-	Matrix4 debugMatrix; // For Box2D's debug drawing projection
-
-	boolean ballShot = false;
+	private boolean ballShot = false; // Is the ball shot?
+	private boolean moveBall = false; // Toggle to lerp the ball back to the gun
+	boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
 	TmxMapLoader mapLoader;
-	TiledMap map[] = new TiledMap[5];
-	OrthogonalTiledMapRenderer mapRenderer;
-	int levelPtr = 0;
+	private TiledMap map[] = new TiledMap[5];
+	private OrthogonalTiledMapRenderer mapRenderer;
+	private int levelPtr = 0;
 
-	float angle = 0.0f;
-	boolean shoot = false;
-	Vector2 mouseClick = new Vector2(0, 0);
-	Vector2 mouseUnClick = new Vector2(0, 0);
-	boolean moveBall = false;
+	private Vector2 mouse = new Vector2(0,0);
+	private Vector2 mouseClick = new Vector2(0,0);
+	private Vector2 mouseUnClick = new Vector2(0,0);
 
-	Vector2 mouse = new Vector2(0,0);
-	float lastUsedAngle = 45.0f;
-	float lastUsedPower = 12.5f;
+	Vector2 velocity = new Vector2(1,1);
+	private float angle = 0.0f;
+	private float power = 0.0f; // Power of the shot
+	final float MAX_POWER = 60.0f; // Maximum power of the shot
+	private float lastUsedAngle = 45.0f;
+	private float lastUsedPower = 12.5f;
+	private boolean shoot = false;
 
-	float power = 0.0f;
+	private boolean touch = false; // Is the mouse clicked or the screen has been touched?
+	private boolean reset = false; // Toggle to reset level
 
-	boolean showGoalHit= false;
-
-	boolean touch = false;
-	boolean reset = false;
+//=====================================================================================================//
 
 	/**
 	 * Create a new NoteBounce level and set the ScreenWidth and ScreenHeight.
@@ -157,12 +162,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		Gdx.input.setInputProcessor(this);
 
+		collisionDetector = new CollisionDetection();
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit. 200 gives a good balance.
 		world = new World(new Vector2(0, gravity), true);
-		collisionDetector = new CollisionDetection();
 		world.setContactListener(collisionDetector);
+
+		// Create a new world that is a copy of the original world to be used a simulator
+		simWorld = new World(new Vector2(0, gravity), true);
+		simWorld.setContactListener(collisionDetector);
 
 		gun = new Gun(30.0f, 30.0f);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
@@ -286,12 +295,52 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	float smootherstep(float edge0, float edge1, float t)
 	{
 		// Scale, and clamp x to 0..1 range
-		t = MathUtils.clamp((t - edge0)/(edge1 - edge0), 0.0f, 1.0f);
+		t = MathUtils.clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
 		// Evaluate polynomial
 		return t * t * t * (t * ((t * 6) - 15) + 10);
 	}
 
-	final float MAX_POWER = 2.3f; //!!! move
+	void unloadLevel() {
+		Array<Body> bodyArray = new Array<Body>();
+		world.getBodies(bodyArray);
+		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
+		for(int i = 0; i < bodyArray.size; i++) {
+			if(! bodyArray.get(i).getFixtureList().first().getUserData().equals("ball") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundary") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundaryBot")) {
+				world.destroyBody(bodyArray.get(i));
+			}
+		}
+	}
+
+	void resetLevel() {
+		ballShot = false;
+		ball.body().setType(BodyDef.BodyType.StaticBody);
+		moveBall = true;
+		playNotes = true;
+		drawBallOver = false;
+		if(goalWasHit) {
+			if(goalNoisePlaying) goalNoise.stop();
+			goalNoisePlaying = false;
+			goalWasHit = false;
+		}
+	}
+
+	void moveBall() {
+		ball.body().setTransform(lerp(ball.body().getPosition().x,
+			(gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y,
+			(gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.setSpriteToBodyPosition();
+		shoot = false;
+		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
+			(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+		{
+			ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
+				(gun.getCenterY() / PIXELS2METERS), 0.0f);
+			ball.setSpriteToBodyPosition();
+			moveBall = false;
+		}
+	}
 
 	/**
 	 * Update all of the variables needed to simulate physics
@@ -301,9 +350,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) timestep = 100.0f;
 		else timestep = 300.0f;
 
-		if(!sim) {
-			world.step(1.0f / timestep, 6, 2);
-		}
+		world.step(1.0f / timestep, velocityIterations, positionIterations);
 
 		world.clearForces();
 		// Copy the camera's projection and scale it to the size of the Box2D world
@@ -311,31 +358,49 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 	}
 
+	/* NOTE: There are a number of ways we could simulate the ball's path. Some techniques can be
+	 *		 combined for a greater effect:
+	 * 1) Use one world and toggle between a state of simulation and actually stepping the world
+	 *		with the ball being shot. This way we can do collision detection and and use the real physics
+	 *		of the ball. This would be the most difficult to implement efficiently. To draw the arc while
+	 *		the ball is shooting we would need to combine this with technique 3 (See #4).
+	 * 2) Make another world (current). This pretty much is the worst case scenario, though. We can do
+	 * 		the physics calculations trivially, as we would do with technique 1, but in order to simulate
+	 * 		collisions we would have to copy the original world entirely. This is the easiest to
+	 * 		implement, however, as there is no worry of the worlds stepping on top of one another
+	 *		and the path can always be drawn trivially.
+	 * 3) Draw sprites at the x,y coordinates using kinematic equations. This option is the most
+	 *		efficient but is not ideal because it is not as flexible and we would need to implement
+	 *		either technique 1 or 2 to do collisions anyway. This is the least interesting option.
+	 * 4) The _best_ way to do this would be to combine techniques. We could toggle the simulation
+	 * 		by stepping the world when the mouse is clicked and draw sprites in the locations
+	 * 	 	that the ball would go. This way we can also have collision detection and the arc would
+	 * 	 	be visible after the ball has been shot. There would need to be an array of sprites
+	 * 	 	that we would have to draw to, increasing space, and this would be the most complex out of
+	 *		all techniques to do super efficiently.
+	 */
 	/**
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
 	void simulate() {
-		Ball b = new Ball(gun.getCenterX(), gun.getCenterY());
-		b.body().getFixtureList().first().setUserData("null");
-		b.body().setType(BodyDef.BodyType.DynamicBody);
-		b.sprite().getTexture().dispose();
+		Ball b = new Ball(gun.getCenterX(), gun.getCenterY(), true);
 		b.body().setLinearVelocity(velocity.x * power, velocity.y * power);
 		debugShapeRenderer.begin();
-		for(int i = 0; i < 50; i++) {
+		for(int i = 0; i < 1000; i++) {
 			debugShapeRenderer.setColor(Color.BLUE);
-			world.step(1.0f / 100.0f, 6, 2);
+			simWorld.step(1.0f / timestep, velocityIterations, positionIterations);
 			debugShapeRenderer.circle(b.body().getPosition().x * PIXELS2METERS,
 				b.body().getPosition().y * PIXELS2METERS, ball.sprite().getWidth() / 2);
+			debugShapeRenderer.circle(b.body().getPosition().x * PIXELS2METERS,
+				b.body().getPosition().y * PIXELS2METERS, 1);
 			if(collisionDetector.isSimhit()) break;
 		}
 		debugShapeRenderer.end();
-		world.destroyBody(b.body());
-		world.clearForces();
+		simWorld.destroyBody(b.body());
+		simWorld.clearForces();
 	}
 
-	Vector2 velocity = new Vector2(25,25);
-	boolean drawBallOver = false;
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
@@ -348,45 +413,36 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// while the input's (0,0) is at the _top_ left. So we do ScreenHeight - getY().
 		mouse.set(Gdx.input.getX(), ScreenHeight - Gdx.input.getY());
 
-		// If we have touched the screen or clicked we should update the power immediately
-		// based on where the mouse was clicked and the current mouse position
+		// If we have touched the screen or clicked we should update the power and the angle.
 		if(touch) {
 			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
 				power = lastUsedPower;
 			} else {
 				power = (float)Math.sqrt(Math.pow((mouse.x - mouseClick.x), 2.0) +
-					Math.pow((mouse.y - mouseClick.y), 2.0)) / 100.0f;
+					Math.pow((mouse.y - mouseClick.y), 2.0)) / 4.0f;
 				if(power > MAX_POWER) power = MAX_POWER;
 			}
 			crosshair.setCenter(mouseClick.x, mouseClick.y);
-		}
 
-		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
-		// then we update the angle to the gun. This prevents the gun from rotating while the player is
-		// dragging to set the power and prevents is from further rotation when the ball has been shot
-		if(!shoot && !ballShot) {
 			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG ???
 				angle = lastUsedAngle;
 			} else {
 				// Find the angle for the gun and ball's projection arc based on where the mouse is
 				// located on the screen. Works best if the gun's texture is defaulted to point towards
 				// the right.
-				/*angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(),
-					                       mouse.x - gun.getCenterX());
-				angle *= (180 / Math.PI);
-
-				// Only allow the gun to rotate between 0 and 90 degrees
-				if(angle > 90) angle = 90;
-				if(angle < 0) angle = 0;*/
 				angle = (float) Math.atan2(mouseClick.y - mouse.y,
 					mouseClick.x - mouse.x);
 				angle *= (180 / Math.PI);
-				//if(angle < 0) angle = 360 - (-angle);
+				// Clamp the rotation around 360 degrees
+				//if(angle < 0) angle = 360 - (-angle); // OLD (but useful??)
+				// Only allow the gun to rotate between 0 and 90 degrees
 				if(angle > 90) angle = 90;
 				else if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
 		}
+
+		if(touch || ballShot) simulate();
 
 		velocity.setAngle(angle);
 		// If we are going to shoot and the ball has not already been shot, shoot the ball.
@@ -439,52 +495,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			loadLevel(levelPtr);
 			goalHit = false;
 			showGoalHit = true;
-		}
-
-		if(sim) simulate();
-	}
-
-	void unloadLevel() {
-		Array<Body> bodyArray = new Array<Body>();
-		world.getBodies(bodyArray);
-		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
-		for(int i = 0; i < bodyArray.size; i++) {
-			if(! bodyArray.get(i).getFixtureList().first().getUserData().equals("ball") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundary") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundaryBot")) {
-				world.destroyBody(bodyArray.get(i));
-			}
-		}
-	}
-
-	void resetLevel() {
-		ballShot = false;
-		ball.body().setType(BodyDef.BodyType.StaticBody);
-		moveBall = true;
-		playNotes = true;
-		drawBallOver = false;
-		if(goalWasHit) {
-			if(goalNoisePlaying) goalNoise.stop();
-			goalNoisePlaying = false;
-			goalWasHit = false;
-		}
-	}
-
-	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x,
-				(gun.getCenterX() / PIXELS2METERS),
-				deltaTime * 10),
-			lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
-		ball.setSpriteToBodyPosition();
-		shoot = false;
-		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
-			(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
-		{
-			ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
-				(gun.getCenterY() / PIXELS2METERS), 0.0f);
-			ball.setSpriteToBodyPosition();
-			moveBall = false;
-			sim = true;
 		}
 	}
 
@@ -595,7 +605,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
+			ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 
@@ -620,6 +631,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	public static World getWorld() {
 		return world;
+	}
+
+	public static World getSimWorld() {
+		return simWorld;
 	}
 
 	public static void setGoalHit(boolean b) {
@@ -682,7 +697,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		return false;
 	}
 
-	boolean sim = true; // !!! Move up
 	public boolean touchDown (int x, int y, int pointer, int button) {
 		System.out.println("Touch down");
 		if(ballShot) {
@@ -705,7 +719,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			shoot = true;
 			touch = false;
 			mouseUnClick.x = x; mouseUnClick.y = y;
-			sim = false;
 		}
 		return false;
 	}

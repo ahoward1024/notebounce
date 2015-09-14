@@ -18,6 +18,28 @@ public class Ball {
     private Body body;
 
     /**
+     * THIS CONSTRUCTOR IS ONLY TO BE USED FOR BALLS THAT ARE PART OF A TRAJECTORY SIMULATION
+     */
+    Ball(float x, float y, boolean sim) {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody; //We set it to a static body first so it doesn't move
+        bodyDef.position.set(x / NoteBounce.PIXELS2METERS, y / NoteBounce.PIXELS2METERS);
+
+        body = NoteBounce.getSimWorld().createBody(bodyDef);
+
+        CircleShape circleShape = new CircleShape();
+        circleShape.setRadius(1);
+        // NOTE(alex): maybe set these as parameters in the future?
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = circleShape;
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.7f;
+        fixtureDef.restitution = 0.5f;
+        body.createFixture(fixtureDef).setUserData("sim");
+        circleShape.dispose();
+    }
+
+    /**
      * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
      * @param x The x position for the center of the ball.
      * @param y The y position for the center of the ball.

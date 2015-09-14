@@ -49,7 +49,7 @@ public class CollisionDetection implements ContactListener {
 
         int notePtr = NoteBounce.getNotePtr();
 
-        if(fb.getUserData().equals("null") && !fa.getUserData().equals("ball")) {
+        if(fb.getUserData().equals("sim") && !fa.getUserData().equals("ball")) {
             simhit = true;
         } else {
             simhit = false;
