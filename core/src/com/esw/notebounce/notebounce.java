@@ -44,6 +44,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Gun gun;
 	static Ball ball;
 	static Sprite ripple;
+	Sprite crosshair;
 
 	CollisionDetection collisionDetector;
 
@@ -88,7 +89,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Vector2 mouse = new Vector2(0,0);
 	float lastUsedAngle = 45.0f;
 	float lastUsedPower = 12.5f;
-	float mouseGraphicsY = 0.0f;
 
 	float power = 0.0f;
 
@@ -191,9 +191,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		notePtr = 0;
 
-		// Load a pixmap to be used as the mouse cursor. NOTE: Pixmaps MUST be powers of 2
-		Pixmap pm = new Pixmap(Gdx.files.internal("crosshair.png"));
-		Gdx.input.setCursorImage(pm, pm.getWidth() / 2, pm.getHeight() / 2);
+		crosshair = new Sprite(new Texture(Gdx.files.internal("crosshair.png")));
 
 		createLevelArray();
 		loadLevel(0);
@@ -293,34 +291,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		return t * t * t * (t * ((t * 6) - 15) + 10);
 	}
 
-	final float MAX_POWER = 2.2f;
-	/**
-	 * This takes two mouse position Vector2s (the first at the place the mouse was clicked, the second
-	 * at the place the mouse is released) to determine the power of the impulse force the gun
-	 * should use to shoot the ball.
-	 * @param touchStart The point where the mouse is clicked.
-	 * @param touchEnd The point where the mouse is released.
-	 * @return The amount of power for the impulse.
-	 */
-	float shotPower(Vector2 touchStart, Vector2 touchEnd) {
-		float power = (float)Math.sqrt(Math.pow((touchEnd.x - touchStart.x), 2.0) +
-			Math.pow((touchEnd.y - touchStart.y), 2.0)) / 100.0f;
-		if(power > MAX_POWER) power = MAX_POWER;
-		// Power's max is set to 25 so if the cursor is at (ScreenWidth / 2, 0) the ball will just
-		// barely hit the top right corner if the gun is in the bottom left corner.
-		return power;
-	}
-
-	/**
-	 * Creates a Vector2 to be used as an impulse force on a Box2D body.
-	 * @param angle The angle of the gun.
-	 * @return The Vector2 impulse.
-	 */
-	Vector2 shot(float angle) {
-		float x = (float)Math.cos(angle * Math.PI / 180);
-		float y = (float)Math.sin(angle * Math.PI / 180);
-		return new Vector2(x * power / 8, y * power / 8);
-	}
+	final float MAX_POWER = 2.3f; //!!! move
 
 	/**
 	 * Update all of the variables needed to simulate physics
@@ -374,12 +345,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// We need the mouse's Y to be normalized because LibGDX
 		// defines the graphic's (0,0) to be at the _bottom_ left corner
-		// while the input's (0,0) is at the _top_ left
-		mouseGraphicsY = ScreenHeight - mouse.y;
-
-		// Grab mouse position
-		mouse.x = Gdx.input.getX();
-		mouse.y = Gdx.input.getY();
+		// while the input's (0,0) is at the _top_ left. So we do ScreenHeight - getY().
+		mouse.set(Gdx.input.getX(), ScreenHeight - Gdx.input.getY());
 
 		// If we have touched the screen or clicked we should update the power immediately
 		// based on where the mouse was clicked and the current mouse position
@@ -387,8 +354,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
 				power = lastUsedPower;
 			} else {
-				power = shotPower(mouseClick, mouse);
+				power = (float)Math.sqrt(Math.pow((mouse.x - mouseClick.x), 2.0) +
+					Math.pow((mouse.y - mouseClick.y), 2.0)) / 100.0f;
+				if(power > MAX_POWER) power = MAX_POWER;
 			}
+			crosshair.setCenter(mouseClick.x, mouseClick.y);
 		}
 
 		// If the ball has not been shot, the mouse was not clicked and the gun is not shooting the ball
@@ -401,13 +371,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				// Find the angle for the gun and ball's projection arc based on where the mouse is
 				// located on the screen. Works best if the gun's texture is defaulted to point towards
 				// the right.
-				angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(),
+				/*angle = (float) Math.atan2(mouseGraphicsY - gun.getCenterY(),
 					                       mouse.x - gun.getCenterX());
 				angle *= (180 / Math.PI);
 
 				// Only allow the gun to rotate between 0 and 90 degrees
 				if(angle > 90) angle = 90;
-				if(angle < 0) angle = 0;
+				if(angle < 0) angle = 0;*/
+				angle = (float) Math.atan2(mouseClick.y - mouse.y,
+					mouseClick.x - mouse.x);
+				angle *= (180 / Math.PI);
+				//if(angle < 0) angle = 360 - (-angle);
+				if(angle > 90) angle = 90;
+				else if(angle < 0) angle = 0;
 			}
 			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
 		}
@@ -531,15 +507,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Update the debug strings
 		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
-				" (" + mouseGraphicsY + ")" + " | Angle: " + String.format("%.2f", angle) +
-		        " | Last Angle: " + String.format("%.2f", lastUsedAngle);
+			" | Angle: " + String.format("%.2f", angle) +
+			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
-				          mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
+			mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
 		ballPositionDebug = "Ball X: " + ball.body().getPosition().x +
-				" | Ball Y:" + ball.body().getPosition().y;
+			" | Ball Y:" + ball.body().getPosition().y;
 		gunPositionDebug = "Gun X: " + gun.getCenterX() + "(" + (gun.getCenterX() / PIXELS2METERS) + ")"
-				           + " | Gun Y: " + gun.getCenterY() + "(" + (gun.getCenterY() / PIXELS2METERS)
-		                   + ")";
+			+ " | Gun Y: " + gun.getCenterY() + "(" + (gun.getCenterY() / PIXELS2METERS) + ")";
 
 		camera.update(); // Update the camera just before drawing
 
@@ -549,7 +524,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
 		debugShapeRenderer.setColor(Color.ORANGE);
 		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2,
-			0.0f, angle, 16);
+			0.0f, angle, 32);
 		debugShapeRenderer.setColor(Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.end();
@@ -584,6 +559,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			// Now draw the gun so it is over the ball
 			gun.sprite().draw(batch);
+		}
+
+		if(touch) {
+			crosshair.draw(batch);
+			batch.end(); // Have to stop the sprite batch for the shape renderer lines to draw
+			debugShapeRenderer.begin();
+			debugShapeRenderer.setColor(Color.PURPLE);
+			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouse.x, mouse.y);
+			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x + 100, mouseClick.y); //+X
+			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x - 100, mouseClick.y); //-X
+			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y + 100); //+Y
+			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y - 100); //-Y
+			debugShapeRenderer.setColor(Color.ORANGE);
+			debugShapeRenderer.arc(mouseClick.x, mouseClick.y, 100, 0.0f, angle, 32);
+			debugShapeRenderer.end();
+			batch.begin(); // Restart the sprite batch
 		}
 
 		// Draw debug inputs last so they are always on top
@@ -699,7 +690,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			resetLevel();
 			reset = true;
 		} else {
-			mouseClick.x = x; mouseClick.y = y;
+			mouseClick.x = x; mouseClick.y = ScreenHeight - y;
 			touch = true;
 			reset = false;
 		}
