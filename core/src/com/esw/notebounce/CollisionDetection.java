@@ -4,7 +4,6 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
 /**
@@ -24,6 +23,14 @@ public class CollisionDetection implements ContactListener {
     private boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
     private boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
 
+    public boolean simhit = false; // Returns true if the simulated ball collides with another object
+
+//=====================================================================================================//
+
+    /**
+     * Update all the times since a note was played.
+     * @param deltaTime The delta time of each frame
+     */
     public void updateTimes(float deltaTime) {
         timeSinceLastBlueNote += deltaTime;
         timeSinceLastGreenNote += deltaTime;
@@ -33,7 +40,26 @@ public class CollisionDetection implements ContactListener {
         timeSinceLastMagentaNote += deltaTime;
     }
 
-    public boolean simhit = false;
+    /**
+     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
+     * X direction.
+     * @param fb The fixture of the dynamic body.
+     * @return True when the velocity is greather than threshold velocity.
+     */
+    private boolean velocityThresholdX(Fixture fb, float velX) {
+        return Math.abs(fb.getBody().getLinearVelocity().x) > velX;
+    }
+
+    /**
+     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
+     * Y direction.
+     * @param fb The fixture of the dynamic body.
+     * @return True when the velocity is greather than threshold velocity.
+     */
+    private boolean velocityThresholdY(Fixture fb, float velY) {
+         return Math.abs(fb.getBody().getLinearVelocity().y) > velY;
+    }
+
     /**
      * Handles the beginning of a Box2D collision.
      * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
@@ -46,10 +72,6 @@ public class CollisionDetection implements ContactListener {
 
         int notePtr = NoteBounce.getNotePtr();
 
-        System.out.println("Begin");
-        System.out.println(fa.getUserData());
-        System.out.println(fb.getUserData());
-
         if(fb.getUserData().equals("sim")) simhit = true;
 
         // Test if goal was hit
@@ -61,33 +83,30 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
-        if(fb.getUserData().equals("ball") &&
-            (!fa.getUserData().equals("boundary") || !fa.getUserData().equals("boundaryBot"))) {
-            if(Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f &&
-                Math.abs(fb.getBody().getLinearVelocity().x) > 2.0f)
-            {
-                NoteBounce.playRipple(fb);
-            }
-        }
-
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.
         if(NoteBounce.playNotes() && fb.getUserData().equals("ball")) {
-            // Boundary Edge collision (not including bottom edge)
-            if(fa.getUserData().equals("boundary") && timeSinceLastBoundNote > lastNoteTime) {
-                if (boundaryFlip) NoteBounce.playNote(1);
-                else NoteBounce.playNote(6);
-                boundaryFlip = !boundaryFlip;
-                timeSinceLastBoundNote = 0.0f;
+
+            // Boundary Edge collision
+            if(fa.getUserData().equals("boundary"))
+            {
+                if(velocityThresholdX(fb, 1.0f)) {
+                    if(boundaryFlip) NoteBounce.playNote(1);
+                    else NoteBounce.playNote(6);
+                    boundaryFlip = ! boundaryFlip;
+                    timeSinceLastBoundNote = 0.0f;
+                    NoteBounce.playRipple(fb);
+                }
             }
 
-            // Boundary Edge collision (only for the bottom edge)
-            if(fa.getUserData().equals("boundaryBot") && timeSinceLastBoundNote > lastNoteTime) {
-                if (Math.abs(fb.getBody().getLinearVelocity().y) > 4.0f) {
-                    if (boundaryFlip) NoteBounce.playNote(1);
+            if(fa.getUserData().equals("boundaryBot"))
+            {
+                if(velocityThresholdY(fb, 2.0f)) {
+                    if(boundaryFlip) NoteBounce.playNote(1);
                     else NoteBounce.playNote(6);
-                    boundaryFlip = !boundaryFlip;
+                    boundaryFlip = ! boundaryFlip;
                     timeSinceLastBoundNote = 0.0f;
+                    NoteBounce.playRipple(fb);
                 }
             }
 
@@ -132,7 +151,7 @@ public class CollisionDetection implements ContactListener {
             }
 
             // Cyan note block collision
-            if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > 0.2f) {
+            if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > lastNoteTime) {
                 if(cyanFlip) {
                     // C Major
                     NoteBounce.playNote(0);
@@ -150,7 +169,7 @@ public class CollisionDetection implements ContactListener {
             }
 
             // Magenta note block collision
-            if(fa.getUserData().equals("magenta") && timeSinceLastMagentaNote > 0.2f) {
+            if(fa.getUserData().equals("magenta") && timeSinceLastMagentaNote > lastNoteTime) {
                 if(cyanFlip) {
                     // D minor
                     NoteBounce.playNote(2);
@@ -170,14 +189,7 @@ public class CollisionDetection implements ContactListener {
     }
 
     public void endContact(Contact c) {
-        Fixture fa = c.getFixtureA();
-        Fixture fb = c.getFixtureB();
 
-        System.out.println("End");
-        System.out.println(fa.getUserData());
-        System.out.println(fb.getUserData());
-
-        if(fb.getUserData().equals("sim")) simhit = false;
     }
 
     public void preSolve(Contact c, Manifold m) {

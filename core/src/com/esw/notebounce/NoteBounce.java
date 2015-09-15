@@ -32,7 +32,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 //=====================================================================================================//
 
 	private static World world;
-	private static World simWorld;
 	private static boolean playNotes = true;
 	private static boolean goalHit = false;
 	private static boolean goalNoisePlaying = false;
@@ -171,10 +170,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity), true);
 		world.setContactListener(collisionDetector);
 
-		// Create a new world that is a copy of the original world to be used a simulator
-		simWorld = new World(new Vector2(0, gravity), true);
-		simWorld.setContactListener(collisionDetector);
-
 		gun = new Gun(30.0f, 30.0f);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball = new Ball(gun.getCenterX(), gun.getCenterY());
@@ -207,7 +202,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		createLevelArray();
 		loadLevel(0);
 
-		System.out.println(map.length);
+		System.out.println(map.length); // DEBUG
 	}
 
 	void createLevelArray() {
@@ -329,7 +324,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+			deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS),
+			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
 		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
@@ -342,7 +339,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
-	int counter = 0;
 	/**
 	 * Update all of the variables needed to simulate physics
 	 */
@@ -365,7 +361,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 *		with the ball being shot. This way we can do collision detection and and use the real physics
 	 *		of the ball. This would be the most difficult to implement efficiently. To draw the arc while
 	 *		the ball is shooting we would need to combine this with technique 3 (See #4).
-	 * 2) Make another world (current). This pretty much is the worst case scenario, though. We can do
+	 * 2) Make another world. This pretty much is the worst case scenario, though. We can do
 	 * 		the physics calculations trivially, as we would do with technique 1, but in order to simulate
 	 * 		collisions we would have to copy the original world entirely. This is the easiest to
 	 * 		implement, however, as there is no worry of the worlds stepping on top of one another
@@ -379,21 +375,23 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * 	 	be visible after the ball has been shot. There would need to be an array of sprites
 	 * 	 	that we would have to draw to, increasing space, and this would be the most complex out of
 	 *		all techniques to do super efficiently.
+	 *
+	 * TODO This is broken for screen sizes that are not the "original" screen size
 	 */
 	/**
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
 	void simulate() {
-		ball.body().getFixtureList().first().setUserData("sim"); // TODO figure out collision detection
+		ball.body().getFixtureList().first().setUserData("sim");
 		ball.body().setType(BodyDef.BodyType.DynamicBody);
 		ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < 200; i++) {
 			world.step(1.0f / timestep, velocityIterations, positionIterations);
 			simcoords.add(new Vector2(ball.body().getPosition().x * PIXELS2METERS,
 				ball.body().getPosition().y * PIXELS2METERS));
-			if(collisionDetector.simhit) break; // TODO see above
+			if(collisionDetector.simhit) break;
 		}
 		collisionDetector.simhit = false;
 		ball.body().setType(BodyDef.BodyType.StaticBody);
@@ -426,7 +424,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 			crosshair.setCenter(mouseClick.x, mouseClick.y);
 
-			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG ???
+			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG
 				angle = lastUsedAngle;
 			} else {
 				// Find the angle for the gun and ball's projection arc based on where the mouse is
@@ -534,13 +532,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		debugShapeRenderer.begin();
 		debugShapeRenderer.setColor(Color.RED);
-		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
-			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
+		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(), gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
 		debugShapeRenderer.setColor(Color.ORANGE);
-		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2,
-			0.0f, angle, 32);
+		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f, angle, 32);
 		debugShapeRenderer.setColor(Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
+		debugShapeRenderer.setColor(Color.BLUE);
+		for(int i = 0; i < simcoords.size; i++) {
+			Vector2 tmp = simcoords.get(i);
+			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite().getWidth()/2);
+		}
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
@@ -609,18 +610,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(),
-			ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
-
-		debugShapeRenderer.begin();
-		debugShapeRenderer.setColor(Color.BLUE);
-		for(int i = 0; i < simcoords.size; i++) {
-			Vector2 tmp = simcoords.get(i);
-			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite().getWidth()/2);
-		}
-		debugShapeRenderer.end();
 	}
 
 	/**
@@ -629,10 +621,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	public static World getWorld() {
 		return world;
-	}
-
-	public static World getSimWorld() {
-		return simWorld;
 	}
 
 	public static Ball getBall() { return ball; }
