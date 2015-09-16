@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -88,20 +89,10 @@ public class CollisionDetection implements ContactListener {
         if(NoteBounce.playNotes() && fb.getUserData().equals("ball")) {
 
             // Boundary Edge collision
-            if(fa.getUserData().equals("boundary"))
+            if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
+                fa.getUserData().equals("left") || fa.getUserData().equals("right"))
             {
-                if(velocityThresholdX(fb, 1.0f)) {
-                    if(boundaryFlip) NoteBounce.playNote(1);
-                    else NoteBounce.playNote(6);
-                    boundaryFlip = ! boundaryFlip;
-                    timeSinceLastBoundNote = 0.0f;
-                    NoteBounce.playRipple(fb);
-                }
-            }
-
-            if(fa.getUserData().equals("boundaryBot"))
-            {
-                if(velocityThresholdY(fb, 2.0f)) {
+                if(velocityThresholdX(fb, 1.0f) && velocityThresholdY(fb, 2.0f)) {
                     if(boundaryFlip) NoteBounce.playNote(1);
                     else NoteBounce.playNote(6);
                     boundaryFlip = ! boundaryFlip;
@@ -184,6 +175,20 @@ public class CollisionDetection implements ContactListener {
                     magentaFlip = !magentaFlip;
                 }
                 timeSinceLastMagentaNote = 0.0f;
+            }
+
+            if(fa.getUserData().equals("gravityUp")) {
+                NoteBounce.getWorld().setGravity(new Vector2(0, -NoteBounce.gravity));
+            }
+            if(fa.getUserData().equals("gravityDown")) {
+                NoteBounce.getWorld().setGravity(new Vector2(0, NoteBounce.gravity));
+            }
+            if(fa.getUserData().equals("gravityLeft")) {
+                NoteBounce.getWorld().setGravity(new Vector2(NoteBounce.gravity, 0));
+
+            }
+            if(fa.getUserData().equals("gravityRight")) {
+                NoteBounce.getWorld().setGravity(new Vector2(-NoteBounce.gravity, 0));
             }
         }
     }

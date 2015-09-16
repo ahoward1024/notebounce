@@ -1,6 +1,7 @@
 package com.esw.notebounce.android;
 
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 
@@ -17,12 +18,19 @@ public class AndroidLauncher extends AndroidApplication {
 		// NOTE: We _MUST_ get the screen size for android or else _nothing_ will work right.
 		// This includes input on the screen/where things are drawn.
 		// According to the newest android API, we should be using a Display and Point objects and
-		// calling display.getSize(point) but our target API for LibGDX is 8, not 11.
+		// calling display.getSize(point) but our target API for LibGDX is 8, not 13.
 		// The deprecated methods display.getWidth()/display.getHeight() will do for now.
 		Display display = getWindowManager().getDefaultDisplay();
-		Point size = new Point();
-		ScreenWidth = display.getWidth(); // COMPATIBILITY ??? STC
-		ScreenHeight = display.getHeight(); // COMPATIBILITY ??? STC
+
+		if(Build.VERSION.SDK_INT >= 13) {
+			Point point = new Point();
+			display.getSize(point);
+			ScreenWidth = point.x;
+			ScreenHeight = point.y;
+		} else {
+			ScreenWidth = display.getWidth(); // COMPATIBILITY ??? STC
+			ScreenHeight = display.getHeight(); // COMPATIBILITY ??? STC
+		}
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		initialize(new NoteBounce(ScreenWidth, ScreenHeight), config);

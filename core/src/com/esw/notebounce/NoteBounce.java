@@ -28,6 +28,8 @@ import com.badlogic.gdx.utils.Array;
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
+	public static final float originalGravity = -200.0f;
+	public static float gravity = originalGravity;
 
 //=====================================================================================================//
 
@@ -39,6 +41,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private static Sound[] notes = new Sound[8];
 	private static int notePtr = 0;
 	private static Sound goalNoise;
+	private static Boundary bot;
+	private static Boundary top;
+	private static Boundary left;
+	private static Boundary right;
 
 	final int velocityIterations = 6;
 	final int positionIterations = 2;
@@ -113,33 +119,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ScreenHeight = height;
 	}
 
-	/**
-	 *  This is called to create the Edge Lines for the boundaries of the screen
-	 *  so the ball will stay within the screen's bounds. If the edge is supposed to be
-	 *  for the bottom of the screen the bottom value should be set to true. This simplifies
-	 *  some of the collision detection code for later.
-	 * @param x1 The beginning x coordinate.
-	 * @param y1 The beginning y coordinate.
-	 * @param x2 The ending x coordinate.
-	 * @param y2 The ending y coordinate.
-	 * @param bottom Indicates if this edge is for the bottom edge of the screen when true.
-	 */
-	public void createLine(float x1, float y1, float x2, float y2, boolean bottom) {
-		Body ground;
-		BodyDef groundBodyDef = new BodyDef();
-		groundBodyDef.type = BodyDef.BodyType.StaticBody;
-		groundBodyDef.position.set(0.0f, 0.0f);
-		FixtureDef groundFixtureDef = new FixtureDef();
-		EdgeShape edgeShape = new EdgeShape();
-		edgeShape.set(x1, y1, x2, y2);
-		groundFixtureDef.shape = edgeShape;
-		ground = world.createBody(groundBodyDef);
-		if(bottom) ground.createFixture(groundFixtureDef).setUserData("boundaryBot");
-		else ground.createFixture(groundFixtureDef).setUserData("boundary");
-		edgeShape.dispose();
-	}
 
-	final float gravity = -200.0f;
+
 	/**
 	 * Creates the game world.
 	 */
@@ -176,12 +157,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
-		createLine(0.0f, 0.0f, ScreenWidth / PIXELS2METERS, 0.0f, true); // BOTTOM
-		createLine(0.0f, 0.0f, 0.0f, ScreenHeight / PIXELS2METERS, false); //RIGHT
-		createLine((ScreenWidth / PIXELS2METERS) - 0.0f, 0.0f, // LEFT
-				(ScreenWidth / PIXELS2METERS) - 0.0f, ScreenHeight / PIXELS2METERS, false);
-		createLine(0.0f, (ScreenHeight / PIXELS2METERS) - 0.0f, // TOP
-				ScreenWidth / PIXELS2METERS, (ScreenHeight / PIXELS2METERS) - 0.0f, false);
+		bot = new Boundary(0.0f, 0.0f, (ScreenWidth / PIXELS2METERS), 0.0f, Boundary.Type.bot);
+		top = new Boundary(0.0f, (ScreenHeight / PIXELS2METERS),
+			(ScreenWidth / PIXELS2METERS), (ScreenHeight / PIXELS2METERS), Boundary.Type.top);
+		left = new Boundary((ScreenWidth / PIXELS2METERS), 0.0f,
+			(ScreenWidth / PIXELS2METERS), (ScreenHeight / PIXELS2METERS), Boundary.Type.left);
+		right = new Boundary(0.0f, 0.0f, 0.0f, (ScreenHeight / PIXELS2METERS), Boundary.Type.right);
+
+
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
 
@@ -303,8 +286,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
 		for(int i = 0; i < bodyArray.size; i++) {
 			if(! bodyArray.get(i).getFixtureList().first().getUserData().equals("ball") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundary") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("boundaryBot")) {
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("bot") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("top") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("left") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("right")) {
 				world.destroyBody(bodyArray.get(i));
 			}
 		}
@@ -316,6 +301,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		moveBall = true;
 		playNotes = true;
 		drawBallOver = false;
+		world.setGravity(new Vector2(0, originalGravity));
 		if(goalWasHit) {
 			if(goalNoisePlaying) goalNoise.stop();
 			goalNoisePlaying = false;
@@ -324,9 +310,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS),
-			deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS),
-			deltaTime * 10), 0.0f);
+		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
 		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
@@ -532,9 +516,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		debugShapeRenderer.begin();
 		debugShapeRenderer.setColor(Color.RED);
-		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(), gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
+		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
+			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
 		debugShapeRenderer.setColor(Color.ORANGE);
-		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f, angle, 32);
+		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f,
+			angle, 32);
 		debugShapeRenderer.setColor(Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.setColor(Color.BLUE);
@@ -609,8 +595,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
+		String g = "";
+		if(world.getGravity().x == 0) {
+			if(world.getGravity().y > 0) g = "Up";
+			else g = "Down";
+		}
+		else {
+			if(world.getGravity().x > 0) g = "Right";
+			else g = "Left";
+		}
+		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 160);
 		debugMessage.setColor(Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
+			ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
 	}
@@ -624,6 +621,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	public static Ball getBall() { return ball; }
+
+	public static Boundary getBoundary(Boundary.Type type) {
+
+
+
+		return null;
+	}
 
 	public static void setGoalHit(boolean b) {
 		goalHit = b;

@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="12">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="30">
  <tileset firstgid="1" name="Untitled-1" tilewidth="240" tileheight="240" tilecount="1">
   <image source="../Untitled-1.png" width="240" height="240"/>
  </tileset>
+ <tileset firstgid="2" name="tilemap" tilewidth="120" tileheight="120" tilecount="20">
+  <image source="../tilemap.png" width="480" height="601"/>
+ </tileset>
  <layer name="Tile Layer 1" width="16" height="9">
   <data encoding="base64" compression="zlib">
-   eJxjYKAuYKSyeeTaQQ93kGLnQLgHF6CmWwAJPAAH
+   eJxjYBj8gJlC/WxAzEGBfiYK7R/KgJWAPAAc1AAZ
   </data>
  </layer>
  <objectgroup name="blue">
-  <object id="1" x="480" y="0" width="240" height="240"/>
-  <object id="2" x="720" y="240" width="240" height="240"/>
-  <object id="4" x="1200" y="480" width="240" height="240"/>
-  <object id="6" x="1560" y="720" width="240" height="240"/>
-  <object id="7" x="360" y="480" width="240" height="240"/>
+  <object id="27" x="1080" y="480" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="green">
+  <object id="29" x="1080" y="240" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="cyan">
+  <object id="28" x="1080" y="360" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="gravityUp">
+  <object id="26" x="960" y="960" width="120" height="120"/>
  </objectgroup>
  <objectgroup name="goal">
-  <object id="10" x="1560" y="120" width="240" height="240"/>
+  <object id="24" x="1200" y="360" width="120" height="120"/>
  </objectgroup>
 </map>
