@@ -360,7 +360,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * 	 	that we would have to draw to, increasing space, and this would be the most complex out of
 	 *		all techniques to do super efficiently.
 	 *
-	 * TODO This is broken for screen sizes that are not the "original" screen size
+	 * FIXME This does not work on Mac
 	 */
 	/**
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
