@@ -38,20 +38,22 @@ public class Boundary {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(0.0f, 0.0f);
 
-        FixtureDef groundFixtureDef = new FixtureDef();
-        EdgeShape edgeShape = new EdgeShape();
-        edgeShape.set(x1, y1, x2, y2);
-        groundFixtureDef.shape = edgeShape;
-
         body = NoteBounce.getWorld().createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        EdgeShape edgeShape = new EdgeShape();
+        edgeShape.set(x1 / NoteBounce.PIXELS2METERS, y1 / NoteBounce.PIXELS2METERS,
+            x2 / NoteBounce.PIXELS2METERS, y2 / NoteBounce.PIXELS2METERS);
+        fixtureDef.shape = edgeShape;
+
         if(type == Boundary.Type.bot)
-            body.createFixture(groundFixtureDef).setUserData("bot");
+            body.createFixture(fixtureDef).setUserData("bot");
         else if(type == Boundary.Type.top)
-            body.createFixture(groundFixtureDef).setUserData("top");
+            body.createFixture(fixtureDef).setUserData("top");
         else if(type == Boundary.Type.left)
-            body.createFixture(groundFixtureDef).setUserData("left");
+            body.createFixture(fixtureDef).setUserData("left");
         else if(type == Boundary.Type.right)
-            body.createFixture(groundFixtureDef).setUserData("right");
+            body.createFixture(fixtureDef).setUserData("right");
 
         edgeShape.dispose();
     }

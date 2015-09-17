@@ -151,20 +151,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity), true);
 		world.setContactListener(collisionDetector);
 
-		gun = new Gun(30.0f, 30.0f);
+		gun = new Gun(ScreenWidth / 2, ScreenHeight / 2);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball = new Ball(gun.getCenterX(), gun.getCenterY());
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
-		bot = new Boundary(0.0f, 0.0f, (ScreenWidth / PIXELS2METERS), 0.0f, Boundary.Type.bot);
-		top = new Boundary(0.0f, (ScreenHeight / PIXELS2METERS),
-			(ScreenWidth / PIXELS2METERS), (ScreenHeight / PIXELS2METERS), Boundary.Type.top);
-		left = new Boundary((ScreenWidth / PIXELS2METERS), 0.0f,
-			(ScreenWidth / PIXELS2METERS), (ScreenHeight / PIXELS2METERS), Boundary.Type.left);
-		right = new Boundary(0.0f, 0.0f, 0.0f, (ScreenHeight / PIXELS2METERS), Boundary.Type.right);
-
-
+		bot = new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, Boundary.Type.bot);
+		top = new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, Boundary.Type.top);
+		left = new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, Boundary.Type.left);
+		right = new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, Boundary.Type.right);
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
 
@@ -310,7 +306,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS), deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+			deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS),
+			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
 		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
@@ -334,9 +332,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world.step(1.0f / timestep, velocityIterations, positionIterations);
 
 		world.clearForces();
-		// Copy the camera's projection and scale it to the size of the Box2D world
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 	}
 
 	/* NOTE: There are a number of ways we could simulate the ball's path. Some techniques can be
@@ -423,7 +418,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				if(angle > 90) angle = 90;
 				else if(angle < 0) angle = 0;
 			}
-			gun.sprite().setRotation(angle); // Only set the rotation if the ball is not shot
+			gun.rotate(angle); // Only set the rotation if the ball is not shot
 		}
 
 		velocity.setAngle(angle);
@@ -610,6 +605,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ScreenHeight - 10);
 
 		batch.end(); // Stop the batch drawing
+
+		// Copy the camera's projection and scale it to the size of the Box2D world
+		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 	}
 
 	/**
@@ -618,15 +617,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	public static World getWorld() {
 		return world;
-	}
-
-	public static Ball getBall() { return ball; }
-
-	public static Boundary getBoundary(Boundary.Type type) {
-
-
-
-		return null;
 	}
 
 	public static void setGoalHit(boolean b) {

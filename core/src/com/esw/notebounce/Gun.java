@@ -1,8 +1,14 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+
+import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
  * Created by Alex on 9/1/2015.
@@ -13,6 +19,7 @@ public class Gun {
     private Vector2 center;
     private Sprite sprite;
     private Vector2 gunEnd;
+    Body body;
 
     /**
      * Calls the create method to make a gun at (x, y) with a scale of 1.
@@ -45,6 +52,18 @@ public class Gun {
 
         center = new Vector2(sprite.getX() + sprite.getWidth() / 2,
                 sprite.getY() + sprite.getHeight() / 2);
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.KinematicBody;
+        bodyDef.position.set(sprite.getX() / NoteBounce.PIXELS2METERS,
+            sprite().getY() / NoteBounce.PIXELS2METERS);
+
+        body = NoteBounce.getWorld().createBody(bodyDef);
+
+        FileHandle fileHandle = new FileHandle("gun.json");
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        FixtureDef fixtureDef = new FixtureDef();
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, 2.4f);
     }
 
     /**
@@ -87,5 +106,10 @@ public class Gun {
 
     public Vector2 end(float angle) {
         return new Vector2(endX(angle), endY(angle));
+    }
+
+    public void rotate(float angle) {
+        sprite.setRotation(angle);
+        body.setTransform(body.getPosition().x, body.getPosition().y, (angle / NoteBounce.PIXELS2METERS));
     }
 }

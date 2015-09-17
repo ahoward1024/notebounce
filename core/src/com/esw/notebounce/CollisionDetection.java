@@ -68,12 +68,12 @@ public class CollisionDetection implements ContactListener {
     public void beginContact(Contact c) {
         final float lastNoteTime = 0.8f; // The minimum time between two notes
 
-        Fixture fa = c.getFixtureA(); // Usually a static object
+        Fixture fa = c.getFixtureA(); // Usually a static or kinematic object
         Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
         int notePtr = NoteBounce.getNotePtr();
 
-        if(fb.getUserData().equals("sim")) simhit = true;
+        if(fb.getUserData().equals("sim") && !fa.getUserData().equals("gun")) simhit = true;
 
         // Test if goal was hit
         if(fa.getUserData().equals("goal") && fb.getUserData().equals("ball")) {
