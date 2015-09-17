@@ -151,9 +151,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity), true);
 		world.setContactListener(collisionDetector);
 
+		ball = new Ball(0, 0); // Create the ball first so the gun can use it's dimensions
 		gun = new Gun(ScreenWidth / 2, ScreenHeight / 2);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
-		ball = new Ball(gun.getCenterX(), gun.getCenterY());
+		ball.setPos(gun.getCenterX(), gun.getCenterY());
+
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
@@ -615,9 +617,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Gets the Box2D physics world for the game.
 	 * @return The current Box2D world.
 	 */
-	public static World getWorld() {
-		return world;
-	}
+	public static World getWorld() { return world; }
+
+	public static Ball getBall() { return ball; }
 
 	public static void setGoalHit(boolean b) {
 		goalHit = b;

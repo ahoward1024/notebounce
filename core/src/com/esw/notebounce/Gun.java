@@ -54,9 +54,8 @@ public class Gun {
                 sprite.getY() + sprite.getHeight() / 2);
 
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.KinematicBody;
-        bodyDef.position.set(sprite.getX() / NoteBounce.PIXELS2METERS,
-            sprite().getY() / NoteBounce.PIXELS2METERS);
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(sprite.getX() / NoteBounce.PIXELS2METERS, sprite().getY() / NoteBounce.PIXELS2METERS);
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
@@ -110,6 +109,7 @@ public class Gun {
 
     public void rotate(float angle) {
         sprite.setRotation(angle);
-        body.setTransform(body.getPosition().x, body.getPosition().y, (angle / NoteBounce.PIXELS2METERS));
+        body.setTransform(body.getPosition(), angle / NoteBounce.PIXELS2METERS);
+
     }
 }

@@ -69,6 +69,11 @@ public class Ball {
         circleShape.dispose();
     }
 
+    public void setPos(float x, float y) {
+        sprite.setCenter(x, y);
+        body.setTransform(x / NoteBounce.PIXELS2METERS, y / NoteBounce.PIXELS2METERS, 0.0f);
+    }
+
     /**
      * Sets the sprite's position to the body's position.
      */
