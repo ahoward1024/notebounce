@@ -152,7 +152,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world.setContactListener(collisionDetector);
 
 		ball = new Ball(0, 0); // Create the ball first so the gun can use it's dimensions
-		gun = new Gun(ScreenWidth / 2, ScreenHeight / 2);
+		gun = new Gun(30.0f, 30.0f);
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball.setPos(gun.getCenterX(), gun.getCenterY());
 
@@ -287,7 +287,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				! bodyArray.get(i).getFixtureList().first().getUserData().equals("bot") &&
 				! bodyArray.get(i).getFixtureList().first().getUserData().equals("top") &&
 				! bodyArray.get(i).getFixtureList().first().getUserData().equals("left") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("right")) {
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("right") &&
+				! bodyArray.get(i).getFixtureList().first().getUserData().equals("gun")) {
 				world.destroyBody(bodyArray.get(i));
 			}
 		}

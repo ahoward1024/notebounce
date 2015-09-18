@@ -55,7 +55,7 @@ public class Gun {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.position.set(sprite.getX() / NoteBounce.PIXELS2METERS, sprite().getY() / NoteBounce.PIXELS2METERS);
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
@@ -63,6 +63,8 @@ public class Gun {
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         FixtureDef fixtureDef = new FixtureDef();
         bodyEditorLoader.attachFixture(body, "gun", fixtureDef, 2.4f);
+        // WARNING: 2.4f is a magical number!!! DO NOT CHANGE IT.
+
     }
 
     /**
@@ -109,7 +111,8 @@ public class Gun {
 
     public void rotate(float angle) {
         sprite.setRotation(angle);
-        body.setTransform(body.getPosition(), angle / NoteBounce.PIXELS2METERS);
+        body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
+        // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT.
 
     }
 }
