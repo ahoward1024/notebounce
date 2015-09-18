@@ -184,11 +184,10 @@ public class CollisionDetection implements ContactListener {
                 NoteBounce.getWorld().setGravity(new Vector2(0, NoteBounce.gravity));
             }
             if(fa.getUserData().equals("gravityLeft")) {
-                NoteBounce.getWorld().setGravity(new Vector2(NoteBounce.gravity, 0));
-
+                NoteBounce.getWorld().setGravity(new Vector2(-NoteBounce.gravity, 0));
             }
             if(fa.getUserData().equals("gravityRight")) {
-                NoteBounce.getWorld().setGravity(new Vector2(-NoteBounce.gravity, 0));
+                NoteBounce.getWorld().setGravity(new Vector2(NoteBounce.gravity, 0));
             }
         }
     }

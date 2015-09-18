@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="30">
- <tileset firstgid="1" name="Untitled-1" tilewidth="240" tileheight="240" tilecount="1">
-  <image source="../Untitled-1.png" width="240" height="240"/>
- </tileset>
- <tileset firstgid="2" name="tilemap" tilewidth="120" tileheight="120" tilecount="20">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="33">
+ <tileset firstgid="1" name="tilemap" tilewidth="120" tileheight="120" tilecount="20">
   <image source="../tilemap.png" width="480" height="601"/>
+  <tile id="0">
+   <objectgroup draworder="index"/>
+  </tile>
+  <tile id="1">
+   <objectgroup draworder="index"/>
+  </tile>
  </tileset>
  <layer name="Tile Layer 1" width="16" height="9">
   <data encoding="base64" compression="zlib">
-   eJxjYBj8gJlC/WxAzEGBfiYK7R/KgJWAPAAc1AAZ
+   eJxjYCANcJConhqAiUL9rEDMjkNOgAj9jBTaTyvAQwc7WAjIAwBB+AA4
   </data>
  </layer>
  <objectgroup name="blue">
@@ -20,8 +23,17 @@
  <objectgroup name="cyan">
   <object id="28" x="1080" y="360" width="120" height="120"/>
  </objectgroup>
+ <objectgroup name="gravityDown">
+  <object id="30" x="1440" y="0" width="120" height="120"/>
+ </objectgroup>
  <objectgroup name="gravityUp">
   <object id="26" x="960" y="960" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="gravityLeft">
+  <object id="32" x="0" y="480" width="120" height="120"/>
+ </objectgroup>
+ <objectgroup name="gravityRight">
+  <object id="31" x="1800" y="720" width="120" height="120"/>
  </objectgroup>
  <objectgroup name="goal">
   <object id="24" x="1200" y="360" width="120" height="120"/>

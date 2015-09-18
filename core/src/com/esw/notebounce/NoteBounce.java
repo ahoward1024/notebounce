@@ -86,7 +86,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
 	TmxMapLoader mapLoader;
-	private TiledMap map[] = new TiledMap[5];
+	private TiledMap map[] = new TiledMap[6];
 	private OrthogonalTiledMapRenderer mapRenderer;
 	private int levelPtr = 0;
 
@@ -118,8 +118,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ScreenWidth  = width;
 		ScreenHeight = height;
 	}
-
-
 
 	/**
 	 * Creates the game world.
@@ -180,10 +178,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("crosshair.png")));
 
+		System.out.println("Total levels: " + map.length); // DEBUG
 		createLevelArray();
 		loadLevel(0);
-
-		System.out.println(map.length); // DEBUG
 	}
 
 	void createLevelArray() {
@@ -217,22 +214,29 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		for(int i = 1; i < map[level].getLayers().getCount(); i++) {
 			for (MapObject object :
 				map[level].getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
+				String name = map[level].getLayers().get(i).getName();
+				System.out.println("Loading object : " + name);
 
-				Rectangle rect = ((RectangleMapObject) object).getRectangle();
-				bodyDef.type = BodyDef.BodyType.StaticBody;
-				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
-					(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
-				body = world.createBody(bodyDef);
-				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
-					(rect.getHeight() / 2) / PIXELS2METERS);
-				fixtureDef.shape = shape;
-				fixtureDef.density = 1.0f;
-				fixtureDef.restitution = 0.0f;
-				body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
+				if(name.equals("door")) {
+					// TODO create door class
+				} else {
+					Rectangle rect = ((RectangleMapObject) object).getRectangle();
+					bodyDef.type = BodyDef.BodyType.StaticBody;
+					bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
+						(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
+					body = world.createBody(bodyDef);
+					shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
+						(rect.getHeight() / 2) / PIXELS2METERS);
+					fixtureDef.shape = shape;
+					fixtureDef.density = 1.0f;
+					fixtureDef.restitution = 0.0f;
+					body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
+				}
 			}
 		}
 
 		shape.dispose(); // Make sure to dispose of the shape to free some now unused memory.
+		System.out.println("Level " + level + " successfully loaded.");
 	}
 
 	/**
