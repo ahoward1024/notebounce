@@ -107,6 +107,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	Array<Vector2> simcoords = new Array<Vector2>();
 
+	Inputs inputs;
+
 //=====================================================================================================//
 
 	/**
@@ -181,6 +183,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		System.out.println("Total levels: " + map.length); // DEBUG
 		createLevelArray();
 		loadLevel(0);
+
+		inputs = new Inputs(ScreenWidth, ScreenHeight);
 	}
 
 	void createLevelArray() {
@@ -484,6 +488,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(touch) simulate();
 	}
 
+	boolean edit = false; // !!! move
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -498,13 +503,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		mapRenderer.render(); // Render the level built with Tiled first
 
-		// Update all of the sprites
-		update();
-		// Simulate Box2D physics
-		if(ballShot) updatePhysics();
+		if(Gdx.input.isKeyJustPressed(Input.Keys.GRAVE)) edit = !edit;
+
+		if(!edit) {
+			// Update all of the sprites
+			update();
+			// Simulate Box2D physics
+			if(ballShot) updatePhysics();
+		}
 
 		// Update the debug strings
-		inputDebug = "Mouse X: " + mouse.x + " | Mouse Y: " + mouse.y +
+		inputDebug = "mouse X: " + mouse.x + " | mouse Y: " + mouse.y +
 			" | Angle: " + String.format("%.2f", angle) +
 			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
@@ -607,6 +616,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			else g = "Left";
 		}
 		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 160);
+		if(edit) debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
+		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
 			ScreenHeight - 10);
