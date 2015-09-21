@@ -25,6 +25,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Created by Alex on 9/21/2015.
+ * Copyright echosoftworks 2015
+ */
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
@@ -41,10 +45,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private static Sound[] notes = new Sound[8];
 	private static int notePtr = 0;
 	private static Sound goalNoise;
-	private static Boundary bot;
-	private static Boundary top;
-	private static Boundary left;
-	private static Boundary right;
 
 	final int velocityIterations = 6;
 	final int positionIterations = 2;
@@ -160,14 +160,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball.setPos(gun.getCenterX(), gun.getCenterY());
 
-		box = new Box(ScreenWidth / 2, ScreenHeight / 2, Box.Type.yellow);
+		box = new Box(ScreenWidth / 6, ScreenHeight / 2, Box.Style.yellow);
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
-		bot = new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, Boundary.Type.bot);
-		top = new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, Boundary.Type.top);
-		left = new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, Boundary.Type.left);
-		right = new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, Boundary.Type.right);
+		new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, UserData.Edge.bot);
+		new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, UserData.Edge.top);
+		new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, UserData.Edge.left);
+		new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, UserData.Edge.right);
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("notes/goal.mp3"));
 
@@ -185,9 +185,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
 
-		System.out.println("Total levels: " + map.length); // DEBUG
-		createLevelArray();
-		loadLevel(0);
+		//System.out.println("Total levels: " + map.length); // DEBUG
+		//createLevelArray();
+		//loadLevel(0);
 
 		inputs = new Inputs(ScreenWidth, ScreenHeight);
 	}
@@ -227,21 +227,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				String name = map[level].getLayers().get(i).getName();
 				System.out.println("Loading object : " + name);
 
-				if(name.equals("door")) {
-					// TODO create door class ???
-				} else {
-					Rectangle rect = ((RectangleMapObject) object).getRectangle();
-					bodyDef.type = BodyDef.BodyType.StaticBody;
-					bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
-						(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
-					body = world.createBody(bodyDef);
-					shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
-						(rect.getHeight() / 2) / PIXELS2METERS);
-					fixtureDef.shape = shape;
-					fixtureDef.density = 1.0f;
-					fixtureDef.restitution = 0.0f;
-					body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
-				}
+				Rectangle rect = ((RectangleMapObject) object).getRectangle();
+				bodyDef.type = BodyDef.BodyType.StaticBody;
+				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
+					(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
+				body = world.createBody(bodyDef);
+				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
+					(rect.getHeight() / 2) / PIXELS2METERS);
+				fixtureDef.shape = shape;
+				fixtureDef.density = 1.0f;
+				fixtureDef.restitution = 0.0f;
+				body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
 			}
 		}
 
@@ -379,7 +375,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * with the current power and angle.
 	 */
 	void simulate() {
-		ball.body.getFixtureList().first().setUserData("sim");
+		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
 		ball.body.setType(BodyDef.BodyType.DynamicBody);
 		ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
@@ -393,7 +389,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ball.body.setType(BodyDef.BodyType.StaticBody);
 		ball.body.setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS,
 			gun.getCenterY() / NoteBounce.PIXELS2METERS, 0.0f);
-		ball.body.getFixtureList().first().setUserData("ball");
+		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
 		world.clearForces();
 	}
 
@@ -499,14 +495,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	@Override
 	public void render() {
-		mapRenderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
+		//mapRenderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
 		// OpenGL
 		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
 		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 
-		mapRenderer.render(); // Render the level built with Tiled first
+		//mapRenderer.render(); // Render the level built with Tiled first
 
 		if(Gdx.input.isKeyJustPressed(Input.Keys.GRAVE)) edit = !edit;
 
@@ -611,7 +607,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
 		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
-		String g = "";
+		String g;
 		if(world.getGravity().x == 0) {
 			if(world.getGravity().y > 0) g = "Up";
 			else g = "Down";
@@ -639,8 +635,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * @return The current Box2D world.
 	 */
 	public static World getWorld() { return world; }
-
-	public static Ball getBall() { return ball; }
 
 	public static void setGoalHit(boolean b) {
 		goalHit = b;
@@ -680,9 +674,35 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		return notes.length;
 	}
 
-	public static void addImpulseToBall(Fixture fa) {
-		ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0);
-		ball.body.applyLinearImpulse(new Vector2(0, 1.5f), ball.body.getWorldCenter(), true);
+	public enum ImpulseType {
+		up,
+		down,
+		left,
+		right
+	}
+
+	static float additionalImpulseForce = 2.0f;
+	public static void addImpulseToBall(ImpulseType type) {
+		Vector2 direction = new Vector2(0,0);
+		switch(type) {
+			case up: {
+				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0);
+				direction.set(0, additionalImpulseForce);
+			} break;
+			case down: {
+				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0);
+				direction.set(0,-additionalImpulseForce);
+			} break;
+			case left: {
+				ball.body.setLinearVelocity(0, ball.body.getLinearVelocity().y);
+				direction.set(-additionalImpulseForce, 0);
+			} break;
+			case right: {
+				ball.body.setLinearVelocity(0, ball.body.getLinearVelocity().y);
+				direction.set(additionalImpulseForce, 0);
+			} break;
+		}
+		ball.body.applyLinearImpulse(direction, ball.body.getWorldCenter(), true);
 	}
 
 	public boolean keyDown (int keycode) {

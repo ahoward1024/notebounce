@@ -11,7 +11,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 /**
  * Created by Alex on 9/1/2015.
+ * Copyright echosoftworks 2015
  */
+@SuppressWarnings("unused")
 public class Ball {
 
     private Vector2 center;
@@ -65,7 +67,7 @@ public class Ball {
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 0.7f;
         fixtureDef.restitution = 0.5f;
-        body.createFixture(fixtureDef).setUserData("ball");
+        body.createFixture(fixtureDef).setUserData(new UserData(UserData.Type.ball));
         circleShape.dispose();
     }
 

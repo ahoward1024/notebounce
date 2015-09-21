@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.esw.notebounce.UserData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,11 +70,11 @@ public class BodyEditorLoader {
      *
      * @param body The Box2d body you want to attach the fixture to.
      * @param name The name of the fixture you want to load.
-     * @param fixName The name you want the fixture to be.
+     * @param userData The user data of the fixture
      * @param fd The fixture parameters to apply to the created body fixture.
      * @param scale The desired scale of the body. The default width is 1.
      */
-    public void attachFixture(Body body, String name, String fixName, FixtureDef fd, float scale) {
+    public void attachFixture(Body body, String name, FixtureDef fd, UserData userData, float scale) {
         RigidBodyModel rbModel = model.rigidBodies.get(name);
         if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
 
@@ -90,7 +91,7 @@ public class BodyEditorLoader {
 
             polygonShape.set(vertices);
             fd.shape = polygonShape;
-            body.createFixture(fd).setUserData(fixName);
+            body.createFixture(fd).setUserData(userData);
 
             for (int ii=0, nn=vertices.length; ii<nn; ii++) {
                 free(vertices[ii]);
@@ -109,11 +110,6 @@ public class BodyEditorLoader {
 
             free(center);
         }
-    }
-
-    // Original version of above but passes the same name to the fixture def's set user data
-    public void attachFixture(Body body, String name, FixtureDef fd, float scale) {
-        attachFixture(body, name, name, fd, scale);
     }
 
     /**

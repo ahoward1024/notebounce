@@ -68,18 +68,19 @@ public class CollisionDetection implements ContactListener {
     public void beginContact(Contact c) {
         final float lastNoteTime = 0.8f; // The minimum time between two notes
 
-        Fixture fa = c.getFixtureA(); // Usually a static or kinematic object
-        Fixture fb = c.getFixtureB(); // Usually a dynamic object
+        UserData uda = (UserData)c.getFixtureA().getUserData(); // Static or kinematic user data
+        UserData udb = (UserData)c.getFixtureB().getUserData(); // Dynamic user data
 
-        System.out.println("fa: " + fa.getUserData());
-        System.out.println("fb: " + fb.getUserData());
+        System.out.println("uda: " + uda.toString());
+        System.out.println("udb: " + udb.toString());
 
         int notePtr = NoteBounce.getNotePtr();
 
-        if(fb.getUserData().equals("sim") && !fa.getUserData().equals("gun")) simhit = true;
+        if(udb.getType().equals(UserData.Type.sim) && !uda.getType().equals(UserData.Type.gun))
+        { simhit = true; }
 
         // Test if goal was hit
-        if(fa.getUserData().equals("goal") && fb.getUserData().equals("ball")) {
+        if(uda.getStyle().equals(Box.Style.goal) && udb.getType().equals(UserData.Type.ball)) {
             NoteBounce.setGoalHit(true);
             // Play the goal noise if it was not already playing
             if(!NoteBounce.goalNoisePlaying()) {
@@ -87,9 +88,26 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
+        if(NoteBounce.playNotes() && udb.getType().equals(UserData.Type.ball)) {
+            if(uda.getStyle().equals(Box.Style.yellow)) {
+                if(uda.getEdge().equals(UserData.Edge.top)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
+                }
+                else if(uda.getEdge().equals(UserData.Edge.bot)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
+                }
+                else if(uda.getEdge().equals(UserData.Edge.left)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
+                }
+                else if(uda.getEdge().equals(UserData.Edge.right)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
+                }
+            }
+        }
+
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.
-        if(NoteBounce.playNotes() && fb.getUserData().equals("ball")) {
+       /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
 
             // TODO different boundary collision detection for each different gravity setting
             // Boundary Edge collision
@@ -162,7 +180,7 @@ public class CollisionDetection implements ContactListener {
                     NoteBounce.playNote(notePtr);
                 }
                 timeSinceLastYellowNote = 0.0f;
-                NoteBounce.addImpulseToBall(fb);
+                NoteBounce.addImpulseToBall();
             }
 
             // Cyan note block collision
@@ -213,7 +231,7 @@ public class CollisionDetection implements ContactListener {
             if(fa.getUserData().equals("gravityRight")) {
                 NoteBounce.getWorld().setGravity(new Vector2(NoteBounce.gravity, 0));
             }
-        }
+        }*/
     }
 
     public void endContact(Contact c) {

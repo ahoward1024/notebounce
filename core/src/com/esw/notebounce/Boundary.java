@@ -7,18 +7,11 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 /**
  * Created by Alex on 9/15/2015.
+ * Copyright echosoftworks 2015
  */
 public class Boundary {
 
     Body body;
-    Type type;
-
-    public enum Type {
-        bot,
-        top,
-        left,
-        right
-    }
 
     /**
      *  This is called to create the Edge Lines for the boundaries of the screen
@@ -29,10 +22,9 @@ public class Boundary {
      * @param y1 The beginning y coordinate.
      * @param x2 The ending x coordinate.
      * @param y2 The ending y coordinate.
-     * @param type Indicates the type of the boundary (bot, top, left, right)
+     * @param edgeType Indicates the type of the boundary (bot, top, left, right)
      */
-    public Boundary(float x1, float y1, float x2, float y2, Boundary.Type type) {
-        this.type = type;
+    public Boundary(float x1, float y1, float x2, float y2, UserData.Edge edgeType) {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -46,14 +38,7 @@ public class Boundary {
             x2 / NoteBounce.PIXELS2METERS, y2 / NoteBounce.PIXELS2METERS);
         fixtureDef.shape = edgeShape;
 
-        if(type == Boundary.Type.bot)
-            body.createFixture(fixtureDef).setUserData("bot");
-        else if(type == Boundary.Type.top)
-            body.createFixture(fixtureDef).setUserData("top");
-        else if(type == Boundary.Type.left)
-            body.createFixture(fixtureDef).setUserData("left");
-        else if(type == Boundary.Type.right)
-            body.createFixture(fixtureDef).setUserData("right");
+        body.createFixture(fixtureDef).setUserData(new UserData(edgeType));
 
         edgeShape.dispose();
     }

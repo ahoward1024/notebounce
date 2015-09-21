@@ -12,6 +12,7 @@ import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
  * Created by Alex on 9/1/2015.
+ * Copyright echosoftworks 2015
  */
 @SuppressWarnings("unused")
 public class Gun {
@@ -62,8 +63,12 @@ public class Gun {
         FileHandle fileHandle = new FileHandle("json/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
         FixtureDef fixtureDef = new FixtureDef();
-        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, 2.4f);
+        UserData userData = new UserData(UserData.Type.gun);
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, 2.4f);
         // WARNING: 2.4f is a magical number!!! DO NOT CHANGE IT.
+        // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
+        // of 100 pixels. Because the gun is 240px the fixture needs to be scaled up to 2.4f
+        // in order for it to fit!
     }
 
     /**
@@ -111,7 +116,7 @@ public class Gun {
     public void rotate(float angle) {
         sprite.setRotation(angle);
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
-        // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT.
+        // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT. I can't explain this one...
 
     }
 }
