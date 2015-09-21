@@ -15,8 +15,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Ball {
 
     private Vector2 center;
-    private Sprite sprite;
-    private Body body;
+    Sprite sprite;
+    Body body;
 
     /**
      * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
@@ -44,7 +44,7 @@ public class Ball {
      * @param scale The scale size of the ball.
      */
     private void create(float x, float y, float scale) {
-        sprite = new Sprite(new Texture(Gdx.files.internal("ball.png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/ball.png")));
         sprite.setCenter(x, y);
         sprite.setOriginCenter();
         sprite.setScale(scale);
@@ -86,23 +86,7 @@ public class Ball {
         return center.x;
     }
 
-    public float getCenterY() {
-        return center.y;
-    }
+    public float getCenterY() { return center.y; }
 
-    public Vector2 getCenter() {
-        return center;
-    }
-
-    /**
-     * Gets the sprite of the ball.
-     * @return The sprite of the ball.
-     */
-    public Sprite sprite() { return sprite; }
-
-    /**
-     * Gets the body of the ball.
-     * @return The body of the ball.
-     */
-    public Body body() { return body; }
+    public Vector2 getCenter() { return center; }
 }

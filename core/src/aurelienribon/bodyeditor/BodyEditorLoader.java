@@ -8,7 +8,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.esw.notebounce.NoteBounce;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +20,8 @@ import java.util.Map;
  * name, and it will attach these fixtures to your body.
  *
  * @author Aurelien Ribon | http://www.aurelienribon.com
+ *
+ * File modified by Alex Howard.
  */
 @SuppressWarnings("unused")
 public class BodyEditorLoader {
@@ -38,14 +39,9 @@ public class BodyEditorLoader {
     // Ctors
     // -------------------------------------------------------------------------
 
-    public BodyEditorLoader(FileHandle file) {
+    public BodyEditorLoader(FileHandle file, String imagePath) {
         if (file == null) throw new NullPointerException("file is null");
-        model = readJson(file.readString());
-    }
-
-    public BodyEditorLoader(String str) {
-        if (str == null) throw new NullPointerException("str is null");
-        model = readJson(str);
+        model = readJson(file.readString(), imagePath);
     }
 
     // -------------------------------------------------------------------------
@@ -73,10 +69,11 @@ public class BodyEditorLoader {
      *
      * @param body The Box2d body you want to attach the fixture to.
      * @param name The name of the fixture you want to load.
+     * @param fixName The name you want the fixture to be.
      * @param fd The fixture parameters to apply to the created body fixture.
      * @param scale The desired scale of the body. The default width is 1.
      */
-    public void attachFixture(Body body, String name, FixtureDef fd, float scale) {
+    public void attachFixture(Body body, String name, String fixName, FixtureDef fd, float scale) {
         RigidBodyModel rbModel = model.rigidBodies.get(name);
         if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
 
@@ -93,7 +90,7 @@ public class BodyEditorLoader {
 
             polygonShape.set(vertices);
             fd.shape = polygonShape;
-            body.createFixture(fd).setUserData(name);
+            body.createFixture(fd).setUserData(fixName);
 
             for (int ii=0, nn=vertices.length; ii<nn; ii++) {
                 free(vertices[ii]);
@@ -112,6 +109,11 @@ public class BodyEditorLoader {
 
             free(center);
         }
+    }
+
+    // Original version of above but passes the same name to the fixture def's set user data
+    public void attachFixture(Body body, String name, FixtureDef fd, float scale) {
+        attachFixture(body, name, name, fd, scale);
     }
 
     /**
@@ -176,24 +178,24 @@ public class BodyEditorLoader {
     // Json reading process
     // -------------------------------------------------------------------------
 
-    private Model readJson(String str) {
+    private Model readJson(String str, String imagePath) {
         Model m = new Model();
 
         JsonValue map = new JsonReader().parse(str);
 
         JsonValue bodyElem = map.getChild("rigidBodies");
         for (; bodyElem != null; bodyElem = bodyElem.next()) {
-            RigidBodyModel rbModel = readRigidBody(bodyElem);
+            RigidBodyModel rbModel = readRigidBody(bodyElem, imagePath);
             m.rigidBodies.put(rbModel.name, rbModel);
         }
 
         return m;
     }
 
-    private RigidBodyModel readRigidBody(JsonValue bodyElem) {
+    private RigidBodyModel readRigidBody(JsonValue bodyElem, String imagePath) {
         RigidBodyModel rbModel = new RigidBodyModel();
         rbModel.name = bodyElem.getString("name");
-        rbModel.imagePath = bodyElem.getString("imagePath");
+        rbModel.imagePath = imagePath;
 
         JsonValue originElem = bodyElem.get("origin");
         rbModel.origin.x = originElem.getFloat("x");

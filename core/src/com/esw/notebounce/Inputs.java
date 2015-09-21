@@ -133,7 +133,15 @@ class Inputs {
         ScreenHeight = height;
     }
 
-    void getInputs() {
+    void getGameInputs() {
+
+    }
+
+    void getEditInputs() {
+
+    }
+
+    void getAllInputs() {
 
         mouse.x = Gdx.input.getX(); mouse.y = ScreenHeight - Gdx.input.getY();
         mouseleft = Gdx.input.isButtonPressed(Input.Buttons.LEFT);

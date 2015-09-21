@@ -45,13 +45,13 @@ public class Gun {
      * @param y The y position of the center of the gun.
      */
     private void create(float x, float y, float scale) {
-        sprite = new Sprite(new Texture("gun.png"));
+        sprite = new Sprite(new Texture("art/gun.png"));
         sprite.setCenter(x, y);
         sprite.setOriginCenter();
         sprite.setScale(scale);
 
-        center = new Vector2(sprite.getX() + sprite.getWidth() / 2,
-                sprite.getY() + sprite.getHeight() / 2);
+        center = new Vector2(sprite.getX() + (sprite.getWidth() / 2),
+                sprite.getY() + (sprite.getHeight() / 2));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -59,12 +59,11 @@ public class Gun {
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
-        FileHandle fileHandle = new FileHandle("gun.json");
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        FileHandle fileHandle = new FileHandle("json/gun.json");
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
         FixtureDef fixtureDef = new FixtureDef();
         bodyEditorLoader.attachFixture(body, "gun", fixtureDef, 2.4f);
         // WARNING: 2.4f is a magical number!!! DO NOT CHANGE IT.
-
     }
 
     /**

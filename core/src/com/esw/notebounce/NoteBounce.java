@@ -109,6 +109,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	Inputs inputs;
 
+	Box box;
+
+	boolean edit = false; // TODO create "edit" mode
+
 //=====================================================================================================//
 
 	/**
@@ -156,6 +160,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball.setPos(gun.getCenterX(), gun.getCenterY());
 
+		box = new Box(ScreenWidth / 2, ScreenHeight / 2, Box.Type.yellow);
 
 		// Build the lines for the bouding box that makes it so the ball
 		// does not go off the screen
@@ -164,7 +169,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		left = new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, Boundary.Type.left);
 		right = new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, Boundary.Type.right);
 
-        goalNoise = Gdx.audio.newSound(Gdx.files.internal("goal.mp3"));
+        goalNoise = Gdx.audio.newSound(Gdx.files.internal("notes/goal.mp3"));
 
 		// Create the bodyArray to hold of of the notes for the note blocks
 		notes[0] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/C4.mp3"));
@@ -178,7 +183,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		notePtr = 0;
 
-		crosshair = new Sprite(new Texture(Gdx.files.internal("crosshair.png")));
+		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
 
 		System.out.println("Total levels: " + map.length); // DEBUG
 		createLevelArray();
@@ -199,6 +204,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		System.out.println("Create Level Array: " + i); // DEBUG
 	}
 
+	// TODO reimplement loadLevel
 	void loadLevel(int level) {
 		System.out.println("Load Level: " + level); // DEBUG
 		mapRenderer = new OrthogonalTiledMapRenderer(map[level]); // Create a mapRenderer for the level
@@ -222,7 +228,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				System.out.println("Loading object : " + name);
 
 				if(name.equals("door")) {
-					// TODO create door class
+					// TODO create door class ???
 				} else {
 					Rectangle rect = ((RectangleMapObject) object).getRectangle();
 					bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -304,7 +310,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	void resetLevel() {
 		ballShot = false;
-		ball.body().setType(BodyDef.BodyType.StaticBody);
+		ball.body.setType(BodyDef.BodyType.StaticBody);
 		moveBall = true;
 		playNotes = true;
 		drawBallOver = false;
@@ -317,15 +323,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	void moveBall() {
-		ball.body().setTransform(lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS),
-			deltaTime * 10), lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS),
+		ball.body.setTransform(lerp(ball.body.getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+			deltaTime * 10), lerp(ball.body.getPosition().y, (gun.getCenterY() / PIXELS2METERS),
 			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
-		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
-			(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+		if((ball.body.getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
+			(ball.body.getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
 		{
-			ball.body().setTransform((gun.getCenterX() / PIXELS2METERS),
+			ball.body.setTransform((gun.getCenterX() / PIXELS2METERS),
 				(gun.getCenterY() / PIXELS2METERS), 0.0f);
 			ball.setSpriteToBodyPosition();
 			moveBall = false;
@@ -373,21 +379,21 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * with the current power and angle.
 	 */
 	void simulate() {
-		ball.body().getFixtureList().first().setUserData("sim");
-		ball.body().setType(BodyDef.BodyType.DynamicBody);
-		ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+		ball.body.getFixtureList().first().setUserData("sim");
+		ball.body.setType(BodyDef.BodyType.DynamicBody);
+		ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
 		for(int i = 0; i < 200; i++) {
 			world.step(1.0f / timestep, velocityIterations, positionIterations);
-			simcoords.add(new Vector2(ball.body().getPosition().x * PIXELS2METERS,
-				ball.body().getPosition().y * PIXELS2METERS));
+			simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
+				ball.body.getPosition().y * PIXELS2METERS));
 			if(collisionDetector.simhit) break;
 		}
 		collisionDetector.simhit = false;
-		ball.body().setType(BodyDef.BodyType.StaticBody);
-		ball.body().setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS,
+		ball.body.setType(BodyDef.BodyType.StaticBody);
+		ball.body.setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS,
 			gun.getCenterY() / NoteBounce.PIXELS2METERS, 0.0f);
-		ball.body().getFixtureList().first().setUserData("ball");
+		ball.body.getFixtureList().first().setUserData("ball");
 		world.clearForces();
 	}
 
@@ -438,9 +444,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(shoot && !ballShot) {
 			shoot = false;
 			ballShot = true;
-			ball.body().setType(BodyDef.BodyType.DynamicBody);
+			ball.body.setType(BodyDef.BodyType.DynamicBody);
 			//ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
-			ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+			ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 			lastUsedPower = power;
 			lastUsedAngle = angle;
 		}
@@ -448,8 +454,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			if((ball.body().getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
-				(ball.body().getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
+			if((ball.body.getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
+				(ball.body.getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
 				drawBallOver = true;
 			}
 		}
@@ -488,7 +494,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(touch) simulate();
 	}
 
-	boolean edit = false; // !!! move
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -518,8 +523,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
 			mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
-		ballPositionDebug = "Ball X: " + ball.body().getPosition().x +
-			" | Ball Y:" + ball.body().getPosition().y;
+		ballPositionDebug = "Ball X: " + ball.body.getPosition().x +
+			" | Ball Y:" + ball.body.getPosition().y;
 		gunPositionDebug = "Gun X: " + gun.getCenterX() + "(" + (gun.getCenterX() / PIXELS2METERS) + ")"
 			+ " | Gun Y: " + gun.getCenterY() + "(" + (gun.getCenterY() / PIXELS2METERS) + ")";
 
@@ -537,12 +542,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.setColor(Color.BLUE);
 		for(int i = 0; i < simcoords.size; i++) {
 			Vector2 tmp = simcoords.get(i);
-			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite().getWidth()/2);
+			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite.getWidth()/2);
 		}
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
-
+		box.sprite.draw(batch);
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
 			batch.draw(ripple, ripple.getX(), ripple.getY(), ripple.getOriginX(), ripple.getOriginY(),
@@ -558,16 +563,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			gun.sprite().draw(batch);
 
 			// Draw the ball second
-			batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(),
-				ball.sprite().getOriginX(), ball.sprite().getOriginY(), ball.sprite().getWidth(),
-				ball.sprite().getHeight(), ball.sprite().getScaleX(), ball.sprite().getScaleY(),
-				ball.sprite().getRotation());
+			batch.draw(ball.sprite, ball.sprite.getX(), ball.sprite.getY(),
+				ball.sprite.getOriginX(), ball.sprite.getOriginY(), ball.sprite.getWidth(),
+				ball.sprite.getHeight(), ball.sprite.getScaleX(), ball.sprite.getScaleY(),
+				ball.sprite.getRotation());
 		} else {
 			// Draw the ball first so it is under the gun
-			batch.draw(ball.sprite(), ball.sprite().getX(), ball.sprite().getY(),
-				ball.sprite().getOriginX(), ball.sprite().getOriginY(), ball.sprite().getWidth(),
-				ball.sprite().getHeight(), ball.sprite().getScaleX(), ball.sprite().getScaleY(),
-				ball.sprite().getRotation());
+			batch.draw(ball.sprite, ball.sprite.getX(), ball.sprite.getY(),
+				ball.sprite.getOriginX(), ball.sprite.getOriginY(), ball.sprite.getWidth(),
+				ball.sprite.getHeight(), ball.sprite.getScaleX(), ball.sprite.getScaleY(),
+				ball.sprite.getRotation());
 
 			// Now draw the gun so it is over the ball
 			gun.sprite().draw(batch);
@@ -657,7 +662,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public static void playRipple(Fixture fb) {
 		playRipple = true;
-		ripple = new Sprite(new Texture(Gdx.files.internal("ripple.png")));
+		ripple = new Sprite(new Texture(Gdx.files.internal("art/ripple.png")));
 		ripple.setCenter((fb.getBody().getPosition().x * PIXELS2METERS),
 			(fb.getBody().getPosition().y * PIXELS2METERS));
 		ripple.setScale(0.1f, 0.1f);
@@ -676,13 +681,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	public static void addImpulseToBall(Fixture fa) {
-		if(ball.body().getWorldCenter().y > (fa.getBody().getWorldCenter().y +
-			fa.getShape().getRadius()) + 0.7) {
-
-			ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0);
-			ball.body().applyLinearImpulse(new Vector2(0, 1.5f),
-				ball.body().getWorldCenter(), true);
-		}
+		ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0);
+		ball.body.applyLinearImpulse(new Vector2(0, 1.5f), ball.body.getWorldCenter(), true);
 	}
 
 	public boolean keyDown (int keycode) {

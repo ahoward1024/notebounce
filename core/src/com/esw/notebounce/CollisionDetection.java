@@ -71,6 +71,9 @@ public class CollisionDetection implements ContactListener {
         Fixture fa = c.getFixtureA(); // Usually a static or kinematic object
         Fixture fb = c.getFixtureB(); // Usually a dynamic object
 
+        System.out.println("fa: " + fa.getUserData());
+        System.out.println("fb: " + fb.getUserData());
+
         int notePtr = NoteBounce.getNotePtr();
 
         if(fb.getUserData().equals("sim") && !fa.getUserData().equals("gun")) simhit = true;
@@ -88,6 +91,7 @@ public class CollisionDetection implements ContactListener {
         // collisions involved with a note block.
         if(NoteBounce.playNotes() && fb.getUserData().equals("ball")) {
 
+            // TODO different boundary collision detection for each different gravity setting
             // Boundary Edge collision
             if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
                 fa.getUserData().equals("left") || fa.getUserData().equals("right"))
@@ -137,8 +141,28 @@ public class CollisionDetection implements ContactListener {
                     NoteBounce.playNote(notePtr);
                 }
                 timeSinceLastYellowNote = 0.0f;
+            }
 
-                NoteBounce.addImpulseToBall(fa);
+            if(fa.getUserData().equals("topyellow") && timeSinceLastBoundNote > lastNoteTime) {
+                if (yellowFlip) {
+                    yellowFlip = false;
+                    notePtr += 4;
+                    if (notePtr > NoteBounce.notesLength() - 1) {
+                        int i = notePtr - (NoteBounce.notesLength() - 1);
+                        notePtr = 0;
+                        notePtr += i;
+                    }
+                    NoteBounce.playNote(notePtr);
+                } else {
+                    yellowFlip = true;
+                    notePtr -= 4;
+                    if (notePtr < 0) {
+                        notePtr = Math.abs(notePtr);
+                    }
+                    NoteBounce.playNote(notePtr);
+                }
+                timeSinceLastYellowNote = 0.0f;
+                NoteBounce.addImpulseToBall(fb);
             }
 
             // Cyan note block collision

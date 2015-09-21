@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="120" tileheight="120" nextobjectid="13">
  <tileset firstgid="1" name="tilemap" tilewidth="120" tileheight="120" tilecount="20">
-  <image source="../tilemap.png" width="480" height="601"/>
+  <image source="../art/tilemap.png" width="480" height="601"/>
   <tile id="0">
    <objectgroup draworder="index">
     <object id="0" x="0" y="0" width="120" height="120"/>
@@ -9,7 +9,7 @@
   </tile>
  </tileset>
  <tileset firstgid="21" name="doors" tilewidth="120" tileheight="120" tilecount="8">
-  <image source="../doors.png" width="240" height="480"/>
+  <image source="../art/doors.png" width="240" height="480"/>
   <tile id="0">
    <objectgroup draworder="index"/>
   </tile>
