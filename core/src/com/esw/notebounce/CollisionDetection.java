@@ -1,6 +1,5 @@
 package com.esw.notebounce;
 
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -9,7 +8,9 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 
 /**
  * Created by Alex on 9/11/2015.
+ * Copyright echosoftworks 2015
  */
+@SuppressWarnings("unused")
 public class CollisionDetection implements ContactListener {
 
     private float timeSinceLastBlueNote    = 0.0f;
@@ -71,9 +72,6 @@ public class CollisionDetection implements ContactListener {
         UserData uda = (UserData)c.getFixtureA().getUserData(); // Static or kinematic user data
         UserData udb = (UserData)c.getFixtureB().getUserData(); // Dynamic user data
 
-        System.out.println("uda: " + uda.toString());
-        System.out.println("udb: " + udb.toString());
-
         int notePtr = NoteBounce.getNotePtr();
 
         if(udb.getType().equals(UserData.Type.sim) && !uda.getType().equals(UserData.Type.gun))
@@ -108,7 +106,7 @@ public class CollisionDetection implements ContactListener {
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.
        /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
-
+            // TODO reimplement collision detection for each object
             // TODO different boundary collision detection for each different gravity setting
             // Boundary Edge collision
             if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||

@@ -101,18 +101,37 @@ public class Gun {
      */
     public Vector2 getCenter() { return center; }
 
+    /**
+     * Get the x position of the end of the gun based on the angle of the gun.
+     * @param angle The current angle the gun is pointing.
+     * @return The x position of the end of the gun.
+     */
     public float endX(float angle) {
         return (float)(getCenterX()+((sprite.getHeight() / 2) * Math.cos(angle * Math.PI / 180)));
     }
 
+    /**
+     * Get the y position of the end of the gun based on the angle of the gun.
+     * @param angle The current angle the gun is pointing.
+     * @return The y position of the end of the gun.
+     */
     public float endY(float angle) {
         return (float)(getCenterY()+((sprite.getWidth() / 2) * Math.sin(angle * Math.PI / 180)));
     }
 
+    /**
+     * Get the x,y position of the end of the gun based on the angle of the gun as a Vector2.
+     * @param angle The current angle the gun is pointing.
+     * @return The x,y position of the end of the gun as a Vector2.
+     */
     public Vector2 end(float angle) {
         return new Vector2(endX(angle), endY(angle));
     }
 
+    /**
+     * Rotate the gun and it's fixture to the specified angle.
+     * @param angle The angle the gun needs to be rotated to.
+     */
     public void rotate(float angle) {
         sprite.setRotation(angle);
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);

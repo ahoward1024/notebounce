@@ -8,8 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 @SuppressWarnings("unused")
 class Inputs {
 
-    // mouse
+    // Mouse
     Vector2 mouse = new Vector2(0,0);
+    // Regular                   // Shifted
     static boolean mouseleft;    boolean shiftMouseLeft;
     static boolean mousemiddle;  boolean shiftMouseMiddle;
     static boolean mouseright;   boolean shiftMouseRight;
@@ -23,8 +24,8 @@ class Inputs {
     static boolean meta;
     static boolean esc;
 
-           // Alpha keys  /* NOTE: A capital key will be tied to shift!! */
-           // Unshifted          // Shifted
+    // Alpha keys  /* NOTE: A capital key will be tied to shift!! */
+    // Unshifted                 // Shifted
     static boolean tab;          boolean shifttab;
     static boolean q;            boolean Q;
     static boolean w;            boolean W;
@@ -61,8 +62,8 @@ class Inputs {
     static boolean forwardslash; boolean question;
     static boolean space;
 
-           // Number keys/symbols
-           // Unshifted    // Shifted
+    // Number keys/symbols
+    // Unshifted           // Shifted
     static boolean tick;   boolean tilde;
     static boolean one;    boolean bang;
     static boolean two;    boolean at;
@@ -106,7 +107,7 @@ class Inputs {
     static boolean left;
     static boolean right;
 
-            // Num Keys
+    // Num Keys
     static boolean numone;
     static boolean numtwo;
     static boolean numthree;
@@ -128,30 +129,65 @@ class Inputs {
     float ScreenWidth = 0;
     float ScreenHeight = 0;
 
+    /**
+     * This class is designed to grab all input states needed for the game and for editing levels.
+     * It was also designed for ease of use as all keys that have a "shifted" state
+     * (e.g. a and A or 8 and *) can be called directily (in this case inputs.a and inputs.A or
+     * inputs.eight and inputs.star) instead of having to manually poll for the modifier key.
+     * In any case, all of the modifier keys can also be called so we can use it in multi-key commands.
+     * @param width The width of the screen (for mouse input to be normalized)
+     * @param height The height of the screen (for mouse input to be normalized)
+     */
     Inputs(int width, int height) {
         ScreenWidth = width;
         ScreenHeight = height;
     }
 
-    void getGameInputs() {
-
-    }
-
-    void getEditInputs() {
-
-    }
-
-    void getAllInputs() {
-
+    /**
+     * Grab all of the mouse inputs.
+     */
+    public void getMouseInputs() {
+        // LibGDX specifies the mouse's (0,0) to be in the upper left corner while the
+        // graphic's (0,0) is in the lower left. Getting the ScreenHeight - mouse.y
+        // normalizes mouse inputs to the graphics coordinates.
         mouse.x = Gdx.input.getX(); mouse.y = ScreenHeight - Gdx.input.getY();
         mouseleft = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
         mousemiddle = Gdx.input.isButtonPressed(Input.Buttons.MIDDLE);
         mouseright = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
         mouseforward = Gdx.input.isButtonPressed(Input.Buttons.FORWARD);
         mouseback = Gdx.input.isButtonPressed(Input.Buttons.BACK);
+    }
 
+    /**
+     * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
+     * to play the game.
+     */
+    public void getGameInputs() { // TODO game inputs
+        getMouseInputs();
 
+    }
 
+    /**
+     * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
+     * to edit levels.
+     */
+    public void getEditInputs() { // TODO edit inputs
+        getMouseInputs();
+    }
+
+    /**
+     * Grab whether the edit key was pressed or not
+     * @return The state of the edit key (grave)
+     */
+    public boolean edit() {
+        return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE);
+    }
+
+    /**
+     * Grab all of the mouse inputs, then grab all of the inputs from all of the keys.
+     */
+    public void getAllInputs() {
+        getMouseInputs();
     }
 
 }

@@ -13,12 +13,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -85,10 +79,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private boolean moveBall = false; // Toggle to lerp the ball back to the gun
 	boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
-	TmxMapLoader mapLoader;
-	private TiledMap map[] = new TiledMap[6];
-	private OrthogonalTiledMapRenderer mapRenderer;
-	private int levelPtr = 0;
+	// TODO create LevelLoader
 
 	private Vector2 mouse = new Vector2(0,0);
 	private Vector2 mouseClick = new Vector2(0,0);
@@ -180,131 +171,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		notes[5] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/A4.mp3"));
 		notes[6] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/B4.mp3"));
 		notes[7] = Gdx.audio.newSound(Gdx.files.internal("notes/C4/C5.mp3"));
-
 		notePtr = 0;
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
 
-		//System.out.println("Total levels: " + map.length); // DEBUG
-		//createLevelArray();
-		//loadLevel(0);
-
 		inputs = new Inputs(ScreenWidth, ScreenHeight);
 	}
 
-	void createLevelArray() {
-		mapLoader = new TmxMapLoader();
-		int i; // DEBUG
-		System.out.println("Map length: " + map.length); // DEBUG
-		// Load each level in the tmx/ levels folder
-		for(i = 0; i < map.length; i++) {
-			System.out.println("Load: tmx/level" + i + ".tmx");
-			map[i] =  mapLoader.load("tmx/level" + i + ".tmx");
-		}
-		System.out.println("Create Level Array: " + i); // DEBUG
-	}
-
-	// TODO reimplement loadLevel
-	void loadLevel(int level) {
-		System.out.println("Load Level: " + level); // DEBUG
-		mapRenderer = new OrthogonalTiledMapRenderer(map[level]); // Create a mapRenderer for the level
-
-		// These are used to create the bodies and fixtures for all of the note blocks in the level.
-		BodyDef bodyDef = new BodyDef();
-		PolygonShape shape = new PolygonShape();
-		FixtureDef fixtureDef = new FixtureDef();
-		Body body;
-
-		// Go through all of the layers in the Tiled map and find all of the object layers so
-		// we can make Box2D static objects out of each layer. This is defined in a specific format:
-		// Layer 0 of a Tiled map will always be all of the sprites (tiles). Each subsequent layer is
-		// an object layer with the same name of the corresponding block it goes around (blue, green,
-		// yellow, etc.) We must create rectangles around all of the object layers and create
-		// static fixtures so the ball has something to collide with.
-		for(int i = 1; i < map[level].getLayers().getCount(); i++) {
-			for (MapObject object :
-				map[level].getLayers().get(i).getObjects().getByType(RectangleMapObject.class)) {
-				String name = map[level].getLayers().get(i).getName();
-				System.out.println("Loading object : " + name);
-
-				Rectangle rect = ((RectangleMapObject) object).getRectangle();
-				bodyDef.type = BodyDef.BodyType.StaticBody;
-				bodyDef.position.set((rect.getX() + rect.getWidth() / 2) / PIXELS2METERS,
-					(rect.getY() + rect.getWidth() / 2) / PIXELS2METERS);
-				body = world.createBody(bodyDef);
-				shape.setAsBox((rect.getWidth() / 2) / PIXELS2METERS,
-					(rect.getHeight() / 2) / PIXELS2METERS);
-				fixtureDef.shape = shape;
-				fixtureDef.density = 1.0f;
-				fixtureDef.restitution = 0.0f;
-				body.createFixture(fixtureDef).setUserData(map[level].getLayers().get(i).getName());
-			}
-		}
-
-		shape.dispose(); // Make sure to dispose of the shape to free some now unused memory.
-		System.out.println("Level " + level + " successfully loaded.");
-	}
-
 	/**
-	 * A simple linear interpolation function (https://en.wikipedia.org/wiki/Linear_interpolation).
-	 * @param edge0 The beginning interpolation value
-	 * @param edge1 The ending interpolation value
-	 * @param t The timestep of interpolation
-	 * @return The point on the interpolation line the number should be after the given timestep
+	 * Reset the state of the current level so the ball can be shot again.
 	 */
-	float lerp(float edge0, float edge1, float t) {
-		return (1 - t) * edge0 + t * edge1;
-	}
-
-	/**
-	 * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep)
-	 * @param edge0 The beginning interpolation value
-	 * @param edge1 The ending interpolation value
-	 * @param t The timestep of interpolation
-	 * @return The point on the interpolation line the number should be after the given timestep
-	 */
-	@SuppressWarnings("unused")
-	float smoothstep(float edge0, float edge1, float t)
-	{
-		// Scale, bias and saturate x to 0..1 range
-		t = MathUtils.clamp((t - edge0)/(edge1 - edge0), 0.0f, 1.0f);
-		// Evaluate polynomial
-		return t * t * (3 - (2 * t));
-	}
-
-	/**
-	 * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep#Variations)
-	 * @param edge0 The beginning interpolation value
-	 * @param edge1 The ending interpolation value
-	 * @param t The timestep of interpolation
-	 * @return The point on the interpolation line the number should be after the given timestep
-	 */
-	@SuppressWarnings("unused")
-	float smootherstep(float edge0, float edge1, float t)
-	{
-		// Scale, and clamp x to 0..1 range
-		t = MathUtils.clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
-		// Evaluate polynomial
-		return t * t * t * (t * ((t * 6) - 15) + 10);
-	}
-
-	void unloadLevel() {
-		Array<Body> bodyArray = new Array<Body>();
-		world.getBodies(bodyArray);
-		// Get all the bodies that are not a ball or boundary (all blocks) and destroy them.
-		for(int i = 0; i < bodyArray.size; i++) {
-			if(! bodyArray.get(i).getFixtureList().first().getUserData().equals("ball") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("bot") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("top") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("left") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("right") &&
-				! bodyArray.get(i).getFixtureList().first().getUserData().equals("gun")) {
-				world.destroyBody(bodyArray.get(i));
-			}
-		}
-	}
-
-	void resetLevel() {
+	void reset() {
 		ballShot = false;
 		ball.body.setType(BodyDef.BodyType.StaticBody);
 		moveBall = true;
@@ -318,9 +195,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	/**
+	 * Move the ball through linear interpolation back to the gun.
+	 */
 	void moveBall() {
-		ball.body.setTransform(lerp(ball.body.getPosition().x, (gun.getCenterX() / PIXELS2METERS),
-			deltaTime * 10), lerp(ball.body.getPosition().y, (gun.getCenterY() / PIXELS2METERS),
+		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+			deltaTime * 10), Utility.lerp(ball.body.getPosition().y, (gun.getCenterY() / PIXELS2METERS),
 			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
@@ -335,7 +215,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	/**
-	 * Update all of the variables needed to simulate physics
+	 * Update all of the variables needed to simulate physics.
 	 */
 	public void updatePhysics() {
 		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) timestep = 3000.0f;
@@ -368,7 +248,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * 	 	that we would have to draw to, increasing space, and this would be the most complex out of
 	 *		all techniques to do super efficiently.
 	 *
-	 * FIXME This does not work on Mac
+	 * FIXME This does not work on Mac (something about screen resolution/HDPI displays...)
 	 */
 	/**
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
@@ -460,7 +340,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Stop any sound (if it was playing)
 		// This essentially "resets" the level
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
-			resetLevel();
+			reset();
 		}
 
 		if(moveBall) {
@@ -478,11 +358,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Go to next level if goal was hit
 		if(goalHit || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) { // SPACE IS DEBUG
-			unloadLevel();
-			resetLevel();
-			if(levelPtr == map.length-1) levelPtr = 0;
-			else levelPtr++;
-			loadLevel(levelPtr);
+			reset();
+			// todo LevelLoader
+			// todo loop levels
+			//levelLoader.loadNextLevel();
 			goalHit = false;
 			showGoalHit = true;
 		}
@@ -495,23 +374,32 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	@Override
 	public void render() {
-		//mapRenderer.setView(camera); // Set the view of the level built with Tiled to the main camera.
+
+		// ================ UPDATE ================//
+
+		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
+		// as the input states will not be updated since the last frame which could cause keys
+		// to always be pressed or never be pressed etc...
+		if(inputs.edit()) edit = !edit; // Grab the edit key (grave) first
+
+		if(!edit) {
+			// Update all of the sprites
+			// inputs.getGameInputs(); // TODO game inputs
+			update();
+			// Simulate Box2D physics
+			if(ballShot) updatePhysics();
+		} else {
+			// inputs.getEditInputs(); // TODO edit inputs
+			System.out.println("Edit mode");
+		}
+
+		// ================ RENDER ================//
+
 		// OpenGL
 		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
 		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
-
-		//mapRenderer.render(); // Render the level built with Tiled first
-
-		if(Gdx.input.isKeyJustPressed(Input.Keys.GRAVE)) edit = !edit;
-
-		if(!edit) {
-			// Update all of the sprites
-			update();
-			// Simulate Box2D physics
-			if(ballShot) updatePhysics();
-		}
 
 		// Update the debug strings
 		inputDebug = "mouse X: " + mouse.x + " | mouse Y: " + mouse.y +
@@ -606,7 +494,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 100);
-		debugMessage.draw(batch, "Level :" + levelPtr, 10, ScreenHeight - 130);
+		//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 130);
 		String g;
 		if(world.getGravity().x == 0) {
 			if(world.getGravity().y > 0) g = "Up";
@@ -719,7 +607,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public boolean touchDown (int x, int y, int pointer, int button) {
 		if(ballShot) {
-			resetLevel();
+			reset();
 			reset = true;
 		} else {
 			mouseClick.x = x; mouseClick.y = ScreenHeight - y;
