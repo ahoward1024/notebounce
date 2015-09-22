@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 class Inputs {
 
     // Mouse
-    Vector2 mouse = new Vector2(0,0);
+    static Vector2 mouse = new Vector2(0,0);
     // Regular                   // Shifted
     static boolean mouseleft;    boolean shiftMouseLeft;
     static boolean mousemiddle;  boolean shiftMouseMiddle;
@@ -17,11 +17,12 @@ class Inputs {
     static boolean mouseforward; boolean shiftMouseFoward;
     static boolean mouseback;    boolean shiftMouseBack;
 
-           // Modifiers
-    static boolean shift;
-    static boolean ctrl;
-    static boolean alt;
-    static boolean meta;
+    // Modifiers          // Left                // Right
+    static boolean shift; static boolean lshift; static boolean rshift;
+    static boolean ctrl;  static boolean lctrl;  static boolean rctrl;
+    static boolean alt;   static boolean lalt;   static boolean ralt;
+    static boolean meta;  static boolean lmeta;  static boolean rmeta;
+    static boolean menu;
     static boolean esc;
 
     // Alpha keys  /* NOTE: A capital key will be tied to shift!! */
@@ -146,11 +147,11 @@ class Inputs {
     /**
      * Grab all of the mouse inputs.
      */
-    public void getMouseInputs() {
+    public static void getMouseInputs() {
         // LibGDX specifies the mouse's (0,0) to be in the upper left corner while the
         // graphic's (0,0) is in the lower left. Getting the ScreenHeight - mouse.y
         // normalizes mouse inputs to the graphics coordinates.
-        mouse.x = Gdx.input.getX(); mouse.y = ScreenHeight - Gdx.input.getY();
+        mouse.x = Gdx.input.getX(); mouse.y = NoteBounce.ScreenHeight - Gdx.input.getY();
         mouseleft = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
         mousemiddle = Gdx.input.isButtonPressed(Input.Buttons.MIDDLE);
         mouseright = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
@@ -162,32 +163,37 @@ class Inputs {
      * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
      * to play the game.
      */
-    public void getGameInputs() { // TODO game inputs
+    public static void getGameInputs() {
         getMouseInputs();
 
+        lshift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT); // Timestep slow
+        lctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Timestep fast
+
+        f = Gdx.input.isKeyJustPressed(Input.Keys.F); // Reset
+        space = Gdx.input.isKeyJustPressed(Input.Keys.SPACE); // Next level
     }
 
     /**
      * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
      * to edit levels.
      */
-    public void getEditInputs() { // TODO edit inputs
+    public static void getEditInputs() { // TODO edit inputs
         getMouseInputs();
-    }
+    } // TODO edit inputs
 
     /**
      * Grab whether the edit key was pressed or not
      * @return The state of the edit key (grave)
      */
-    public boolean edit() {
+    public static boolean edit() {
         return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE);
     }
 
     /**
      * Grab all of the mouse inputs, then grab all of the inputs from all of the keys.
      */
-    public void getAllInputs() {
+    public static void getAllInputs() {
         getMouseInputs();
-    }
+    } // TODO all inputs... maybe...
 
 }

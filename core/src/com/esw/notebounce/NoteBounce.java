@@ -2,7 +2,6 @@ package com.esw.notebounce;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -23,6 +22,7 @@ import com.badlogic.gdx.utils.Array;
  * Created by Alex on 9/21/2015.
  * Copyright echosoftworks 2015
  */
+@SuppressWarnings("unused")
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
@@ -43,8 +43,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	final int velocityIterations = 6;
 	final int positionIterations = 2;
 
-	private int ScreenWidth  = 0;
-	private int ScreenHeight = 0;
+	static int ScreenWidth  = 0;
+	static int ScreenHeight = 0;
 
 	private OrthographicCamera camera; // Orthographic because 2D
 
@@ -65,6 +65,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private float goalTextTimer = 0.0f;
 	private float deltaTime = 0.0f;
 	float timestep = 300.0f;
+	final float timestepNormal = 300.0f;
+	final float timestepSlow = 3000.0f;
+	final float timestepFast = 100.0f;
 
 	String inputDebug = "";        // DEBUG
 	String mouseClickDebug = "";   // DEBUG
@@ -97,8 +100,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private boolean reset = false; // Toggle to reset level
 
 	Array<Vector2> simcoords = new Array<Vector2>();
-
-	Inputs inputs;
 
 	Box box;
 
@@ -174,8 +175,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		notePtr = 0;
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
-
-		inputs = new Inputs(ScreenWidth, ScreenHeight);
 	}
 
 	/**
@@ -199,7 +198,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Move the ball through linear interpolation back to the gun.
 	 */
 	void moveBall() {
-		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x, (gun.getCenterX() / PIXELS2METERS),
+		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x,
+			(gun.getCenterX() / PIXELS2METERS),
 			deltaTime * 10), Utility.lerp(ball.body.getPosition().y, (gun.getCenterY() / PIXELS2METERS),
 			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
@@ -218,12 +218,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Update all of the variables needed to simulate physics.
 	 */
 	public void updatePhysics() {
-		if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) timestep = 3000.0f;
-		else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) timestep = 100.0f;
-		else timestep = 300.0f;
-
 		world.step(1.0f / timestep, velocityIterations, positionIterations);
-
 		world.clearForces();
 	}
 
@@ -254,17 +249,26 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
+	Color drawColor = Color.BLUE; // !!! MOVE
 	void simulate() {
 		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
 		ball.body.setType(BodyDef.BodyType.DynamicBody);
 		ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
-		for(int i = 0; i < 200; i++) {
+
+		int steps = 4;
+		if(timestep == timestepNormal) { steps = 8; drawColor = Color.BLUE; }
+		else if(timestep == timestepSlow) { steps = 20; drawColor = Color.PURPLE; }
+		else if(timestep == timestepFast) { steps = 2; drawColor = Color.RED; }
+		for(int i = 0; i < 5000; i++) {
 			world.step(1.0f / timestep, velocityIterations, positionIterations);
-			simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
-				ball.body.getPosition().y * PIXELS2METERS));
+			if(i % steps == 0) {
+				simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
+					ball.body.getPosition().y * PIXELS2METERS));
+			}
 			if(collisionDetector.simhit) break;
 		}
+
 		collisionDetector.simhit = false;
 		ball.body.setType(BodyDef.BodyType.StaticBody);
 		ball.body.setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS,
@@ -287,30 +291,25 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// If we have touched the screen or clicked we should update the power and the angle.
 		if(touch) {
-			if(Gdx.input.isKeyPressed(Input.Keys.X)) {
-				power = lastUsedPower;
-			} else {
-				power = (float)Math.sqrt(Math.pow((mouse.x - mouseClick.x), 2.0) +
-					Math.pow((mouse.y - mouseClick.y), 2.0)) / 4.0f;
-				if(power > MAX_POWER) power = MAX_POWER;
-			}
+
+			power = (float)Math.sqrt(Math.pow((mouse.x - mouseClick.x), 2.0) +
+				Math.pow((mouse.y - mouseClick.y), 2.0)) / 4.0f;
+			if(power > MAX_POWER) power = MAX_POWER;
+
 			crosshair.setCenter(mouseClick.x, mouseClick.y);
 
-			if(Gdx.input.isKeyPressed(Input.Keys.Z)) { // DEBUG
-				angle = lastUsedAngle;
-			} else {
-				// Find the angle for the gun and ball's projection arc based on where the mouse is
-				// located on the screen. Works best if the gun's texture is defaulted to point towards
-				// the right.
-				angle = (float) Math.atan2(mouseClick.y - mouse.y,
-					mouseClick.x - mouse.x);
-				angle *= (180 / Math.PI);
-				// Clamp the rotation around 360 degrees
-				//if(angle < 0) angle = 360 - (-angle); // OLD (but useful??)
-				// Only allow the gun to rotate between 0 and 90 degrees
-				if(angle > 90) angle = 90;
-				else if(angle < 0) angle = 0;
-			}
+			// Find the angle for the gun and ball's projection arc based on where the mouse is
+			// located on the screen. Works best if the gun's texture is defaulted to point towards
+			// the right.
+			angle = (float) Math.atan2(mouseClick.y - mouse.y,
+				mouseClick.x - mouse.x);
+			angle *= (180 / Math.PI);
+			// Clamp the rotation around 360 degrees
+			//if(angle < 0) angle = 360 - (-angle); // OLD (but useful??)
+			// Only allow the gun to rotate between 0 and 90 degrees
+			if(angle > 90) angle = 90;
+			else if(angle < 0) angle = 0;
+
 			gun.rotate(angle); // Only set the rotation if the ball is not shot
 		}
 
@@ -339,7 +338,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Destroy the current ball in the world (if there is one) so another can be shot
 		// Stop any sound (if it was playing)
 		// This essentially "resets" the level
-		if(Gdx.input.isKeyJustPressed(Input.Keys.F) && ballShot) {
+		if(Inputs.f && ballShot) {
 			reset();
 		}
 
@@ -357,7 +356,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		// Go to next level if goal was hit
-		if(goalHit || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) { // SPACE IS DEBUG
+		if(goalHit || Inputs.space) { // SPACE IS DEBUG
 			reset();
 			// todo LevelLoader
 			// todo loop levels
@@ -380,16 +379,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
 		// as the input states will not be updated since the last frame which could cause keys
 		// to always be pressed or never be pressed etc...
-		if(inputs.edit()) edit = !edit; // Grab the edit key (grave) first
+		if(Inputs.edit()) edit = !edit; // Grab the edit key (grave) first
 
 		if(!edit) {
 			// Update all of the sprites
-			// inputs.getGameInputs(); // TODO game inputs
+			Inputs.getGameInputs();
+			if(Inputs.lshift) timestep = timestepSlow;
+			else if (Inputs.lctrl) timestep = timestepFast;
+			else timestep = timestepNormal;
 			update();
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
-			// inputs.getEditInputs(); // TODO edit inputs
+			Inputs.getEditInputs(); // TODO edit inputs
 			System.out.println("Edit mode");
 		}
 
@@ -423,7 +425,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			angle, 32);
 		debugShapeRenderer.setColor(Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
-		debugShapeRenderer.setColor(Color.BLUE);
+		debugShapeRenderer.setColor(drawColor);
 		for(int i = 0; i < simcoords.size; i++) {
 			Vector2 tmp = simcoords.get(i);
 			debugShapeRenderer.circle(tmp.x, tmp.y, ball.sprite.getWidth()/2);
@@ -542,11 +544,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		playNotes = false;
 	}
 
-	public static void playRipple(Fixture fb) {
+	public static void playRipple() {
 		playRipple = true;
 		ripple = new Sprite(new Texture(Gdx.files.internal("art/ripple.png")));
-		ripple.setCenter((fb.getBody().getPosition().x * PIXELS2METERS),
-			(fb.getBody().getPosition().y * PIXELS2METERS));
+		ripple.setCenter((ball.body.getPosition().x * PIXELS2METERS),
+			(ball.body.getPosition().y * PIXELS2METERS));
 		ripple.setScale(0.1f, 0.1f);
 	}
 
@@ -568,7 +570,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		left,
 		right
 	}
-
 	static float additionalImpulseForce = 2.0f;
 	public static void addImpulseToBall(ImpulseType type) {
 		Vector2 direction = new Vector2(0,0);
