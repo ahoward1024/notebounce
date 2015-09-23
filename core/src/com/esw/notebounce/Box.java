@@ -36,8 +36,8 @@ public class Box {
         gDown,
         gLeft,
         gRight,
-        gAll, // TODO create "All" gravity box image/logic
-        rotate, // TODO create rotate box ??
+        gAll,    // TODO create "All" gravity box image/logic
+        rotate,  // TODO create rotate box ??
         generic, // TODO create generic box image/logic
         noBox
     }

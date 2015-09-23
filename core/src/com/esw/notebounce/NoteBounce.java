@@ -154,7 +154,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		box = new Box(ScreenWidth / 6, ScreenHeight / 2, Box.Style.yellow);
 
-		// Build the lines for the bouding box that makes it so the ball
+		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
 		new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, UserData.Edge.bot);
 		new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, UserData.Edge.top);
@@ -374,6 +374,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void render() {
 
+		// OpenGL
+		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
+		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		deltaTime = Gdx.graphics.getDeltaTime();
+
 		// ================ UPDATE ================//
 
 		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
@@ -392,16 +398,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(ballShot) updatePhysics();
 		} else {
 			Inputs.getEditInputs(); // TODO edit inputs
-			System.out.println("Edit mode");
+
+			debugShapeRenderer.begin();
+			debugShapeRenderer.setColor(new Color(1, 0, 0, 0.1f));
+			for(int i = 0; i < ScreenWidth; i += 60) {
+				debugShapeRenderer.line(i, 0, i, ScreenHeight);
+				debugShapeRenderer.line(0, i, ScreenWidth, i);
+			}
+			debugShapeRenderer.setColor(new Color(0.5f, 0.5f, 0.5f, 0.1f));
+			for(int i = 0; i < ScreenWidth; i += 120) {
+				debugShapeRenderer.line(i, 0, i, ScreenHeight);
+				debugShapeRenderer.line(0, i, ScreenWidth, i);
+			}
+			debugShapeRenderer.end();
 		}
 
 		// ================ RENDER ================//
-
-		// OpenGL
-		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
-		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		deltaTime = Gdx.graphics.getDeltaTime();
 
 		// Update the debug strings
 		inputDebug = "mouse X: " + mouse.x + " | mouse Y: " + mouse.y +
@@ -607,13 +619,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	public boolean touchDown (int x, int y, int pointer, int button) {
-		if(ballShot) {
-			reset();
-			reset = true;
-		} else {
-			mouseClick.x = x; mouseClick.y = ScreenHeight - y;
-			touch = true;
-			reset = false;
+		if(!edit) {
+			if(ballShot) {
+				reset();
+				reset = true;
+			} else {
+				mouseClick.x = x;
+				mouseClick.y = ScreenHeight - y;
+				touch = true;
+				reset = false;
+			}
 		}
 		return false;
 	}
