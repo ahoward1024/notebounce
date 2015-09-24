@@ -1,0 +1,16 @@
+Level spec:
+
+{
+	"level": [
+	{
+		"name": "blah",
+		"path": "levels/blah.json",
+		"objects":[
+		{
+			"box":[{"style": "blue","x":100,"y":100}],
+			"gun":[{"x":30,"y":30}],
+		},
+		]
+	},
+	]
+}

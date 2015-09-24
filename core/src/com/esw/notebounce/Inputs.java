@@ -11,11 +11,11 @@ class Inputs {
     // Mouse
     static Vector2 mouse = new Vector2(0,0);
     // Regular                   // Shifted
-    static boolean mouseleft;    boolean shiftMouseLeft;
-    static boolean mousemiddle;  boolean shiftMouseMiddle;
-    static boolean mouseright;   boolean shiftMouseRight;
-    static boolean mouseforward; boolean shiftMouseFoward;
-    static boolean mouseback;    boolean shiftMouseBack;
+    static boolean mouseleft;    static boolean shiftMouseLeft;
+    static boolean mousemiddle;  static boolean shiftMouseMiddle;
+    static boolean mouseright;   static boolean shiftMouseRight;
+    static boolean mouseforward; static boolean shiftMouseFoward;
+    static boolean mouseback;    static boolean shiftMouseBack;
 
     // Modifiers          // Left                // Right
     static boolean shift; static boolean lshift; static boolean rshift;
@@ -27,57 +27,58 @@ class Inputs {
 
     // Alpha keys  /* NOTE: A capital key will be tied to shift!! */
     // Unshifted                 // Shifted
-    static boolean tab;          boolean shifttab;
-    static boolean q;            boolean Q;
-    static boolean w;            boolean W;
-    static boolean e;            boolean E;
-    static boolean r;            boolean R;
-    static boolean t;            boolean T;
-    static boolean y;            boolean Y;
-    static boolean u;            boolean U;
-    static boolean i;            boolean I;
-    static boolean o;            boolean O;
-    static boolean p;            boolean P;
-    static boolean leftsquare;   boolean leftcurly;
-    static boolean rightsquare;  boolean rightcurly;
-    static boolean backslash;    boolean pipe;
-    static boolean a;            boolean A;
-    static boolean s;            boolean S;
-    static boolean d;            boolean D;
-    static boolean f;            boolean F;
-    static boolean j;            boolean J;
-    static boolean k;            boolean K;
-    static boolean l;            boolean L;
-    static boolean semicolon;    boolean colon;
-    static boolean singlequote;  boolean doublequote;
-    static boolean enter;        boolean shiftenter;
-    static boolean z;            boolean Z;
-    static boolean x;            boolean X;
-    static boolean c;            boolean C;
-    static boolean v;            boolean V;
-    static boolean b;            boolean B;
-    static boolean n;            boolean N;
-    static boolean m;            boolean M;
-    static boolean comma;        boolean leftangle;
-    static boolean dot;          boolean rightangle;
-    static boolean forwardslash; boolean question;
+    static boolean tab;          static boolean shifttab;
+    static boolean q;            static boolean Q;
+    static boolean w;            static boolean W;
+    static boolean e;            static boolean E;
+    static boolean r;            static boolean R;
+    static boolean t;            static boolean T;
+    static boolean y;            static boolean Y;
+    static boolean u;            static boolean U;
+    static boolean i;            static boolean I;
+    static boolean o;            static boolean O;
+    static boolean p;            static boolean P;
+    static boolean leftsquare;   static boolean leftcurly;
+    static boolean rightsquare;  static boolean rightcurly;
+    static boolean backslash;    static boolean pipe;
+    static boolean a;            static boolean A;
+    static boolean s;            static boolean S;
+    static boolean d;            static boolean D;
+    static boolean f;            static boolean F;
+    static boolean g;            static boolean G;
+    static boolean j;            static boolean J;
+    static boolean k;            static boolean K;
+    static boolean l;            static boolean L;
+    static boolean semicolon;    static boolean colon;
+    static boolean singlequote;  static boolean doublequote;
+    static boolean enter;        static boolean shiftenter;
+    static boolean z;            static boolean Z;
+    static boolean x;            static boolean X;
+    static boolean c;            static boolean C;
+    static boolean v;            static boolean V;
+    static boolean b;            static boolean B;
+    static boolean n;            static boolean N;
+    static boolean m;            static boolean M;
+    static boolean comma;        static boolean leftangle;
+    static boolean dot;          static boolean rightangle;
+    static boolean forwardslash; static boolean question;
     static boolean space;
 
     // Number keys/symbols
     // Unshifted           // Shifted
-    static boolean tick;   boolean tilde;
-    static boolean one;    boolean bang;
-    static boolean two;    boolean at;
-    static boolean three;  boolean hash;
-    static boolean four;   boolean dollar;
-    static boolean five;   boolean percent;
-    static boolean six;    boolean caret;
-    static boolean seven;  boolean and;
-    static boolean eight;  boolean star;
-    static boolean nine;   boolean leftparen;
-    static boolean zero;   boolean rightparen;
-    static boolean dash;   boolean underscore;
-    static boolean equals; boolean plus;
+    static boolean tick;   static boolean tilde;
+    static boolean one;    static boolean bang;
+    static boolean two;    static boolean at;
+    static boolean three;  static boolean hash;
+    static boolean four;   static boolean dollar;
+    static boolean five;   static boolean percent;
+    static boolean six;    static boolean caret;
+    static boolean seven;  static boolean and;
+    static boolean eight;  static boolean star;
+    static boolean nine;   static boolean leftparen;
+    static boolean zero;   static boolean rightparen;
+    static boolean dash;   static boolean underscore;
+    static boolean equals; static boolean plus;
 
     static boolean F1;
     static boolean F2;
@@ -133,7 +134,7 @@ class Inputs {
     /**
      * This class is designed to grab all input states needed for the game and for editing levels.
      * It was also designed for ease of use as all keys that have a "shifted" state
-     * (e.g. a and A or 8 and *) can be called directily (in this case inputs.a and inputs.A or
+     * (e.g. a and A or 8 and *) can be called directly (in this case inputs.a and inputs.A or
      * inputs.eight and inputs.star) instead of having to manually poll for the modifier key.
      * In any case, all of the modifier keys can also be called so we can use it in multi-key commands.
      * @param width The width of the screen (for mouse input to be normalized)
@@ -177,9 +178,33 @@ class Inputs {
      * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
      * to edit levels.
      */
-    public static void getEditInputs() { // TODO edit inputs
+    public static void getEditInputs() {
         getMouseInputs();
-    } // TODO edit inputs
+
+        // BOXES
+        one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // blue
+        two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // green
+        three = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3); // cyan
+        four  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_4); // magenta
+        five  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_5); // yellow
+        six   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_6); // goal
+        seven = Gdx.input.isKeyJustPressed(Input.Keys.NUM_7); // gUp
+        eight = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8); // gDown
+        nine  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9); // gLeft
+        zero  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_0); // gRight
+        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // gAll
+        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // rotate
+
+        // Doors
+        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // TopClosed
+        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // BotClosed
+        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // LeftClosed
+        y = Gdx.input.isKeyJustPressed(Input.Keys.Y); // RightClosed
+
+        // Gun
+        g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
+
+    } // TODO edit inputs ??? more ???
 
     /**
      * Grab whether the edit key was pressed or not

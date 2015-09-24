@@ -104,6 +104,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Box box;
 
 	boolean edit = false; // TODO create "edit" mode
+	boolean snap; // Snapping to grid on/off
 
 //=====================================================================================================//
 
@@ -175,6 +176,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		notePtr = 0;
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
+
+		LevelLoader loader = new LevelLoader("levels/");
 	}
 
 	/**
