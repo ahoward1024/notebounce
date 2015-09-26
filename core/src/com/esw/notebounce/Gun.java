@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -60,7 +61,7 @@ public class Gun {
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
-        FileHandle fileHandle = new FileHandle("json/gun.json");
+        FileHandle fileHandle = Gdx.files.internal("json/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);

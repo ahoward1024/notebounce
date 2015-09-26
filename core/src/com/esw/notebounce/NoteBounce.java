@@ -101,7 +101,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	Array<Vector2> simcoords = new Array<Vector2>();
 
-	Box box;
+	Box[] boxes;
+
 
 	boolean edit = false; // TODO create "edit" mode
 	boolean snap; // Snapping to grid on/off
@@ -153,7 +154,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		gunDebugRectangle = gun.sprite().getBoundingRectangle();
 		ball.setPos(gun.getCenterX(), gun.getCenterY());
 
-		box = new Box(ScreenWidth / 6, ScreenHeight / 2, Box.Style.yellow);
+		boxes = new Box[6];
+		boxes[0] = new Box(ScreenWidth / 6, ScreenHeight / 2, Box.Style.yellow);
+		boxes[1] = new Box(ScreenWidth - 120, ScreenHeight - 120, Box.Style.goal);
+		boxes[2] = new Box(120, ScreenHeight - 120 , Box.Style.green);
+		boxes[3] = new Box(ScreenWidth- 120, 120, Box.Style.blue);
+		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - 120, Box.Style.magenta);
+		boxes[5] = new Box(ScreenWidth / 2, 120, Box.Style.cyan);
 
 		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
@@ -448,7 +455,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
-		box.sprite.draw(batch);
+		// Draw the boxes array
+		for(Box b : boxes) {
+			b.sprite.draw(batch);
+		}
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
 			batch.draw(ripple, ripple.getX(), ripple.getY(), ripple.getOriginX(), ripple.getOriginY(),
@@ -540,6 +550,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * @return The current Box2D world.
 	 */
 	public static World getWorld() { return world; }
+
+	public static Ball getBall() { return ball; }
 
 	public static void setGoalHit(boolean b) {
 		goalHit = b;

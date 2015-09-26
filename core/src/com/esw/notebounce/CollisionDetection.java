@@ -45,21 +45,21 @@ public class CollisionDetection implements ContactListener {
     /**
      * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
      * X direction.
-     * @param fb The fixture of the dynamic body.
+     * @param f The fixture of the dynamic body.
      * @return True when the velocity is greather than threshold velocity.
      */
-    private boolean velocityThresholdX(Fixture fb, float velX) {
-        return Math.abs(fb.getBody().getLinearVelocity().x) > velX;
+    private boolean thresholdVelocityX(Fixture f, float velX) {
+        return Math.abs(f.getBody().getLinearVelocity().x) > velX;
     }
 
     /**
      * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
      * Y direction.
-     * @param fb The fixture of the dynamic body.
+     * @param f The fixture of the dynamic body.
      * @return True when the velocity is greather than threshold velocity.
      */
-    private boolean velocityThresholdY(Fixture fb, float velY) {
-         return Math.abs(fb.getBody().getLinearVelocity().y) > velY;
+    private boolean thresholdVelocityY(Fixture f, float velY) {
+         return Math.abs(f.getBody().getLinearVelocity().y) > velY;
     }
 
     /**
@@ -69,8 +69,11 @@ public class CollisionDetection implements ContactListener {
     public void beginContact(Contact c) {
         final float lastNoteTime = 0.8f; // The minimum time between two notes
 
-        UserData uda = (UserData)c.getFixtureA().getUserData(); // Static or kinematic user data
-        UserData udb = (UserData)c.getFixtureB().getUserData(); // Dynamic user data
+        Fixture fa = c.getFixtureA();
+        Fixture fb = c.getFixtureB();
+
+        UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
+        UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
         int notePtr = NoteBounce.getNotePtr();
 
@@ -101,6 +104,13 @@ public class CollisionDetection implements ContactListener {
                     NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
                 }
             }
+        }
+
+        // Play a note if the ball hits anything besides the gun
+        if(udb.getType().equals(UserData.Type.ball) && !uda.getType().equals(UserData.Type.gun) &&
+            thresholdVelocityX(fb, 2.0f) &&
+            thresholdVelocityY(fb, 2.0f)) {
+            NoteBounce.playNote(0);
         }
 
         // If notes are allowed to be played at this time then we handle all of the

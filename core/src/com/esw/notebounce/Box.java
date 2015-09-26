@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -73,7 +74,7 @@ public class Box {
         // todo: we don't have to base last note times on a counter.
         // Load the edges.json file to get all of the edge types (top, bot, left, right)
         // This is so we can specify what is the top of the box if we needs
-        FileHandle fileHandle = new FileHandle("json/edges.json");
+        FileHandle fileHandle = Gdx.files.internal("json/edges.json");
         float scale = 1.2f; // MAGIC NUMBERS AGAIN I'M SO SORRY......
         // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
         // of 100 pixels. Because all of the box tiles are 120px the box fixtures need to be scaled
