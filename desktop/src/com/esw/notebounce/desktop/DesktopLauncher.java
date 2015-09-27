@@ -6,14 +6,15 @@ import com.esw.notebounce.NoteBounce;
 
 public class DesktopLauncher {
 
-	public static int ScreenWidth  = 1280;
-	public static int ScreenHeight = 720;
+	public static int ScreenWidth  = 1920;
+	public static int ScreenHeight = 1080;
 
 	public static void main(String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width  = ScreenWidth;
 		config.height = ScreenHeight;
-		//config.resizable = false; // Not needed! Everything seems to scale automagically!!! Yay!!
+		config.resizable = true;
+		config.useHDPI = true;
 		new LwjglApplication(new NoteBounce(ScreenWidth, ScreenHeight), config);
 	}
 }

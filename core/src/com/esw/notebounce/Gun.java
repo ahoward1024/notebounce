@@ -23,6 +23,18 @@ public class Gun {
     private Vector2 gunEnd;
     Body body;
 
+    public enum Position {
+        botleft,
+        left,
+        topleft,
+        bot,
+        mid,
+        top,
+        botright,
+        right,
+        topright
+    }
+
     /**
      * Calls the create method to make a gun at (x, y) with a scale of 1.
      * @param x The x position of the center of the gun.
@@ -37,8 +49,21 @@ public class Gun {
      * @param x The x position of the center of the gun.
      * @param y The y position of the center of the gun.
      */
-    Gun(float x, float y, float scale) {
-        create(x, y, scale);
+    Gun(float x, float y, float scale) { create(x, y, scale); }
+
+    Gun(Position position) {
+        switch(position) {
+            case botleft:  break;
+            case left:  break;
+            case topleft:  break;
+            case bot:  break;
+            case mid:  break;
+            case top:  break;
+            case botright:  break;
+            case right:  break;
+            case topright:  break;
+            default:
+        }
     }
 
     /**
@@ -65,7 +90,7 @@ public class Gun {
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);
-        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, 2.4f);
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, 2.4f * scale);
         // WARNING: 2.4f is a magical number!!! DO NOT CHANGE IT.
         // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
         // of 100 pixels. Because the gun is 240px the fixture needs to be scaled up to 2.4f

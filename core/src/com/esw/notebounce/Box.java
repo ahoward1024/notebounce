@@ -49,13 +49,14 @@ public class Box {
      * @param y The y position of the center of the Box.
      * @param style The Box's style.
      */
-    Box(float x, float y, Style style) {
+    Box(float x, float y, float scale, Style style) {
         this.style = style;
         String imagePath = "art/tiles/" + style + ".png";
 
         sprite = new Sprite(new Texture(imagePath));
         sprite.setCenter(x, y);
         sprite.setOriginCenter();
+        sprite.setScale(scale);
 
         center = new Vector2(sprite.getX() + (sprite.getWidth() / 2),
             sprite.getY() + (sprite.getHeight() / 2));
@@ -75,19 +76,19 @@ public class Box {
         // Load the edges.json file to get all of the edge types (top, bot, left, right)
         // This is so we can specify what is the top of the box if we needs
         FileHandle fileHandle = Gdx.files.internal("json/edges.json");
-        float scale = 1.2f; // MAGIC NUMBERS AGAIN I'M SO SORRY......
+        float base = 1.2f; // MAGIC NUMBERS AGAIN I'M SO SORRY......
         // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
         // of 100 pixels. Because all of the box tiles are 120px the box fixtures need to be scaled
         // up to 1.2f in order for them to fit!
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, imagePath);
         bodyEditorLoader.attachFixture(body, "top", fixtureDef,
-            new UserData(style, UserData.Edge.top), scale);
+            new UserData(style, UserData.Edge.top), base * scale);
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef,
-            new UserData(style, UserData.Edge.bot), scale);
+            new UserData(style, UserData.Edge.bot), base * scale);
         bodyEditorLoader.attachFixture(body, "left", fixtureDef,
-            new UserData(style, UserData.Edge.left), scale);
+            new UserData(style, UserData.Edge.left), base * scale);
         bodyEditorLoader.attachFixture(body, "right", fixtureDef,
-            new UserData(style, UserData.Edge.right), scale);
+            new UserData(style, UserData.Edge.right), base * scale);
 
     }
 }

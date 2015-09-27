@@ -75,6 +75,9 @@ public class CollisionDetection implements ContactListener {
         UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
+        //System.out.println("UD a: " + uda.toString()); // DEBUG
+        //System.out.println("UD b: " + udb.toString()); // DEBUG
+
         int notePtr = NoteBounce.getNotePtr();
 
         if(udb.getType().equals(UserData.Type.sim) && !uda.getType().equals(UserData.Type.gun))
@@ -106,11 +109,13 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
-        // Play a note if the ball hits anything besides the gun
+        // Play a note if the ball hits anything besides the gun or goal
         if(udb.getType().equals(UserData.Type.ball) && !uda.getType().equals(UserData.Type.gun) &&
-            thresholdVelocityX(fb, 2.0f) &&
-            thresholdVelocityY(fb, 2.0f)) {
-            NoteBounce.playNote(0);
+            !uda.getStyle().equals(Box.Style.goal)) {
+            if(!uda.getEdge().equals(UserData.Edge.bot))
+                NoteBounce.playNote(0);
+            else if (uda.getEdge().equals(UserData.Edge.bot) && thresholdVelocityY(fb, 2.0f))
+                NoteBounce.playNote(0);
         }
 
         // If notes are allowed to be played at this time then we handle all of the

@@ -1,6 +1,8 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -50,4 +52,32 @@ public class Utility {
         return t * t * t * (t * ((t * 6) - 15) + 10);
     }
 
+    public static int GCD(int a, int b) {
+        if (b==0) return a;
+        return GCD(b,a%b);
+    }
+
+    public static float findScalePercent(int a, int b) {
+        if(a == NoteBounce.basex && b == NoteBounce.basey) return 1;
+
+        Array<Integer> numbers = new Array<Integer>();
+        int m;
+        if(a > b) m = b;
+        else m = a;
+
+        if(a < NoteBounce.basex && b < NoteBounce.basey) {
+            for(int i = m; i >= 1; i--) {
+                if(a % i == 0 && b % i == 0 && i < GCD(NoteBounce.basex, NoteBounce.basey)) {
+                    return ((float)i / GCD(NoteBounce.basex, NoteBounce.basey));
+                }
+            }
+        } else if(a > NoteBounce.basex && b > NoteBounce.basey){
+            for(int i = m; i >= 1; i--) {
+                if(a % i == 0 && b % i == 0 && i > GCD(NoteBounce.basey, NoteBounce.basex)) {
+                    return ((float)i / GCD(NoteBounce.basex, NoteBounce.basey));
+                }
+            }
+        }
+        return -1;
+    }
 }
