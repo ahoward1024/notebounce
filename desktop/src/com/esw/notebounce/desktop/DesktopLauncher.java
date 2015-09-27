@@ -6,8 +6,8 @@ import com.esw.notebounce.NoteBounce;
 
 public class DesktopLauncher {
 
-	public static int ScreenWidth  = 1920;
-	public static int ScreenHeight = 1080;
+	public static int ScreenWidth  = 800;
+	public static int ScreenHeight = 480;
 
 	public static void main(String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();

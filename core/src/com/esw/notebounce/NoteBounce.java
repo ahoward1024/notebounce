@@ -98,7 +98,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Vector2 velocity = new Vector2(1,1);
 	private float angle = 0.0f;
 	private float power = 0.0f; // Power of the shot
-	private float MAX_POWER = 60.0f; // Maximum power of the shot
+	final float MAX_POWER = 60.0f; // Maximum power of the shot
 	private float lastUsedAngle = 45.0f;
 	private float lastUsedPower = 12.5f;
 	private boolean shoot = false;
@@ -150,8 +150,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		System.out.println(scalePercent + "%");
 
-		MAX_POWER *= scalePercent;
-
 		Box2D.init(); // MUST initialize Box2D before using it!
 		box2DDebugRenderer = new Box2DDebugRenderer();
 		debugShapeRenderer = new ShapeRenderer();
@@ -174,7 +172,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Because the world's timestep will be 1/300, we need to make gravity
 		// _a lot_ more than the standard 9.8 or 10. Otherwise the ball will act
 		// like it is in space after it slows down quite a bit. 200 gives a good balance.
-		world = new World(new Vector2(0, gravity), true);
+		world = new World(new Vector2(0, gravity * scalePercent), true);
 		world.setContactListener(collisionDetector);
 
 		ball = new Ball(0, 0, scalePercent); // Create the ball first so the gun can use it's dimensions
@@ -339,6 +337,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			power = ((float)Math.sqrt(Math.pow((Inputs.mouse.x - mouseClick.x), 2.0) +
 				Math.pow((Inputs.mouse.y - mouseClick.y), 2.0)) / 4.0f) + 15.0f;
 			if(power > MAX_POWER) power = MAX_POWER;
+
+			power *= scalePercent;
 
 			crosshair.setCenter(mouseClick.x, mouseClick.y);
 
@@ -638,7 +638,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 	public static void addImpulseToBall(ImpulseType type) { // FIXME resolution independence
 		System.out.println("before: " + ball.body.getLinearVelocity());
-		float additionalImpulseForce = 1.25f * scalePercent;
+		float additionalImpulseForce = 1.1f;
+		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);
 		switch(type) {
 			case up: {
