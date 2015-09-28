@@ -9,15 +9,18 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.utils.Array;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+
+import java.util.ArrayList;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
- * Created by Alex on 9/20/2015.
+ * Created by Alex on 9/28/2015.
  * Copyright echosoftworks 2015
  */
 @SuppressWarnings("unused")
-public class Box {
+public class Triangle {
 
     Sprite sprite;
     Body body;
@@ -30,12 +33,30 @@ public class Box {
      * The type of the Box.
      */
     public enum Color {
-        blue,
-        green,
-        cyan,
-        magenta,
-        yellow,
-        goal,
+        blueBotLeft,
+        blueTopLeft,
+        blueTopRight,
+        blueBotRight,
+
+        greenBotLeft,
+        greenTopLeft,
+        greenTopRight,
+        greenBotRight,
+
+        cyanBotLeft,
+        cyanTopLeft,
+        cyanTopRight,
+        cyanBotRight,
+
+        magentaBotLeft,
+        magentaTopLeft,
+        magentaTopRight,
+        magentaBotRight,
+
+        yellowBotLeft,
+        yellowTopLeft,
+        yellowTopRight,
+        yellowBotRight,
 
         none
     }
@@ -52,18 +73,19 @@ public class Box {
         eight,
     }
 
+    // TODO modifiers for triangle hypotenuses
     public enum Modifier {
         acceleratorUp,
         acceleratorDown,
         acceleratorLeft,
         acceleratorRight,
-        acceleratorAll,
+        acceleratorHyp,
 
         dampenerUp,
         dampenerDown,
         dampenerLeft,
         dampenerRight,
-        dampenerAll,
+        dampenerHyp,
 
         none
     }
@@ -74,7 +96,7 @@ public class Box {
      * @param y The y position of the center of the Box.
      * @param color The Box's color.
      */
-    Box(float x, float y, float scale, Color color) {
+    Triangle(float x, float y, float scale, Color color) {
         this.modifiers = new Array<Modifier>();
         modifiers.add(Modifier.none);
 
@@ -87,7 +109,7 @@ public class Box {
      * @param y The y position of the center of the Box.
      * @param color The Box's color.
      */
-    Box(float x, float y, float scale, Color color, Shade shade) {
+    Triangle(float x, float y, float scale, Color color, Shade shade) {
         this.modifiers = new Array<Modifier>();
         modifiers.add(Modifier.none);
         create(x, y, scale, color, shade, modifiers);
@@ -100,7 +122,7 @@ public class Box {
      * @param color The Box's color.
      * @param modifiers An array of modifiers to be set on the box
      */
-    Box(float x, float y, float scale, Color color, Array<Modifier> modifiers) {
+    Triangle(float x, float y, float scale, Color color, Array<Modifier> modifiers) {
         create(x, y, scale, color, Shade.zero, modifiers);
     }
 
@@ -111,7 +133,7 @@ public class Box {
      * @param color The Box's color.
      * @param modifiers An array of modifiers to be set on the box
      */
-    Box(float x, float y, float scale, Color color, Shade shade, Array<Modifier> modifiers) {
+    Triangle(float x, float y, float scale, Color color, Shade shade, Array<Modifier> modifiers) {
         create(x, y, scale, color, shade, modifiers);
     }
 
@@ -120,8 +142,8 @@ public class Box {
         this.color = color;
         this.shade = shade;
 
-        // Example blue0.png. Call ordinal on shade because we cannot have ints;
-        FileHandle image = Gdx.files.internal("art/tiles/boxes/" + color + shade.ordinal() + ".png");
+        // Example: greenBotLeft8.png.
+        FileHandle image = Gdx.files.internal("art/tiles/triangles/" + color + shade.ordinal() + ".png");
         sprite = new Sprite(new Texture(image));
         sprite.setCenter(x, y);
         sprite.setOriginCenter();
@@ -142,11 +164,11 @@ public class Box {
 
         // Load the edges.json file to get all of the edge types (top, bot, left, right)
         // This is so we can specify what is the top of the box if we needs
-        FileHandle fileHandle = Gdx.files.internal("fixtures/boxes.json");
+        FileHandle fileHandle = Gdx.files.internal("fixtures/triangles.json");
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
 
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        /*BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         bodyEditorLoader.attachFixture(body, "top", fixtureDef,
             new UserData(color, UserData.Edge.top), base * scale);
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef,
@@ -154,11 +176,7 @@ public class Box {
         bodyEditorLoader.attachFixture(body, "left", fixtureDef,
             new UserData(color, UserData.Edge.left), base * scale);
         bodyEditorLoader.attachFixture(body, "right", fixtureDef,
-            new UserData(color, UserData.Edge.right), base * scale);
+            new UserData(color, UserData.Edge.right), base * scale);*/
 
-    }
-
-    public Array<Modifier> getModifiers() {
-        return modifiers;
     }
 }

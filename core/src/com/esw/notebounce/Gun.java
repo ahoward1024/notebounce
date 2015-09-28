@@ -87,7 +87,7 @@ public class Gun {
         body = NoteBounce.getWorld().createBody(bodyDef);
 
         FileHandle fileHandle = Gdx.files.internal("fixtures/gun.json");
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);
         float base = 0.0f;

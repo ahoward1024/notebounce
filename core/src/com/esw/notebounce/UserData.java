@@ -9,7 +9,8 @@ public class UserData {
 
     Type type;
     Edge edge = Edge.noEdge;
-    Box.Style style = Box.Style.noBox;
+    Box.Color color = Box.Color.none;
+    Box.Shade shade = Box.Shade.zero;
 
     public enum Type {
         boundary,
@@ -37,9 +38,9 @@ public class UserData {
         this.edge = edge;
     }
 
-    UserData(Box.Style style, UserData.Edge edge) {
+    UserData(Box.Color style, UserData.Edge edge) {
         this.type = Type.box;
-        this.style = style;
+        this.color = style;
         this.edge = edge;
     }
 
@@ -47,12 +48,14 @@ public class UserData {
 
     public Edge getEdge() { return edge; }
 
-    public Box.Style getStyle() { return style; }
+    public Box.Color getStyle() { return color; }
+
+    public Box.Shade getShade() { return shade; }
 
     @Override
     public String toString() {
         if(edge == Edge.noEdge) return type.toString();
-        if(style == Box.Style.noBox) return type + " | " + edge;
-        return style + " | " + edge;
+        if(color == Box.Color.none) return type + " | " + edge;
+        return color + " | " + edge;
     }
 }

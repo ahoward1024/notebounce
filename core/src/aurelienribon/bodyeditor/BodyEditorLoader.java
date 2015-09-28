@@ -40,9 +40,9 @@ public class BodyEditorLoader {
     // Ctors
     // -------------------------------------------------------------------------
 
-    public BodyEditorLoader(FileHandle file, String imagePath) {
+    public BodyEditorLoader(FileHandle file) {
         if (file == null) throw new NullPointerException("file is null");
-        model = readJson(file.readString(), imagePath);
+        model = readJson(file.readString());
     }
 
     // -------------------------------------------------------------------------
@@ -113,16 +113,6 @@ public class BodyEditorLoader {
     }
 
     /**
-     * Gets the image path attached to the given name.
-     */
-    public String getImagePath(String name) {
-        RigidBodyModel rbModel = model.rigidBodies.get(name);
-        if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
-
-        return rbModel.imagePath;
-    }
-
-    /**
      * Gets the origin point attached to the given name. Since the point is
      * normalized in [0,1] coordinates, it needs to be scaled to your body
      * size. Warning: this method returns the same Vector2 object each time, so
@@ -154,7 +144,6 @@ public class BodyEditorLoader {
 
     public static class RigidBodyModel {
         public String name;
-        public String imagePath;
         public final Vector2 origin = new Vector2();
         public final List<PolygonModel> polygons = new ArrayList<PolygonModel>();
         public final List<CircleModel> circles = new ArrayList<CircleModel>();
@@ -174,24 +163,23 @@ public class BodyEditorLoader {
     // Json reading process
     // -------------------------------------------------------------------------
 
-    private Model readJson(String str, String imagePath) {
+    private Model readJson(String str) {
         Model m = new Model();
 
         JsonValue map = new JsonReader().parse(str);
 
         JsonValue bodyElem = map.getChild("rigidBodies");
         for (; bodyElem != null; bodyElem = bodyElem.next()) {
-            RigidBodyModel rbModel = readRigidBody(bodyElem, imagePath);
+            RigidBodyModel rbModel = readRigidBody(bodyElem);
             m.rigidBodies.put(rbModel.name, rbModel);
         }
 
         return m;
     }
 
-    private RigidBodyModel readRigidBody(JsonValue bodyElem, String imagePath) {
+    private RigidBodyModel readRigidBody(JsonValue bodyElem) {
         RigidBodyModel rbModel = new RigidBodyModel();
         rbModel.name = bodyElem.getString("name");
-        rbModel.imagePath = imagePath;
 
         JsonValue originElem = bodyElem.get("origin");
         rbModel.origin.x = originElem.getFloat("x");

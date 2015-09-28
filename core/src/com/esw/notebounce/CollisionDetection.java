@@ -75,10 +75,10 @@ public class CollisionDetection implements ContactListener {
         UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
-        if(!udb.getType().equals(UserData.Type.sim)) {
+       /* if(!udb.getType().equals(UserData.Type.sim)) {
             System.out.println("UD a: " + uda.toString()); // DEBUG
             System.out.println("UD b: " + udb.toString()); // DEBUG
-        }
+        } */ // DEBUG
 
         int notePtr = NoteBounce.getNotePtr();
 
@@ -86,7 +86,7 @@ public class CollisionDetection implements ContactListener {
         { simhit = true; }
 
         // Test if goal was hit
-        if(uda.getStyle().equals(Box.Style.goal) && udb.getType().equals(UserData.Type.ball)) {
+        if(uda.getStyle().equals(Box.Color.goal) && udb.getType().equals(UserData.Type.ball)) {
             NoteBounce.setGoalHit(true);
             // Play the goal noise if it was not already playing
             if(!NoteBounce.goalNoisePlaying()) {
@@ -95,7 +95,7 @@ public class CollisionDetection implements ContactListener {
         }
 
         if((udb.getType().equals(UserData.Type.ball) || udb.getType().equals(UserData.Type.sim))
-            && uda.getStyle().equals(Box.Style.yellow0)) {
+            && uda.getStyle().equals(Box.Color.yellow)) {
             if(uda.getEdge().equals(UserData.Edge.top)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
             }
@@ -112,7 +112,7 @@ public class CollisionDetection implements ContactListener {
 
         // Play a note if the ball hits anything besides the gun or goal
         if(udb.getType().equals(UserData.Type.ball) && !uda.getType().equals(UserData.Type.gun) &&
-            !uda.getStyle().equals(Box.Style.goal)) {
+            !uda.getStyle().equals(Box.Color.goal)) {
             if(thresholdVelocityY(fb, 2.0f)) NoteBounce.playNote(0);
             else if((uda.getEdge().equals(UserData.Edge.left) ||
                 uda.getEdge().equals(UserData.Edge.right)) && thresholdVelocityX(fb, 2.0f)) {

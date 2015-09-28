@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -21,13 +20,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
-
-import java.util.ArrayList;
-import java.util.Timer;
-
-import javax.rmi.CORBA.Util;
-
-import sun.security.krb5.SCDynamicStoreConfig;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -188,12 +180,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ball.setPos(gun.getCenterX(), gun.getCenterY());
 
 		boxes = new Box[6];
-		boxes[0] = new Box(ScreenWidth / 4, ScreenHeight / 2, scalePercent, Box.Style.yellow0);
-		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, Box.Style.goal);
-		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, Box.Style.blue0);
-		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, Box.Style.green0);
-		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, Box.Style.magenta0);
-		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, Box.Style.cyan0);
+		boxes[0] = new Box(ScreenWidth / 4, ScreenHeight / 2, scalePercent, Box.Color.yellow);
+		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, Box.Color.goal);
+		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, Box.Color.blue);
+		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, Box.Color.green);
+		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, Box.Color.magenta);
+		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, Box.Color.cyan);
 
 		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
@@ -318,7 +310,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
-	Color drawColor = Color.BLUE; // !!! MOVE
+	com.badlogic.gdx.graphics.Color drawColor = com.badlogic.gdx.graphics.Color.BLUE; // !!! MOVE
 	void simulate() {
 		ball.body().getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
 		ball.body().setType(BodyDef.BodyType.DynamicBody);
@@ -326,9 +318,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		simcoords.clear();
 
 		int steps = 4;
-		if(timestep == timestepNormal) { steps = 8; drawColor = Color.BLUE; }
-		else if(timestep == timestepSlow) { steps = 20; drawColor = Color.PURPLE; }
-		else if(timestep == timestepFast) { steps = 2; drawColor = Color.RED; }
+		if(timestep == timestepNormal) { steps = 8; drawColor = com.badlogic.gdx.graphics.Color.BLUE; }
+		else if(timestep == timestepSlow) { steps = 20; drawColor = com.badlogic.gdx.graphics.Color.PURPLE; }
+		else if(timestep == timestepFast) { steps = 2; drawColor = com.badlogic.gdx.graphics.Color.RED; }
 		// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 		// up the loop will not break causing it to run every iteration and will cause framerate issues.
 		for(int i = 0; i < 1000; i++) { // DEBUG
@@ -470,12 +462,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			Inputs.getEditInputs(); // TODO edit inputs
 
 			debugShapeRenderer.begin();
-			debugShapeRenderer.setColor(new Color(1, 0, 0, 0.1f));
+			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(1, 0, 0, 0.1f));
 			for(int i = 0; i < ScreenWidth; i += midlines) {
 				debugShapeRenderer.line(i, 0, i, ScreenHeight);
 				debugShapeRenderer.line(0, i, ScreenWidth, i);
 			}
-			debugShapeRenderer.setColor(new Color(0.5f, 0.5f, 0.5f, 0.1f));
+			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(0.5f, 0.5f, 0.5f, 0.1f));
 			for(int i = 0; i < ScreenWidth; i += lines) {
 				debugShapeRenderer.line(i, 0, i, ScreenHeight);
 				debugShapeRenderer.line(0, i, ScreenWidth, i);
@@ -503,13 +495,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		camera.update(); // Update the camera just before drawing
 
 		debugShapeRenderer.begin();
-		debugShapeRenderer.setColor(Color.RED);
+		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.RED);
 		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
 			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
-		debugShapeRenderer.setColor(Color.ORANGE);
+		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.ORANGE);
 		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f,
 			angle, 32);
-		debugShapeRenderer.setColor(Color.GREEN);
+		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.setColor(drawColor);
 		for(int i = 0; i < simcoords.size; i++) {
@@ -550,13 +542,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			crosshair.draw(batch);
 			batch.end(); // Have to stop the sprite batch for the shape renderer lines to draw
 			debugShapeRenderer.begin();
-			debugShapeRenderer.setColor(Color.PURPLE);
+			debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.PURPLE);
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, Inputs.mouse.x, Inputs.mouse.y);
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x + 100, mouseClick.y); //+X
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x - 100, mouseClick.y); //-X
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y + 100); //+Y
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y - 100); //-Y
-			debugShapeRenderer.setColor(Color.ORANGE);
+			debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.ORANGE);
 			debugShapeRenderer.arc(mouseClick.x, mouseClick.y, 100, 0.0f, angle, 32);
 			debugShapeRenderer.end();
 			batch.begin(); // Restart the sprite batch
@@ -565,7 +557,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Draw debug inputs last so they are always on top
 		if (showGoalHit) {
 			goalWasHit = true;
-			debugMessage.setColor(Color.RED);
+			debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
 			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
 			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
 				showGoalHit = false;
@@ -573,7 +565,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 			goalTextTimer += deltaTime;
 		}
-		debugMessage.setColor(Color.GREEN);
+		debugMessage.setColor(com.badlogic.gdx.graphics.Color.GREEN);
 		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
 		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
@@ -592,10 +584,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 160);
 		if(edit) debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
-		debugMessage.setColor(Color.YELLOW);
+		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
 			ScreenHeight - 10);
-		debugMessage.setColor(Color.RED);
+		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
 		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2,
 			ScreenHeight - 10);
 		batch.end(); // Stop the batch drawing
