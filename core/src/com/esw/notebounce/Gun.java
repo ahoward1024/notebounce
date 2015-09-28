@@ -86,15 +86,13 @@ public class Gun {
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
-        FileHandle fileHandle = Gdx.files.internal("json/gun.json");
+        FileHandle fileHandle = Gdx.files.internal("fixtures/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, "art/gun.png");
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);
-        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, 2.4f * scale);
-        // WARNING: 2.4f is a magical number!!! DO NOT CHANGE IT.
-        // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
-        // of 100 pixels. Because the gun is 240px the fixture needs to be scaled up to 2.4f
-        // in order for it to fit!
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, base * scale);
     }
 
     /**

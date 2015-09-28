@@ -8,6 +8,8 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 /**
  * Created by Alex on 9/1/2015.
@@ -17,8 +19,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Ball {
 
     private Vector2 center;
-    Sprite sprite;
-    Body body;
+    private Sprite sprite;
+    private Body body;
 
     /**
      * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
@@ -94,8 +96,15 @@ public class Ball {
      * Sets the sprite's position to the body's position.
      */
     public void setSpriteToBodyPosition() {
-        sprite.setPosition((body.getPosition().x * NoteBounce.PIXELS2METERS) - sprite.getOriginX(),
-                           (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
+        sprite.setPosition((body.getPosition().x * NoteBounce.PIXELS2METERS) - sprite.getOriginX(), (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
+    }
+
+    public Sprite sprite() {
+        return sprite;
+    }
+
+    public Body body() {
+        return body;
     }
 
     /**

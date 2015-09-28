@@ -8,6 +8,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Array;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+
+import java.util.ArrayList;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
@@ -22,34 +26,133 @@ public class Box {
     Body body;
     Vector2 center;
     Style style;
+    Array<Modifier> modifiers;
 
     /**
      * The type of the Box.
      */
     public enum Style {
-        blue,
-        green,
-        cyan,
-        magenta,
-        yellow,
+        blue0,
+        blue1,
+        blue2,
+        blue3,
+        blue4,
+        blue5,
+        blue6,
+        blue7,
+        blue8,
+        blueTriBotLeft,
+        blueTriTopLeft,
+        blueTriTopRight,
+        blueTriBotRight,
+
+        green0,
+        green1,
+        green2,
+        green3,
+        green4,
+        green5,
+        green6,
+        green7,
+        green8,
+        greenTriBotLeft,
+        greenTriTopLeft,
+        greenTriTopRight,
+        greenTriBotRight,
+
+        cyan0,
+        cyan1,
+        cyan2,
+        cyan3,
+        cyan4,
+        cyan5,
+        cyan6,
+        cyan7,
+        cyan8,
+        cyan9,
+        cyanTriBotLeft,
+        cyanTriTopLeft,
+        cyanTriTopRight,
+        cyanTriBotRight,
+
+        magenta0,
+        magenta1,
+        magenta2,
+        magenta3,
+        magenta4,
+        magenta5,
+        magenta6,
+        magenta7,
+        magenta8,
+        magentaTriBotLeft,
+        magentaTriTopLeft,
+        magentaTriTopRight,
+        magentaTriBotRight,
+
+        yellow0,
+        yellow1,
+        yellow2,
+        yellow3,
+        yellow4,
+        yellow5,
+        yellow6,
+        yellow7,
+        yellow8,
+        yellowTriBotLeft,
+        yellowTriTopLeft,
+        yellowTriTopRight,
+        yellowTriBotRight,
+
         goal,
         gUp,
         gDown,
         gLeft,
         gRight,
-        gAll,    // TODO create "All" gravity box image/logic
-        rotate,  // TODO create rotate box ??
-        generic, // TODO create generic box image/logic
+        gAll,
         noBox
     }
 
+    // TODO modifiers for triangle hypotenuses
+    public enum Modifier {
+        acceleratorUp,
+        acceleratorDown,
+        acceleratorLeft,
+        acceleratorRight,
+        acceleratorAll,
+
+        dampenerUp,
+        dampenerDown,
+        dampenerLeft,
+        dampenerRight,
+        dampenerAll,
+
+        noModifier
+    }
+
     /**
-     * Creates a new Box centered at (x,y) with at specified Box Type.
+     * Creates a new Box centered at (x,y) with at specified Box Type and no modifiers.
      * @param x The x position of the center of the Box.
      * @param y The y position of the center of the Box.
      * @param style The Box's style.
      */
     Box(float x, float y, float scale, Style style) {
+        this.modifiers = new Array<Modifier>();
+        modifiers.add(Modifier.noModifier);
+        create(x, y, scale, style, modifiers);
+    }
+
+    /**
+     * Creates a new Box centered at (x,y) with at specified Box Type with the specified modifiers.
+     * @param x The x position of the center of the Box.
+     * @param y The y position of the center of the Box.
+     * @param style The Box's style.
+     * @param modifiers An array of modifiers to be set on the box
+     */
+    Box(float x, float y, float scale, Style style, Array<Modifier> modifiers) {
+        create(x, y, scale, style, modifiers);
+    }
+
+    private void create(float x, float y, float scale, Style style, Array<Modifier> modifiers) {
         this.style = style;
         String imagePath = "art/tiles/" + style + ".png";
 
@@ -75,11 +178,10 @@ public class Box {
         // todo: we don't have to base last note times on a counter.
         // Load the edges.json file to get all of the edge types (top, bot, left, right)
         // This is so we can specify what is the top of the box if we needs
-        FileHandle fileHandle = Gdx.files.internal("json/edges.json");
-        float base = 1.2f; // MAGIC NUMBERS AGAIN I'M SO SORRY......
-        // NOT JUST A MAGIC NUMBER!! When these fixtures are created, they are made at a scale
-        // of 100 pixels. Because all of the box tiles are 120px the box fixtures need to be scaled
-        // up to 1.2f in order for them to fit!
+        FileHandle fileHandle = Gdx.files.internal("fixtures/edges.json");
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle, imagePath);
         bodyEditorLoader.attachFixture(body, "top", fixtureDef,
             new UserData(style, UserData.Edge.top), base * scale);
