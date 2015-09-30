@@ -172,6 +172,8 @@ class Inputs {
 
         f = Gdx.input.isKeyJustPressed(Input.Keys.F); // Reset
         space = Gdx.input.isKeyJustPressed(Input.Keys.SPACE); // Next level
+
+        tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
     }
 
     /**
@@ -180,6 +182,8 @@ class Inputs {
      */
     public static void getEditInputs() {
         getMouseInputs();
+
+        tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
 
         // BOXES
         one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // blues
@@ -223,7 +227,7 @@ class Inputs {
      * @return The state of the edit key (grave)
      */
     public static boolean edit() {
-        return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE);
+        return Gdx.input.isKeyJustPressed(Input.Keys.TAB);
     }
 
     /**

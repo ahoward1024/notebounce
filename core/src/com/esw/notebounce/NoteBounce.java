@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -109,6 +110,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Triangle[] triangles;
 
 	boolean edit = false; // TODO create "edit" mode
+	boolean drawGrid = false;
 	boolean snap; // Snapping to grid on/off
 
 	int lines = 0;
@@ -181,18 +183,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ball.setPos(gun.center.x, gun.center.y);
 
 		boxes = new Box[6];
-		boxes[0] = new Box(ScreenWidth / 4, ScreenHeight / 2, scalePercent, UserData.Color.yellow);
+		boxes[0] = new Box(ScreenWidth - midlines, ScreenHeight / 2, scalePercent, UserData.Color.yellow, UserData.Shade.five);
 		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, UserData.Color.goal);
-		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, UserData.Color.blue);
-		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, UserData.Color.green);
-		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, UserData.Color.magenta);
-		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, UserData.Color.cyan);
+		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, UserData.Color.blue, UserData.Shade.six);
+		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, UserData.Color.green, UserData.Shade.seven);
+		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, UserData.Color.magenta, UserData.Shade.two);
+		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, UserData.Color.cyan, UserData.Shade.one);
 
-		triangles = new Triangle[2];
-		triangles[0] = new Triangle(UserData.Triangle.BotLeft, UserData.Color.yellow, UserData.Shade.eight,
-			ScreenWidth / 2, ScreenHeight /2, scalePercent);
-		triangles[1] = new Triangle(UserData.Triangle.TopRight, UserData.Color.cyan, UserData.Shade.four,
-			(ScreenWidth / 2) + (2* midlines), (ScreenHeight / 4) - midlines, scalePercent);
+		triangles = new Triangle[1];
+		triangles[0] = new Triangle(UserData.Triangle.TopRight, UserData.Color.cyan, UserData.Shade.four,
+			(ScreenWidth / 2), (ScreenHeight) - (midlines * 2), scalePercent);
+
 
 		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
@@ -439,6 +440,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(touch) simulate();
 	}
 
+	void drawDottedLine(int dotDist, float x1, float y1, float x2, float y2) {
+		Vector2 vec2 = new Vector2(x2, y2).sub(new Vector2(x1, y1));
+		float length = vec2.len();
+		for(int i = 0; i < length; i += dotDist) {
+			vec2.clamp(length - i, length - i);
+			debugShapeRenderer.point(x1 + vec2.x, y1 + vec2.y, 0);
+		}
+	}
+
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -467,21 +477,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			update();
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
+			if(Inputs.tick) drawGrid = !drawGrid;
 		} else {
 			Inputs.getEditInputs(); // TODO edit inputs
-
-			debugShapeRenderer.begin();
-			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(1, 0, 0, 0.1f));
-			for(int i = 0; i < ScreenWidth; i += midlines) {
-				debugShapeRenderer.line(i, 0, i, ScreenHeight);
-				debugShapeRenderer.line(0, i, ScreenWidth, i);
-			}
-			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(0.5f, 0.5f, 0.5f, 0.1f));
-			for(int i = 0; i < ScreenWidth; i += lines) {
-				debugShapeRenderer.line(i, 0, i, ScreenHeight);
-				debugShapeRenderer.line(0, i, ScreenWidth, i);
-			}
-			debugShapeRenderer.end();
+			if(Inputs.tick) drawGrid = !drawGrid;
 		}
 
 		// ================ RENDER ================//
@@ -605,8 +604,23 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		//debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		//box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+
+		if(drawGrid) {
+			debugShapeRenderer.begin();
+			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.RED));
+			for(int i = 0; i < ScreenWidth; i += midlines) {
+				drawDottedLine(5, i, 0, i, ScreenWidth);
+				drawDottedLine(5, 0, i, ScreenWidth, i);
+			}
+			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.GRAY));
+			for(int i = 0; i < ScreenWidth; i += lines) {
+				debugShapeRenderer.line(i, 0, i, ScreenHeight);
+				debugShapeRenderer.line(0, i, ScreenWidth, i);
+			}
+			debugShapeRenderer.end();
+		}
 	}
 
 	/**
