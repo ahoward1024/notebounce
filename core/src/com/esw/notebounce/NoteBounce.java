@@ -106,6 +106,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Array<Vector2> simcoords = new Array<Vector2>();
 
 	Box[] boxes;
+	Triangle[] triangles;
 
 	boolean edit = false; // TODO create "edit" mode
 	boolean snap; // Snapping to grid on/off
@@ -176,16 +177,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		ball = new Ball(0, 0, scalePercent); // Create the ball first so the gun can use it's dimensions
 		gun = new Gun(30.0f, 30.0f, scalePercent);
-		gunDebugRectangle = gun.sprite().getBoundingRectangle();
-		ball.setPos(gun.getCenterX(), gun.getCenterY());
+		gunDebugRectangle = gun.sprite.getBoundingRectangle();
+		ball.setPos(gun.center.x, gun.center.y);
 
 		boxes = new Box[6];
-		boxes[0] = new Box(ScreenWidth / 4, ScreenHeight / 2, scalePercent, Box.Color.yellow);
-		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, Box.Color.goal);
-		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, Box.Color.blue);
-		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, Box.Color.green);
-		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, Box.Color.magenta);
-		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, Box.Color.cyan);
+		boxes[0] = new Box(ScreenWidth / 4, ScreenHeight / 2, scalePercent, UserData.Color.yellow);
+		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, UserData.Color.goal);
+		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, UserData.Color.blue);
+		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, UserData.Color.green);
+		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, UserData.Color.magenta);
+		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, UserData.Color.cyan);
+
+		triangles = new Triangle[2];
+		triangles[0] = new Triangle(UserData.Triangle.BotLeft, UserData.Color.yellow, UserData.Shade.eight,
+			ScreenWidth / 2, ScreenHeight /2, scalePercent);
+		triangles[1] = new Triangle(UserData.Triangle.TopRight, UserData.Color.cyan, UserData.Shade.four,
+			(ScreenWidth / 2) + (2* midlines), (ScreenHeight / 4) - midlines, scalePercent);
 
 		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
@@ -249,7 +256,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	void reset() {
 		ballShot = false;
-		ball.body().setType(BodyDef.BodyType.StaticBody);
+		ball.body.setType(BodyDef.BodyType.StaticBody);
 		moveBall = true;
 		playNotes = true;
 		drawBallOver = false;
@@ -265,13 +272,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Move the ball through linear interpolation back to the gun.
 	 */
 	void moveBall() {
-		ball.body().setTransform(Utility.lerp(ball.body().getPosition().x, (gun.getCenterX() / PIXELS2METERS), deltaTime * 10), Utility.lerp(ball.body().getPosition().y, (gun.getCenterY() / PIXELS2METERS), deltaTime * 10), 0.0f);
+		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x, (gun.center.x / PIXELS2METERS),
+			deltaTime * 10), Utility.lerp(ball.body.getPosition().y, (gun.center.y / PIXELS2METERS),
+			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
-		if((ball.body().getPosition().x < ((gun.getCenterX() / PIXELS2METERS) + 0.02f)) &&
-			(ball.body().getPosition().y < ((gun.getCenterY() / PIXELS2METERS) + 0.02f)))
+		if((ball.body.getPosition().x < ((gun.center.x/ PIXELS2METERS) + 0.02f)) &&
+			(ball.body.getPosition().y < ((gun.center.y / PIXELS2METERS) + 0.02f)))
 		{
-			ball.body().setTransform((gun.getCenterX() / PIXELS2METERS), (gun.getCenterY() / PIXELS2METERS), 0.0f);
+			ball.body.setTransform((gun.center.x / PIXELS2METERS), (gun.center.y / PIXELS2METERS), 0.0f);
 			ball.setSpriteToBodyPosition();
 			moveBall = false;
 		}
@@ -312,9 +321,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	com.badlogic.gdx.graphics.Color drawColor = com.badlogic.gdx.graphics.Color.BLUE; // !!! MOVE
 	void simulate() {
-		ball.body().getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
-		ball.body().setType(BodyDef.BodyType.DynamicBody);
-		ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
+		ball.body.setType(BodyDef.BodyType.DynamicBody);
+		ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 		simcoords.clear();
 
 		int steps = 4;
@@ -326,15 +335,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		for(int i = 0; i < 1000; i++) { // DEBUG
 			world.step(1.0f / timestep, velocityIterations, positionIterations);
 			if(i % steps == 0) {
-				simcoords.add(new Vector2(ball.body().getPosition().x * PIXELS2METERS,
-					ball.body().getPosition().y * PIXELS2METERS));
+				simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
+					ball.body.getPosition().y * PIXELS2METERS));
 			}
 			//if(collisionDetector.simhit) break; // Collision detection
 		}
 		collisionDetector.simhit = false;
-		ball.body().setType(BodyDef.BodyType.StaticBody);
-		ball.body().setTransform(gun.getCenterX() / NoteBounce.PIXELS2METERS, gun.getCenterY() / NoteBounce.PIXELS2METERS, 0.0f);
-		ball.body().getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
+		ball.body.setType(BodyDef.BodyType.StaticBody);
+		ball.body.setTransform(gun.center.x / NoteBounce.PIXELS2METERS,
+			gun.center.y / NoteBounce.PIXELS2METERS, 0.0f);
+		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
 		world.clearForces();
 	}
 
@@ -381,9 +391,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(shoot && !ballShot) {
 			shoot = false;
 			ballShot = true;
-			ball.body().setType(BodyDef.BodyType.DynamicBody);
-			//ball.body().applyLinearImpulse(shot(angle), ball.body().getWorldCenter(), true);
-			ball.body().setLinearVelocity(velocity.x * power, velocity.y * power);
+			ball.body.setType(BodyDef.BodyType.DynamicBody);
+			ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
 			lastUsedPower = power;
 			lastUsedAngle = angle;
 		}
@@ -391,8 +400,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			if((ball.body().getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
-				(ball.body().getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
+			if((ball.body.getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
+				(ball.body.getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
 				drawBallOver = true;
 			}
 		}
@@ -483,14 +492,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
 			mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
-		ballPositionDebug = "Ball X: " + String.format("%.4f",ball.body().getPosition().x) +
-			" (" + String.format("%.4f", ball.sprite().getX()) + ") " +
-			" | Ball Y:" + String.format("%.4f", ball.body().getPosition().y) +
-			" (" + String.format("%.4f", ball.sprite().getY()) +")";
-		ballVelocityDebug = "Ball Velocity X: " + ball.body().getLinearVelocity().x + " | " +
-			"Ball Velocity Y: " + ball.body().getLinearVelocity().y;
-		gunPositionDebug = "Gun X: " + gun.getCenterX() + "(" + (gun.getCenterX() / PIXELS2METERS) + ")"
-			+ " | Gun Y: " + gun.getCenterY() + "(" + (gun.getCenterY() / PIXELS2METERS) + ")";
+		ballPositionDebug = "Ball X: " + String.format("%.4f",ball.body.getPosition().x) +
+			" (" + String.format("%.4f", ball.sprite.getX()) + ") " +
+			" | Ball Y:" + String.format("%.4f", ball.body.getPosition().y) +
+			" (" + String.format("%.4f", ball.sprite.getY()) +")";
+		ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
+			"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
+		gunPositionDebug = "Gun X: " + gun.center.x + "(" + (gun.center.x / PIXELS2METERS) + ")"
+			+ " | Gun Y: " + gun.center.y + "(" + (gun.center.y / PIXELS2METERS) + ")";
 
 		camera.update(); // Update the camera just before drawing
 
@@ -499,14 +508,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
 			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
 		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.ORANGE);
-		debugShapeRenderer.arc(gun.getCenterX(), gun.getCenterY(), gun.sprite().getWidth() / 2, 0.0f,
+		debugShapeRenderer.arc(gun.center.x, gun.center.y, gun.sprite.getWidth() / 2, 0.0f,
 			angle, 32);
 		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.GREEN);
 		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
 		debugShapeRenderer.setColor(drawColor);
 		for(int i = 0; i < simcoords.size; i++) {
 			Vector2 tmp = simcoords.get(i);
-			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite().getWidth()/2) * scalePercent);
+			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite.getWidth()/2) * scalePercent);
 		}
 		debugShapeRenderer.end();
 
@@ -514,6 +523,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Draw the boxes array
 		for(Box b : boxes) {
 			b.sprite.draw(batch);
+		}
+		for(Triangle t : triangles) {
+			t.sprite.draw(batch);
 		}
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
@@ -526,16 +538,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// using the batch to draw it, not drawing it in the batch.
 		if(drawBallOver) {
 			// Draw the gun first so it is under the ball
-			gun.sprite().draw(batch);
+			gun.sprite.draw(batch);
 
 			// Draw the ball second
-			ball.sprite().draw(batch);
+			ball.sprite.draw(batch);
 		} else {
 			// Draw the ball first so it is under the gun
-			ball.sprite().draw(batch);
+			ball.sprite.draw(batch);
 
 			// Now draw the gun so it is over the ball
-			gun.sprite().draw(batch);
+			gun.sprite.draw(batch);
 		}
 
 		if(touch) {
@@ -626,8 +638,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	public static void playRipple() {
 		playRipple = true;
 		ripple = new Sprite(new Texture(Gdx.files.internal("art/ripple.png")));
-		ripple.setCenter((ball.body().getPosition().x * PIXELS2METERS),
-			(ball.body().getPosition().y * PIXELS2METERS));
+		ripple.setCenter((ball.body.getPosition().x * PIXELS2METERS),
+			(ball.body.getPosition().y * PIXELS2METERS));
 		ripple.setScale(0.1f, 0.1f);
 	}
 
@@ -655,23 +667,23 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		Vector2 direction = new Vector2(0,0);
 		switch(type) {
 			case up: {
-				ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0.0f);
+				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
 				direction.set(0.0f, additionalImpulseForce);
 			} break;
 			case down: {
-				ball.body().setLinearVelocity(ball.body().getLinearVelocity().x, 0.0f);
+				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
 				direction.set(0.0f, -additionalImpulseForce);
 			} break;
 			case left: {
-				ball.body().setLinearVelocity(0.0f, ball.body().getLinearVelocity().y);
+				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
 				direction.set(-additionalImpulseForce, 0.0f);
 			} break;
 			case right: {
-				ball.body().setLinearVelocity(0.0f, ball.body().getLinearVelocity().y);
+				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
 				direction.set(additionalImpulseForce, 0.0f);
 			} break;
 		}
-		ball.body().applyLinearImpulse(direction, ball.body().getWorldCenter(), true);
+		ball.body.applyLinearImpulse(direction, ball.body.getWorldCenter(), true);
 	}
 
 	public boolean keyDown (int keycode) {

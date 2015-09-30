@@ -82,11 +82,11 @@ public class CollisionDetection implements ContactListener {
 
         int notePtr = NoteBounce.getNotePtr();
 
-        if(udb.getType().equals(UserData.Type.sim) && !uda.getType().equals(UserData.Type.gun))
+        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.gun))
         { simhit = true; }
 
         // Test if goal was hit
-        if(uda.getStyle().equals(Box.Color.goal) && udb.getType().equals(UserData.Type.ball)) {
+        if(uda.color.equals(UserData.Color.goal) && udb.type.equals(UserData.Type.ball)) {
             NoteBounce.setGoalHit(true);
             // Play the goal noise if it was not already playing
             if(!NoteBounce.goalNoisePlaying()) {
@@ -94,28 +94,28 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
-        if((udb.getType().equals(UserData.Type.ball) || udb.getType().equals(UserData.Type.sim))
-            && uda.getStyle().equals(Box.Color.yellow)) {
-            if(uda.getEdge().equals(UserData.Edge.top)) {
+        if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))
+            && uda.type.equals(UserData.Color.yellow)) {
+            if(uda.edge.equals(UserData.Edge.top)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
             }
-            else if(uda.getEdge().equals(UserData.Edge.bot)) {
+            else if(uda.edge.equals(UserData.Edge.bot)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
             }
-            else if(uda.getEdge().equals(UserData.Edge.left)) {
+            else if(uda.edge.equals(UserData.Edge.left)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
             }
-            else if(uda.getEdge().equals(UserData.Edge.right)) {
+            else if(uda.edge.equals(UserData.Edge.right)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
             }
         }
 
         // Play a note if the ball hits anything besides the gun or goal
-        if(udb.getType().equals(UserData.Type.ball) && !uda.getType().equals(UserData.Type.gun) &&
-            !uda.getStyle().equals(Box.Color.goal)) {
+        if(udb.type.equals(UserData.Type.ball) && !uda.type.equals(UserData.Type.gun) &&
+            !uda.color.equals(UserData.Color.goal)) {
             if(thresholdVelocityY(fb, 2.0f)) NoteBounce.playNote(0);
-            else if((uda.getEdge().equals(UserData.Edge.left) ||
-                uda.getEdge().equals(UserData.Edge.right)) && thresholdVelocityX(fb, 2.0f)) {
+            else if((uda.edge.equals(UserData.Edge.left) ||
+                uda.edge.equals(UserData.Edge.right)) && thresholdVelocityX(fb, 2.0f)) {
                 NoteBounce.playNote(0);
             }
         }

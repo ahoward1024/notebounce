@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Boundary {
 
     Body body;
+    UserData userData = new UserData(UserData.Type.boundary);
 
     /**
      *  This is called to create the Edge Lines for the boundaries of the screen
@@ -25,7 +26,7 @@ public class Boundary {
      * @param edgeType Indicates the type of the boundary (bot, top, left, right)
      */
     public Boundary(float x1, float y1, float x2, float y2, UserData.Edge edgeType) {
-
+        userData.edge = edgeType;
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(0.0f, 0.0f);
@@ -38,7 +39,7 @@ public class Boundary {
             x2 / NoteBounce.PIXELS2METERS, y2 / NoteBounce.PIXELS2METERS);
         fixtureDef.shape = edgeShape;
 
-        body.createFixture(fixtureDef).setUserData(new UserData(edgeType));
+        body.createFixture(fixtureDef).setUserData(userData);
 
         edgeShape.dispose();
     }

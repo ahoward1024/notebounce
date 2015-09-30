@@ -1,5 +1,7 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.utils.Array;
+
 /**
  * Created by Alex on 9/21/2015.
  * Copyright echosoftworks 2015
@@ -8,17 +10,52 @@ package com.esw.notebounce;
 public class UserData {
 
     Type type;
-    Edge edge = Edge.noEdge;
-    Box.Color color = Box.Color.none;
-    Box.Shade shade = Box.Shade.zero;
+    Triangle triangle = Triangle.none;
+    Color color = Color.none;
+    Shade shade = Shade.zero;
+    public Edge edge = Edge.none; // Has to be public so BodyEditorLoader can set it.
+    Array<Modifier> modifiers = new Array<Modifier>();
 
     public enum Type {
         boundary,
-        edge,
+        box,
+        triangle,
         ball,
         sim,
         gun,
-        box,
+    }
+
+    // These are capitalized to follow the file naming convention for each of the .pngs
+    public enum Triangle {
+        BotLeft,
+        TopLeft,
+        BotRight,
+        TopRight,
+
+        none
+    }
+
+    public enum Color {
+        blue,
+        green,
+        cyan,
+        magenta,
+        yellow,
+        goal,
+
+        none
+    }
+
+    public enum Shade {
+        zero,
+        one,
+        two,
+        three,
+        four,
+        five,
+        six,
+        seven,
+        eight,
     }
 
     public enum Edge {
@@ -26,36 +63,53 @@ public class UserData {
         bot,
         left,
         right,
-        noEdge
+        hyp,
+
+        none
+    }
+
+    public enum Modifier {
+        acceleratorUp,
+        acceleratorDown,
+        acceleratorLeft,
+        acceleratorRight,
+        acceleratorAll,
+
+        dampenerUp,
+        dampenerDown,
+        dampenerLeft,
+        dampenerRight,
+        dampenerAll,
+
+        none
     }
 
     UserData(Type type) {
         this.type = type;
     }
 
-    UserData(UserData.Edge edge) {
-        this.type = Type.boundary;
-        this.edge = edge;
+    public UserData(UserData userData) {
+        this.type = userData.type;
+        this.triangle = userData.triangle;
+        this.color = userData.color;
+        this.shade = userData.shade;
+        this.edge = userData.edge;
+        this.modifiers = userData.modifiers;
     }
-
-    UserData(Box.Color style, UserData.Edge edge) {
-        this.type = Type.box;
-        this.color = style;
-        this.edge = edge;
-    }
-
-    public Type getType() { return type; }
-
-    public Edge getEdge() { return edge; }
-
-    public Box.Color getStyle() { return color; }
-
-    public Box.Shade getShade() { return shade; }
 
     @Override
     public String toString() {
-        if(edge == Edge.noEdge) return type.toString();
-        if(color == Box.Color.none) return type + " | " + edge;
-        return color + " | " + edge;
+        String output = "" + type;
+        if(triangle != Triangle.none) output += " : " + triangle;
+        if(edge != Edge.none) output += " : " + edge;
+        output += " : " + color + " : " + shade.ordinal();
+        if(modifiers.size > 0) {
+            output += "[";
+            for(Modifier mod : modifiers) {
+                output += ", " + mod.name();
+            }
+            output += "]";
+        }
+        return output;
     }
 }

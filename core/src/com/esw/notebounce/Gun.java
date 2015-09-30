@@ -18,21 +18,22 @@ import aurelienribon.bodyeditor.BodyEditorLoader;
 @SuppressWarnings("unused")
 public class Gun {
 
-    private Vector2 center;
-    private Sprite sprite;
-    private Vector2 gunEnd;
+    Vector2 center;
+    Sprite sprite;
+    Vector2 gunEnd;
     Body body;
 
-    public enum Position {
-        botleft,
-        left,
-        topleft,
-        bot,
-        mid,
-        top,
-        botright,
-        right,
-        topright
+    class GunPosition {
+        float padding = 30 * NoteBounce.scalePercent;
+        public final Vector2 botLeft = new Vector2(padding, padding);
+        public final Vector2 left = new Vector2(padding, NoteBounce.ScreenHeight / 2);
+        public final Vector2 topLeft = new Vector2(padding, NoteBounce.ScreenHeight - padding);
+        public final Vector2 top = new Vector2(NoteBounce.ScreenWidth / 2, NoteBounce.ScreenHeight - padding);
+        public final Vector2 topRight = new Vector2(NoteBounce.ScreenWidth - padding, NoteBounce.ScreenHeight - padding);
+        public final Vector2 right = new Vector2(NoteBounce.ScreenWidth - padding, NoteBounce.ScreenHeight / 2);
+        public final Vector2 botRight = new Vector2(NoteBounce.ScreenWidth - padding, padding);
+        public final Vector2 bot = new Vector2(NoteBounce.ScreenWidth / 2, padding);
+        public final Vector2 center = new Vector2(NoteBounce.ScreenWidth / 2, NoteBounce.ScreenHeight / 2);
     }
 
     /**
@@ -51,19 +52,8 @@ public class Gun {
      */
     Gun(float x, float y, float scale) { create(x, y, scale); }
 
-    Gun(Position position) {
-        switch(position) {
-            case botleft:  break;
-            case left:  break;
-            case topleft:  break;
-            case bot:  break;
-            case mid:  break;
-            case top:  break;
-            case botright:  break;
-            case right:  break;
-            case topright:  break;
-            default:
-        }
+    Gun(Vector2 position, float scale) {
+        create(position.x, position.y, scale);
     }
 
     /**
@@ -92,38 +82,8 @@ public class Gun {
         UserData userData = new UserData(UserData.Type.gun);
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
-        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, base * scale);
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, UserData.Edge.none, base * scale);
     }
-
-    /**
-     * Gets the sprite of the gun.
-     * @return The sprite of the gun.
-     */
-    public Sprite sprite() {
-        return sprite;
-    }
-
-    /**
-     * Gets the center x of the gun relative to the screen it is in.
-     * @return The x position of the center of the gun relative to the screen it is in.
-     */
-    public float getCenterX() {
-        return center.x;
-    }
-
-    /**
-     * Gets the center y of the gun relative to the screen it is in.
-     * @return The y position of the center of the gun relative to the screen it is in.
-     */
-    public float getCenterY() {
-        return center.y;
-    }
-
-    /**
-     * Gets the center Vector2 of the gun relative to the screen it is in.
-     * @return The Vector2 position of the center of the gun relative to the screen it is in.
-     */
-    public Vector2 getCenter() { return center; }
 
     /**
      * Get the x position of the end of the gun based on the angle of the gun.
@@ -131,7 +91,7 @@ public class Gun {
      * @return The x position of the end of the gun.
      */
     public float endX(float angle) {
-        return (float)(getCenterX()+((sprite.getHeight() / 2) * Math.cos(angle * Math.PI / 180)));
+        return (float)(center.x + ((sprite.getHeight() / 2) * Math.cos(angle * Math.PI / 180)));
     }
 
     /**
@@ -140,7 +100,7 @@ public class Gun {
      * @return The y position of the end of the gun.
      */
     public float endY(float angle) {
-        return (float)(getCenterY()+((sprite.getWidth() / 2) * Math.sin(angle * Math.PI / 180)));
+        return (float)(center.y + ((sprite.getWidth() / 2) * Math.sin(angle * Math.PI / 180)));
     }
 
     /**
