@@ -5,12 +5,14 @@ package com.esw.notebounce;
  */
 public class Edit {
 
-    public static State state;
+    public static State state = State.none;
 
     public enum State {
         box,
         triangle,
         gun,
         door,
+
+        none
     }
 }

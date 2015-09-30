@@ -4,7 +4,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -14,13 +13,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonWriter;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -30,7 +25,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
-	public static final int basex = 1920, basey = 1080;
+	public static final int basew = 1920, baseh = 1080;
 	public static final float originalGravity = -200.0f;
 	public static float gravity = originalGravity;
 
@@ -56,11 +51,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	private Box2DDebugRenderer box2DDebugRenderer;
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
 	private BitmapFont debugMessage;
-	private Rectangle gunDebugRectangle;
 	private ShapeRenderer debugShapeRenderer;
 
 	private SpriteBatch batch;
-	private Gun gun;
 	private static Ball ball;
 	private static Sprite ripple;
 	private Sprite crosshair;
@@ -106,8 +99,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	Array<Vector2> simcoords = new Array<Vector2>();
 
-	Box[] boxes;
-	Triangle[] triangles;
+	Array<Box> boxes = new Array<Box>();
+	Array<Triangle> triangles = new Array<Triangle>();
+	Gun[] guns = new Gun[9];
+	int currentGun = 0;
 
 	boolean edit = false; // TODO create "edit" mode
 	boolean drawGrid = false;
@@ -145,7 +140,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void create() {
 		scalePercent = Utility.findScalePercent(ScreenWidth, ScreenHeight);
-		lines = (int)(Utility.GCD(basex, basey) * scalePercent);
+		lines = (int)(Utility.GCD(basew, baseh) * scalePercent);
 		midlines = lines / 2;
 
 		System.out.println(scalePercent + "%");
@@ -175,25 +170,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity * scalePercent), true);
 		world.setContactListener(collisionDetector);
 
+		ball = new Ball(10, 10, scalePercent);
+
 		// experimental();
-
-		ball = new Ball(0, 0, scalePercent); // Create the ball first so the gun can use it's dimensions
-		gun = new Gun(30.0f, 30.0f, scalePercent);
-		gunDebugRectangle = gun.sprite.getBoundingRectangle();
-		ball.setPos(gun.center.x, gun.center.y);
-
-		boxes = new Box[6];
-		boxes[0] = new Box(ScreenWidth - midlines, ScreenHeight / 2, scalePercent, UserData.Color.yellow, UserData.Shade.five);
-		boxes[1] = new Box(ScreenWidth - midlines, ScreenHeight - midlines, scalePercent, UserData.Color.goal);
-		boxes[2] = new Box(midlines, ScreenHeight - midlines, scalePercent, UserData.Color.blue, UserData.Shade.six);
-		boxes[3] = new Box(ScreenWidth - midlines, midlines, scalePercent, UserData.Color.green, UserData.Shade.seven);
-		boxes[4] = new Box(ScreenWidth / 2, ScreenHeight - midlines, scalePercent, UserData.Color.magenta, UserData.Shade.two);
-		boxes[5] = new Box(ScreenWidth / 2, midlines, scalePercent, UserData.Color.cyan, UserData.Shade.one);
-
-		triangles = new Triangle[1];
-		triangles[0] = new Triangle(UserData.Triangle.TopRight, UserData.Color.cyan, UserData.Shade.four,
-			(ScreenWidth / 2), (ScreenHeight) - (midlines * 2), scalePercent);
-
 
 		// Build the lines for the bounding box that makes it so the ball
 		// does not go off the screen
@@ -219,29 +198,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		LevelLoader loader = new LevelLoader("levels/");
 
-	}
-
-	public void experimental() {
-		Ball theball = new Ball(10, 10, 1);
-
-		FileHandle output = new FileHandle("levels/test.json");
-		Json json = new Json();
-		json.setOutputType(JsonWriter.OutputType.json);
-		json.addClassTag("ball", Ball.class);
-		json.setElementType(Ball.class, "center", Vector2.class);
-		json.setSerializer(Ball.class, new Json.Serializer<Ball>() {
-			public void write(Json json, Ball ball, Class knownType) {
-				json.writeObjectStart();
-				json.writeValue("center", ball.getCenter());
-				json.writeObjectEnd();
-			}
-
-			public Ball read(Json json, JsonValue jsonValue, Class type) {
-				return null;
-			}
-		});
-		System.out.println(json.prettyPrint(theball));
-		json.toJson(theball, output);
 	}
 
 	@Override
@@ -273,15 +229,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Move the ball through linear interpolation back to the gun.
 	 */
 	void moveBall() {
-		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x, (gun.center.x / PIXELS2METERS),
-			deltaTime * 10), Utility.lerp(ball.body.getPosition().y, (gun.center.y / PIXELS2METERS),
+		ball.body.setTransform(Utility.lerp(ball.body.getPosition().x, (guns[currentGun].center.x / PIXELS2METERS),
+			deltaTime * 10), Utility.lerp(ball.body.getPosition().y, (guns[currentGun].center.y / PIXELS2METERS),
 			deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		shoot = false;
-		if((ball.body.getPosition().x < ((gun.center.x/ PIXELS2METERS) + 0.02f)) &&
-			(ball.body.getPosition().y < ((gun.center.y / PIXELS2METERS) + 0.02f)))
+		if((ball.body.getPosition().x < ((guns[currentGun].center.x/ PIXELS2METERS) + 0.02f)) &&
+			(ball.body.getPosition().y < ((guns[currentGun].center.y / PIXELS2METERS) + 0.02f)))
 		{
-			ball.body.setTransform((gun.center.x / PIXELS2METERS), (gun.center.y / PIXELS2METERS), 0.0f);
+			ball.body.setTransform((guns[currentGun].center.x / PIXELS2METERS), (guns[currentGun].center.y / PIXELS2METERS), 0.0f);
 			ball.setSpriteToBodyPosition();
 			moveBall = false;
 		}
@@ -320,33 +276,44 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
-	com.badlogic.gdx.graphics.Color drawColor = com.badlogic.gdx.graphics.Color.BLUE; // !!! MOVE
+	Color simDrawColor = Color.BLUE; // !!! MOVE
 	void simulate() {
-		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
-		ball.body.setType(BodyDef.BodyType.DynamicBody);
-		ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
-		simcoords.clear();
+		if(ball != null) {
+			ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
+			ball.body.setType(BodyDef.BodyType.DynamicBody);
+			ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
+			simcoords.clear();
 
-		int steps = 4;
-		if(timestep == timestepNormal) { steps = 8; drawColor = com.badlogic.gdx.graphics.Color.BLUE; }
-		else if(timestep == timestepSlow) { steps = 20; drawColor = com.badlogic.gdx.graphics.Color.PURPLE; }
-		else if(timestep == timestepFast) { steps = 2; drawColor = com.badlogic.gdx.graphics.Color.RED; }
-		// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
-		// up the loop will not break causing it to run every iteration and will cause framerate issues.
-		for(int i = 0; i < 1000; i++) { // DEBUG
-			world.step(1.0f / timestep, velocityIterations, positionIterations);
-			if(i % steps == 0) {
-				simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
-					ball.body.getPosition().y * PIXELS2METERS));
+			int steps = 4;
+			if(timestep == timestepNormal) {
+				steps = 8;
+				simDrawColor = Color.BLUE;
+			} else if(timestep == timestepSlow) {
+				steps = 20;
+				simDrawColor = Color.PURPLE;
+			} else if(timestep == timestepFast) {
+				steps = 2;
+				simDrawColor = Color.RED;
 			}
-			//if(collisionDetector.simhit) break; // Collision detection
+			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
+			// up the loop will not break causing it to run every iteration and will cause framerate issues.
+			for(int i = 0; i < 1000; i++) { // DEBUG
+				world.step(1.0f / timestep, velocityIterations, positionIterations);
+				if(i % steps == 0) {
+					simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
+						ball.body.getPosition().y * PIXELS2METERS));
+				}
+				//if(collisionDetector.simhit) break; // Collision detection
+			}
+			collisionDetector.simhit = false;
+			ball.body.setType(BodyDef.BodyType.StaticBody);
+			if(guns[currentGun] != null) {
+				ball.body.setTransform(guns[currentGun].center.x / NoteBounce.PIXELS2METERS,
+					guns[currentGun].center.y / NoteBounce.PIXELS2METERS, 0.0f);
+			}
+			ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
+			world.clearForces();
 		}
-		collisionDetector.simhit = false;
-		ball.body.setType(BodyDef.BodyType.StaticBody);
-		ball.body.setTransform(gun.center.x / NoteBounce.PIXELS2METERS,
-			gun.center.y / NoteBounce.PIXELS2METERS, 0.0f);
-		ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
-		world.clearForces();
 	}
 
 	/**
@@ -358,6 +325,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// If we have touched the screen or clicked we should update the power and the angle.
 		if(touch) {
+			crosshair.setCenter(mouseClick.x, mouseClick.y);
+
 			// The power is calculated by getting the distance between where the touch input started
 			// and where the touch input is currently at, then divided by four to "smooth" out the value
 			// so the player can have a more granular shot based on how far they pulled. 15.0f is added
@@ -369,8 +338,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			power *= scalePercent;
 
-			crosshair.setCenter(mouseClick.x, mouseClick.y);
-
 			// Find the angle for the gun and ball's projection arc based on where the mouse is
 			// located on the screen. Works best if the gun's texture is defaulted to point towards
 			// the right.
@@ -380,10 +347,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Clamp the rotation around 360 degrees
 			//if(angle < 0) angle = 360 - (-angle); // OLD (but useful??)
 			// Only allow the gun to rotate between 0 and 90 degrees
-			if(angle > 90) angle = 90;
-			else if(angle < 0) angle = 0;
+			//if(angle > 90) angle = 90;
+			//else if(angle < 0) angle = 0;
+			if(angle < 0) angle = 360 - (-angle);
 
-			gun.rotate(angle); // Only set the rotation if the ball is not shot
+			if(guns[currentGun] != null) guns[currentGun].rotate(angle); // Only set the rotation if the ball is not shot
 		}
 
 		velocity.setAngle(angle);
@@ -401,9 +369,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			if((ball.body.getPosition().x * PIXELS2METERS) > gun.endX(angle) &&
-				(ball.body.getPosition().y * PIXELS2METERS) > gun.endY(angle)) {
-				drawBallOver = true;
+			if(guns[currentGun] != null) {
+				if((ball.body.getPosition().x * PIXELS2METERS) > guns[currentGun].endX(angle) &&
+					(ball.body.getPosition().y * PIXELS2METERS) > guns[currentGun].endY(angle)) {
+					drawBallOver = true;
+				}
 			}
 		}
 
@@ -415,7 +385,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		if(moveBall) {
-			moveBall();
+			if(guns[currentGun] != null) moveBall();
 		}
 
 		if(playRipple) {
@@ -479,8 +449,32 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(ballShot) updatePhysics();
 			if(Inputs.tick) drawGrid = !drawGrid;
 		} else {
-			Inputs.getEditInputs(); // TODO edit inputs
+			Inputs.getEditInputs();
 			if(Inputs.tick) drawGrid = !drawGrid;
+
+			if(Inputs.t) Edit.state = Edit.State.triangle;
+			else if(Inputs.b) Edit.state = Edit.State.box;
+			else if(Inputs.g) Edit.state = Edit.State.gun;
+
+			switch(Edit.state) {
+				case triangle: {
+
+				} break;
+				case box: {
+
+				} break;
+				case gun: {
+					if(Inputs.numfive) {
+						if(guns[5] == null) {
+							guns[5] = new Gun(GunPosition.center, scalePercent);
+							currentGun = 5;
+							ball.setPos(guns[currentGun].center);
+						}
+						else guns[5] = null;
+					}
+				} break;
+			}
+
 		}
 
 		// ================ RENDER ================//
@@ -491,27 +485,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
 			mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
-		ballPositionDebug = "Ball X: " + String.format("%.4f",ball.body.getPosition().x) +
-			" (" + String.format("%.4f", ball.sprite.getX()) + ") " +
-			" | Ball Y:" + String.format("%.4f", ball.body.getPosition().y) +
-			" (" + String.format("%.4f", ball.sprite.getY()) +")";
-		ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
-			"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
-		gunPositionDebug = "Gun X: " + gun.center.x + "(" + (gun.center.x / PIXELS2METERS) + ")"
-			+ " | Gun Y: " + gun.center.y + "(" + (gun.center.y / PIXELS2METERS) + ")";
+		if(ball != null) {
+			ballPositionDebug = "Ball X: " + String.format("%.4f", ball.body.getPosition().x) +
+				" (" + String.format("%.4f", ball.sprite.getX()) + ") " +
+				" | Ball Y:" + String.format("%.4f", ball.body.getPosition().y) +
+				" (" + String.format("%.4f", ball.sprite.getY()) + ")";
+			ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
+				"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
+		}
 
 		camera.update(); // Update the camera just before drawing
 
 		debugShapeRenderer.begin();
-		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugShapeRenderer.rect(gunDebugRectangle.getX(), gunDebugRectangle.getY(),
-			gunDebugRectangle.getWidth(), gunDebugRectangle.getHeight());
-		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.ORANGE);
-		debugShapeRenderer.arc(gun.center.x, gun.center.y, gun.sprite.getWidth() / 2, 0.0f,
-			angle, 32);
-		debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.GREEN);
-		debugShapeRenderer.circle(gun.endX(angle), gun.endY(angle), 3.0f);
-		debugShapeRenderer.setColor(drawColor);
+		debugShapeRenderer.setColor(simDrawColor);
 		for(int i = 0; i < simcoords.size; i++) {
 			Vector2 tmp = simcoords.get(i);
 			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite.getWidth()/2) * scalePercent);
@@ -536,17 +522,25 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// We have to set ALL of the ball's sprite's parameters because we are
 		// using the batch to draw it, not drawing it in the batch.
 		if(drawBallOver) {
-			// Draw the gun first so it is under the ball
-			gun.sprite.draw(batch);
+			// Now draw the gun so it is over the ball
+			for(int i = 0; i < guns.length; i++) {
+				if(guns[i] != null) {
+					guns[i].sprite.draw(batch);
+				}
+			}
 
 			// Draw the ball second
-			ball.sprite.draw(batch);
+			if(ball != null) ball.sprite.draw(batch);
 		} else {
 			// Draw the ball first so it is under the gun
-			ball.sprite.draw(batch);
+			if(ball != null) ball.sprite.draw(batch);
 
 			// Now draw the gun so it is over the ball
-			gun.sprite.draw(batch);
+			for(int i = 0; i < guns.length; i++) {
+				if(guns[i] != null) {
+					guns[i].sprite.draw(batch);
+				}
+			}
 		}
 
 		if(touch) {
@@ -593,7 +587,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			else g = "Left";
 		}
 		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 160);
-		if(edit) debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
+		if(edit) {
+			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
+			debugMessage.draw(batch, "Edit: " + Edit.state, 10, ScreenHeight - 220);
+		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
@@ -604,15 +601,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
-		//debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		//box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 
 		if(drawGrid) {
+			int linewidth = 5;
 			debugShapeRenderer.begin();
 			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.RED));
 			for(int i = 0; i < ScreenWidth; i += midlines) {
-				drawDottedLine(5, i, 0, i, ScreenWidth);
-				drawDottedLine(5, 0, i, ScreenWidth, i);
+				drawDottedLine(linewidth, i, 0, i, ScreenWidth);
+				drawDottedLine(linewidth, 0, i, ScreenWidth, i);
 			}
 			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.GRAY));
 			for(int i = 0; i < ScreenWidth; i += lines) {

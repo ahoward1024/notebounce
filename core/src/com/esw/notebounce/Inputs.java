@@ -185,38 +185,34 @@ class Inputs {
 
         tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
 
-        // BOXES
-        one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // blues
-        two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // greens
-        three = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3); // cyans
-        four  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_4); // magentas
-        five  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_5); // yellows
-        six   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_6); // goal
-        seven = Gdx.input.isKeyJustPressed(Input.Keys.NUM_7); // doors
+        one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Shade 0
+        two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // Shade 1
+        three = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3); // Shade 2
+        four  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_4); // Shade 3
+        five  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_5); // Shade 4
+        six   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_6); // Shade 5
+        seven = Gdx.input.isKeyJustPressed(Input.Keys.NUM_7); // Shade 6
+        eight = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8); // Shade 7
+        nine  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9); // Shade 8
 
-        if(Edit.state == Edit.State.box || Edit.state == Edit.State.triangle) {
-            q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // Shade 0
-            w = Gdx.input.isKeyJustPressed(Input.Keys.E); // Shade 1
-            e = Gdx.input.isKeyJustPressed(Input.Keys.R); // Shade 2
-            r = Gdx.input.isKeyJustPressed(Input.Keys.T); // Shade 3
-            t = Gdx.input.isKeyJustPressed(Input.Keys.Y); // Shade 4
-            u = Gdx.input.isKeyJustPressed(Input.Keys.U); // Shade 5
-            i = Gdx.input.isKeyJustPressed(Input.Keys.I); // Shade 6
-            o = Gdx.input.isKeyJustPressed(Input.Keys.O); // Shade 7
-            p = Gdx.input.isKeyJustPressed(Input.Keys.P); // Shade 8
-        }
-
-
-        // Doors
-
-        // Gun
+        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // Triangle
+        b = Gdx.input.isKeyJustPressed(Input.Keys.B); // Box1
         g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
 
-        shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || // Snap to large grid
-            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
+        numzero  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0);
+        numone   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1);
+        numtwo   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2);
+        numthree = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_3);
+        numfour  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_4);
+        numfive  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_5);
+        numsix   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_6);
+        numseven = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_7);
+        numeight = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_8);
+        numnine  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_9);
 
-        ctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || // Snap to fine grid
-            Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT);
+        shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT); // Snap to lines
+
+        ctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Snap to midlines
 
 
 

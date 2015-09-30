@@ -18,57 +18,21 @@ import aurelienribon.bodyeditor.BodyEditorLoader;
 @SuppressWarnings("unused")
 public class Gun {
 
+    Vector2 position;
     Vector2 center;
     Sprite sprite;
     Vector2 gunEnd;
     Body body;
 
-    class GunPosition {
-        float padding = 30 * NoteBounce.scalePercent;
-        public final Vector2 botLeft = new Vector2(padding, padding);
-        public final Vector2 left = new Vector2(padding, NoteBounce.ScreenHeight / 2);
-        public final Vector2 topLeft = new Vector2(padding, NoteBounce.ScreenHeight - padding);
-        public final Vector2 top = new Vector2(NoteBounce.ScreenWidth / 2, NoteBounce.ScreenHeight - padding);
-        public final Vector2 topRight = new Vector2(NoteBounce.ScreenWidth - padding, NoteBounce.ScreenHeight - padding);
-        public final Vector2 right = new Vector2(NoteBounce.ScreenWidth - padding, NoteBounce.ScreenHeight / 2);
-        public final Vector2 botRight = new Vector2(NoteBounce.ScreenWidth - padding, padding);
-        public final Vector2 bot = new Vector2(NoteBounce.ScreenWidth / 2, padding);
-        public final Vector2 center = new Vector2(NoteBounce.ScreenWidth / 2, NoteBounce.ScreenHeight / 2);
-    }
-
-    /**
-     * Calls the create method to make a gun at (x, y) with a scale of 1.
-     * @param x The x position of the center of the gun.
-     * @param y The y position of the center of the gun.
-     */
-    Gun(float x, float y) {
-        create(x, y, 1.0f);
-    }
-
-    /**
-     * Calls the create method to make a gun at (x, y) with a scale of: scale.
-     * @param x The x position of the center of the gun.
-     * @param y The y position of the center of the gun.
-     */
-    Gun(float x, float y, float scale) { create(x, y, scale); }
-
     Gun(Vector2 position, float scale) {
-        create(position.x, position.y, scale);
-    }
-
-    /**
-     * Creates method to make a gun at (x, y) with a scale of: scale.
-     * @param x The x position of the center of the gun.
-     * @param y The y position of the center of the gun.
-     */
-    private void create(float x, float y, float scale) {
+        this.position = position;
         sprite = new Sprite(new Texture("art/gun.png"));
-        sprite.setCenter(x, y);
+        sprite.setCenter(position.x, position.y);
         sprite.setOriginCenter();
         sprite.setScale(scale);
 
         center = new Vector2(sprite.getX() + (sprite.getWidth() / 2),
-                sprite.getY() + (sprite.getHeight() / 2));
+            sprite.getY() + (sprite.getHeight() / 2));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -116,7 +80,7 @@ public class Gun {
      * Rotate the gun and it's fixture to the specified angle.
      * @param angle The angle the gun needs to be rotated to.
      */
-    public void rotate(float angle) {
+    public void rotate(float angle) { // TODO clamp gun's rotation values
         sprite.setRotation(angle);
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
         // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT. I can't explain this one...

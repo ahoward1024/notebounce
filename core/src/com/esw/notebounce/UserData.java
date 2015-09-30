@@ -81,6 +81,8 @@ public class UserData {
         dampenerRight,
         dampenerAll,
 
+        gravity,
+
         none
     }
 
