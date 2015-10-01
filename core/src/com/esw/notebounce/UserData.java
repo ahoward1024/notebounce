@@ -15,6 +15,7 @@ public class UserData {
     Shade shade = Shade.zero;
     public Edge edge = Edge.none; // Has to be public so BodyEditorLoader can set it.
     Array<Modifier> modifiers = new Array<Modifier>();
+    int id = -1; // ID number for guns
 
     public enum Type {
         boundary,

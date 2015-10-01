@@ -23,9 +23,11 @@ public class Gun {
     Sprite sprite;
     Vector2 gunEnd;
     Body body;
+    int id;
 
-    Gun(Vector2 position, float scale) {
+    Gun(Vector2 position, float scale, int id) {
         this.position = position;
+        this.id = id;
         sprite = new Sprite(new Texture("art/gun.png"));
         sprite.setCenter(position.x, position.y);
         sprite.setOriginCenter();
@@ -44,6 +46,7 @@ public class Gun {
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);
+        userData.id = id;
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
         bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, UserData.Edge.none, base * scale);

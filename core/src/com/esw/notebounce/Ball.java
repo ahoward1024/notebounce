@@ -72,21 +72,13 @@ public class Ball {
     }
 
     /**
-     * Set the ball and it's body to a specified position.
-     * @param x The desired x position of the ball.
-     * @param y The desired y position of the ball.
-     */
-    public void setPos(float x, float y) {
-        sprite.setCenter(x, y);
-        body.setTransform(x / NoteBounce.PIXELS2METERS, y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
-
-    /**
      * Set the ball and it's body to a specified Vector2 position.
      * @param v The desired Vector2 postition of the ball.
      */
     public void setPos(Vector2 v) {
         sprite.setCenter(v.x, v.y);
+        center.x = v.x;
+        center.y = v.y;
         body.setTransform(v.x / NoteBounce.PIXELS2METERS, v.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 
@@ -94,23 +86,8 @@ public class Ball {
      * Sets the sprite's position to the body's position.
      */
     public void setSpriteToBodyPosition() {
-        sprite.setPosition((body.getPosition().x * NoteBounce.PIXELS2METERS) - sprite.getOriginX(), (body.getPosition().y * NoteBounce.PIXELS2METERS) - sprite.getOriginY());
+        center.x = body.getPosition().x * NoteBounce.PIXELS2METERS;
+        center.y = body.getPosition().y * NoteBounce.PIXELS2METERS;
+        sprite.setCenter(center.x, center.y);
     }
-
-    /**
-     * @return The x position of the center of the ball.
-     */
-    public float getCenterX() {
-        return center.x;
-    }
-
-    /**
-     * @return The y position of the center of the ball
-     */
-    public float getCenterY() { return center.y; }
-
-    /**
-     * @return The center position of the ball as a Vector2
-     */
-    public Vector2 getCenter() { return center; }
 }

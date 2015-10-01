@@ -120,6 +120,10 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
+        if(udb.type.equals(UserData.Type.ball) && uda.type.equals(UserData.Type.gun)) {
+            NoteBounce.currentGun = uda.id;
+        }
+
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.
        /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {

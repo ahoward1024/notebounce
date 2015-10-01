@@ -64,7 +64,7 @@ public class LevelLoader {
         json.setSerializer(Ball.class, new Json.Serializer<Ball>() {
             public void write(Json json, Ball ball, Class knownType) {
                 json.writeObjectStart();
-                json.writeValue("center", ball.getCenter());
+                json.writeValue("center", ball.center);
                 json.writeObjectEnd();
             }
 

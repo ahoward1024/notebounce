@@ -1,6 +1,7 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 /**
@@ -49,6 +50,17 @@ public class Utility {
         t = MathUtils.clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
         // Evaluate polynomial
         return t * t * t * (t * ((t * 6) - 15) + 10);
+    }
+
+    /**
+     * Test whether a vector point is inside of a particular radius based on the centerpoint c1.
+     * @param c1 The center of the circle.
+     * @param c2 The point to be tested.
+     * @param radius the radius of the circle.
+     * @return True if the test point is inside of the circle.
+     */
+    public static boolean isInsideCircle(Vector2 testpoint, Vector2 center, float radius) {
+        return Math.pow((center.x - testpoint.x), 2) + Math.pow((center.y - testpoint.y), 2) <= Math.pow(radius, 2);
     }
 
     /**
