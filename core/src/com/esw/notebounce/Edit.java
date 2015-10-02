@@ -5,14 +5,14 @@ package com.esw.notebounce;
  */
 public class Edit {
 
-    public static State state = State.none;
+    public static UserData.Type typeState = UserData.Type.box;
+    public static UserData.Color colorState = UserData.Color.blue;
+    public static UserData.Shade shadeState = UserData.Shade.zero;
+    public static UserData.Triangle triangleState = UserData.Triangle.BotLeft;
+    public static Grid grid = Grid.off;
 
-    public enum State {
-        box,
-        triangle,
-        gun,
-        door,
-
-        none
+    public enum Grid {
+        off,
+        on
     }
 }

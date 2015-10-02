@@ -10,6 +10,7 @@ class Inputs {
 
     // Mouse
     static Vector2 mouse = new Vector2(0,0);
+    static Vector2 imouse = new Vector2(0,0);
     // Regular                   // Shifted
     static boolean mouseleft;    static boolean shiftMouseLeft;
     static boolean mousemiddle;  static boolean shiftMouseMiddle;
@@ -46,6 +47,7 @@ class Inputs {
     static boolean d;            static boolean D;
     static boolean f;            static boolean F;
     static boolean g;            static boolean G;
+    static boolean h;            static boolean H;
     static boolean j;            static boolean J;
     static boolean k;            static boolean K;
     static boolean l;            static boolean L;
@@ -128,23 +130,6 @@ class Inputs {
     static boolean numenter;
     static boolean numdot;
 
-    float ScreenWidth = 0;
-    float ScreenHeight = 0;
-
-    /**
-     * This class is designed to grab all input states needed for the game and for editing levels.
-     * It was also designed for ease of use as all keys that have a "shifted" state
-     * (e.g. a and A or 8 and *) can be called directly (in this case inputs.a and inputs.A or
-     * inputs.eight and inputs.star) instead of having to manually poll for the modifier key.
-     * In any case, all of the modifier keys can also be called so we can use it in multi-key commands.
-     * @param width The width of the screen (for mouse input to be normalized)
-     * @param height The height of the screen (for mouse input to be normalized)
-     */
-    Inputs(int width, int height) {
-        ScreenWidth = width;
-        ScreenHeight = height;
-    }
-
     /**
      * Grab all of the mouse inputs.
      */
@@ -153,6 +138,7 @@ class Inputs {
         // graphic's (0,0) is in the lower left. Getting the ScreenHeight - mouse.y
         // normalizes mouse inputs to the graphics coordinates.
         mouse.x = Gdx.input.getX(); mouse.y = NoteBounce.ScreenHeight - Gdx.input.getY();
+        imouse.x = mouse.x; imouse.y = mouse.y + NoteBounce.ScreenHeight;
         mouseleft = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
         mousemiddle = Gdx.input.isButtonPressed(Input.Buttons.MIDDLE);
         mouseright = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
@@ -183,7 +169,16 @@ class Inputs {
     public static void getEditInputs() {
         getMouseInputs();
 
-        tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
+        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // Triangle
+        b = Gdx.input.isKeyJustPressed(Input.Keys.B); // Box1
+        g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
+        v = Gdx.input.isKeyJustPressed(Input.Keys.V); // Goal
+
+        y = Gdx.input.isKeyJustPressed(Input.Keys.Y); // Blue
+        u = Gdx.input.isKeyJustPressed(Input.Keys.U); // Green
+        i = Gdx.input.isKeyJustPressed(Input.Keys.I); // Yellow
+        o = Gdx.input.isKeyJustPressed(Input.Keys.O); // Cyan
+        p = Gdx.input.isKeyJustPressed(Input.Keys.P); // Magenta
 
         one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Shade 0
         two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // Shade 1
@@ -194,10 +189,6 @@ class Inputs {
         seven = Gdx.input.isKeyJustPressed(Input.Keys.NUM_7); // Shade 6
         eight = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8); // Shade 7
         nine  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9); // Shade 8
-
-        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // Triangle
-        b = Gdx.input.isKeyJustPressed(Input.Keys.B); // Box1
-        g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
 
         numzero  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0);
         numone   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1);
@@ -225,6 +216,8 @@ class Inputs {
     public static boolean edit() {
         return Gdx.input.isKeyJustPressed(Input.Keys.TAB);
     }
+
+    public static  boolean grid() { return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); }
 
     /**
      * Grab all of the mouse inputs, then grab all of the inputs from all of the keys.

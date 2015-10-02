@@ -17,8 +17,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
-import javax.rmi.CORBA.Util;
-
 /**
  * Created by Alex on 9/21/2015.
  * Copyright echosoftworks 2015
@@ -102,11 +100,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Array<Vector2> simcoords = new Array<Vector2>();
 
 	Array<Box> boxes = new Array<Box>();
+	Array<Goal> goals = new Array<Goal>();
 	Array<Triangle> triangles = new Array<Triangle>();
 	Gun[] guns = new Gun[9];
 	static int currentGun = 0;
+	static int currentBox = 0;
 
-	boolean edit = false; // TODO create "edit" mode
+	boolean edit = false;
 	boolean drawGrid = false;
 	boolean snap; // Snapping to grid on/off
 
@@ -432,6 +432,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Render all of the objects in the game world.
 	 */
+	Box box = null; // !!! Move
+	Goal goal = null; // !!! Move
+	Triangle triangle = null;
+	boolean updateColor = false;
+	boolean updateShade = false;
+	boolean updateTriangle = false;
 	@Override
 	public void render() {
 
@@ -446,34 +452,236 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
 		// as the input states will not be updated since the last frame which could cause keys
 		// to always be pressed or never be pressed etc...
-		if(Inputs.edit()) edit = !edit; // Grab the edit key (grave) first
+		if(Inputs.edit()) edit = !edit; // Grab the edit key (tab) first
+		if(Inputs.grid()) drawGrid = !drawGrid;
 
 		if(!edit) {
 			// Update all of the sprites
 			Inputs.getGameInputs();
+			if(drawGrid && Edit.grid == Edit.Grid.on) {
+				drawGrid = false;
+				Edit.grid = Edit.Grid.off;
+			}
 			if(Inputs.lshift) timestep = timestepSlow;
 			else if (Inputs.lctrl) timestep = timestepFast;
 			else timestep = timestepNormal;
 			update();
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
-			if(Inputs.tick) drawGrid = !drawGrid;
 		} else {
 			Inputs.getEditInputs();
-			if(Inputs.tick) drawGrid = !drawGrid;
 
-			if(Inputs.t) Edit.state = Edit.State.triangle;
-			else if(Inputs.b) Edit.state = Edit.State.box;
-			else if(Inputs.g) Edit.state = Edit.State.gun;
+			// Toggle grid
+			if(!drawGrid && Edit.grid == Edit.Grid.off) {
+				drawGrid = true;
+				Edit.grid = Edit.Grid.on;
+			}
 
-			switch(Edit.state) {
-				case triangle: {
+			// Edit states
+			if(Inputs.b) {
+				Edit.typeState = UserData.Type.box;
+				if(triangle != null) {
+					world.destroyBody(triangle.body);
+					triangle = null;
+				}
+				if(goal != null) {
+					world.destroyBody(goal.body);
+					goal = null;
+				}
+			} else if(Inputs.t) {
+				Edit.typeState = UserData.Type.triangle;
+				if(box != null) {
+					world.destroyBody(box.body);
+					box = null;
+				}if(goal != null) {
+					world.destroyBody(goal.body);
+					goal = null;
+				}
+			} else if(Inputs.g) {
+				Edit.typeState = UserData.Type.gun;
+			} else if(Inputs.v) {
+				Edit.typeState = UserData.Type.goal;
+				if(box != null) {
+					world.destroyBody(box.body);
+					box = null;
+				}
+				if(triangle != null) {
+					world.destroyBody(triangle.body);
+					triangle = null;
+				}
+			}
 
-				} break;
+			switch(Edit.typeState) {
 				case box: {
 
+					if(Inputs.y) {
+						Edit.colorState = UserData.Color.blue;
+						updateColor = true;
+					} else if(Inputs.u) {
+						Edit.colorState = UserData.Color.green;
+						updateColor = true;
+					} else if(Inputs.i) {
+						Edit.colorState = UserData.Color.cyan;
+						updateColor = true;
+					} else if(Inputs.o) {
+						Edit.colorState = UserData.Color.magenta;
+						updateColor = true;
+					} else if(Inputs.p) {
+						Edit.colorState = UserData.Color.yellow;
+						updateColor = true;
+					} else {
+						updateColor = false;
+					}
+
+					if(Inputs.one) {
+						Edit.shadeState = UserData.Shade.zero;
+						updateShade = true;
+					} else if(Inputs.two) {
+						Edit.shadeState = UserData.Shade.one;
+						updateShade = true;
+					} else if(Inputs.three) {
+						Edit.shadeState = UserData.Shade.two;
+						updateShade = true;
+					} else if(Inputs.four) {
+						Edit.shadeState = UserData.Shade.three;
+						updateShade = true;
+					} else if(Inputs.five) {
+						Edit.shadeState = UserData.Shade.four;
+						updateShade = true;
+					} else if(Inputs.six) {
+						Edit.shadeState = UserData.Shade.five;
+						updateShade = true;
+					} else if(Inputs.seven) {
+						Edit.shadeState = UserData.Shade.six;
+						updateShade = true;
+					} else if(Inputs.eight) {
+						Edit.shadeState = UserData.Shade.seven;
+						updateShade = true;
+					} else if(Inputs.nine) {
+						Edit.shadeState = UserData.Shade.eight;
+						updateShade = true;
+					} else {
+						updateShade = false;
+					}
+
+					if(box == null) {
+						box = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+					} else if(updateColor || updateShade){
+						box.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+					}
+					if(!Inputs.mouseleft) {
+						box.setPos(Inputs.mouse);
+					} else {
+						box.sprite.setAlpha(1.0f);
+						boxes.add(box);
+						box = null;
+					}
+
 				} break;
+				case triangle: {
+
+					if(Inputs.q) {
+						Edit.triangleState = UserData.Triangle.BotLeft;
+						updateTriangle = true;
+					} else if(Inputs.w) {
+						Edit.triangleState = UserData.Triangle.TopLeft;
+						updateTriangle = true;
+					} else if(Inputs.e) {
+						Edit.triangleState = UserData.Triangle.BotRight;
+						updateTriangle = true;
+					} else if(Inputs.r) {
+						Edit.triangleState = UserData.Triangle.BotRight;
+						updateTriangle = true;
+					} else {
+						updateTriangle = false;
+					}
+
+					if(Inputs.y) {
+						Edit.colorState = UserData.Color.blue;
+						updateColor = true;
+					} else if(Inputs.u) {
+						Edit.colorState = UserData.Color.green;
+						updateColor = true;
+					} else if(Inputs.i) {
+						Edit.colorState = UserData.Color.cyan;
+						updateColor = true;
+					} else if(Inputs.o) {
+						Edit.colorState = UserData.Color.magenta;
+						updateColor = true;
+					} else if(Inputs.p) {
+						Edit.colorState = UserData.Color.yellow;
+						updateColor = true;
+					} else {
+						updateColor = false;
+					}
+
+					if(Inputs.one) {
+						Edit.shadeState = UserData.Shade.zero;
+						updateShade = true;
+					} else if(Inputs.two) {
+						Edit.shadeState = UserData.Shade.one;
+						updateShade = true;
+					} else if(Inputs.three) {
+						Edit.shadeState = UserData.Shade.two;
+						updateShade = true;
+					} else if(Inputs.four) {
+						Edit.shadeState = UserData.Shade.three;
+						updateShade = true;
+					} else if(Inputs.five) {
+						Edit.shadeState = UserData.Shade.four;
+						updateShade = true;
+					} else if(Inputs.six) {
+						Edit.shadeState = UserData.Shade.five;
+						updateShade = true;
+					} else if(Inputs.seven) {
+						Edit.shadeState = UserData.Shade.six;
+						updateShade = true;
+					} else if(Inputs.eight) {
+						Edit.shadeState = UserData.Shade.seven;
+						updateShade = true;
+					} else if(Inputs.nine) {
+						Edit.shadeState = UserData.Shade.eight;
+						updateShade = true;
+					} else {
+						updateShade = false;
+					}
+
+					if(triangle == null) {
+						triangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent,
+							Edit.colorState, Edit.shadeState, 0.5f);
+					} else if(updateColor || updateShade || updateTriangle){
+						triangle.update(Inputs.mouse, scalePercent, Edit.triangleState,
+							Edit.colorState, Edit.shadeState, 0.5f);
+					}
+
+					if(!Inputs.mouseleft) {
+						triangle.setPos(Inputs.mouse);
+					} else {
+						triangle.sprite.setAlpha(1.0f);
+						triangles.add(triangle);
+						triangle = null;
+					}
+
+				} break;
+				case goal: {
+					if(goal == null) {
+						goal = new Goal(Inputs.mouse, scalePercent, 0.5f);
+					}
+
+					if(!Inputs.mouseleft) {
+						goal.setPos(Inputs.mouse);
+					} else {
+						goal.sprite.setAlpha(1.0f);
+						goals.add(goal);
+						goal = null;
+					}
+				}
 				case gun: {
+					if(box != null) {
+						world.destroyBody(box.body);
+						box = null;
+					}
+					// TODO triangle null
 					int num = -1;
 					Vector2 position = new Vector2(0,0);
 					if(Inputs.numone) { num = 0; position = GunPosition.one; }
@@ -533,12 +741,27 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
+
+		if(box != null) {
+			box.sprite.draw(batch);
+		}
 		// Draw the boxes array
 		for(Box b : boxes) {
 			b.sprite.draw(batch);
 		}
+
+		if(triangle != null) {
+			triangle.sprite.draw(batch);
+		}
 		for(Triangle t : triangles) {
 			t.sprite.draw(batch);
+		}
+
+		if(goal != null) {
+			goal.sprite.draw(batch);
+		}
+		for(Goal g : goals) {
+			g.sprite.draw(batch);
 		}
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
@@ -551,9 +774,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// using the batch to draw it, not drawing it in the batch.
 		if(drawBallOver) {
 			// Now draw the gun so it is over the ball
-			for(int i = 0; i < guns.length; i++) {
-				if(guns[i] != null) {
-					guns[i].sprite.draw(batch);
+			for(Gun g : guns) {
+				if(g != null) {
+					g.sprite.draw(batch);
 				}
 			}
 
@@ -564,9 +787,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(ball != null) ball.sprite.draw(batch);
 
 			// Now draw the gun so it is over the ball
-			for(int i = 0; i < guns.length; i++) {
-				if(guns[i] != null) {
-					guns[i].sprite.draw(batch);
+			for(Gun g : guns) {
+				if(g != null) {
+					g.sprite.draw(batch);
 				}
 			}
 		}
@@ -618,7 +841,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 220);
-			debugMessage.draw(batch, "Edit: " + Edit.state, 10, ScreenHeight - 250);
+			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 250);
+			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 280);
+			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState, 10, ScreenHeight - 310);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
@@ -702,7 +927,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		left,
 		right
 	}
-	public static void addImpulseToBall(ImpulseType type) { // FIXME resolution independence
+	public static void addImpulseToBall(ImpulseType type) { // FIXME resolution independence (possibly fixed)
 		float additionalImpulseForce = 1.1f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);

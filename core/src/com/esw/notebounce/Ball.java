@@ -67,7 +67,9 @@ public class Ball {
         fixtureDef.density = 0.5f;
         fixtureDef.friction = 0.7f;
         fixtureDef.restitution = 0.5f;
+
         body.createFixture(fixtureDef).setUserData(new UserData(UserData.Type.ball));
+
         circleShape.dispose();
     }
 

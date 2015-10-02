@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
@@ -16,21 +17,16 @@ import aurelienribon.bodyeditor.BodyEditorLoader;
  * Copyright echosoftworks 2015
  */
 @SuppressWarnings("unused")
-public class Box {
+public class Goal {
 
     Sprite sprite;
     Body body;
     Vector2 center;
-    UserData userData = new UserData(UserData.Type.box);
+    UserData userData = new UserData(UserData.Type.goal);
 
-    Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
-        userData.color = color;
-        userData.shade = shade;
+    Goal(Vector2 v, float scale, float alpha) {
 
-
-        // Example blue0.png. Call ordinal on shade because we cannot have ints;
-        FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
-            userData.shade.ordinal() + ".png");
+        FileHandle image = Gdx.files.internal("art/goal.png");
         sprite = new Sprite(new Texture(image));
         sprite.setAlpha(alpha);
         sprite.setCenter(v.x, v.y);
@@ -46,29 +42,18 @@ public class Box {
 
         body = NoteBounce.getWorld().createBody(bodyDef);
 
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS,
+            ((sprite.getHeight() * scale) / 2) / NoteBounce.PIXELS2METERS);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
+        fixtureDef.shape = shape;
 
-        // Load the edges.json file to get all of the edge types (top, bot, left, right)
-        // This is so we can specify what is the top of the box if we needs
-        FileHandle fileHandle = Gdx.files.internal("fixtures/boxes.json");
-        float base = 0.0f;
-        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+        body.createFixture(fixtureDef).setUserData(userData);
 
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
-        bodyEditorLoader.attachFixture(body, "top", fixtureDef, userData, UserData.Edge.top, base * scale);
-        bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
-        bodyEditorLoader.attachFixture(body, "left", fixtureDef, userData, UserData.Edge.left, base * scale);
-        bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
+        shape.dispose();
     }
-
-    // TODO nix this. We want to just add as we go with a addModifier() function
-    /*Box(float x, float y, float scale, UserData.Color color, UserData.Modifier modifier) {
-        userData.color = color;
-        userData.modifiers.add(modifier);
-        create(x, y, scale, 1.0f);
-    }*/
 
     public void setPos(Vector2 v) {
         center = v;

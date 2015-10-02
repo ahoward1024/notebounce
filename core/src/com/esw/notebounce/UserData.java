@@ -20,6 +20,7 @@ public class UserData {
     public enum Type {
         boundary,
         box,
+        goal,
         triangle,
         ball,
         sim,
