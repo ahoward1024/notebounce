@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -123,6 +124,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	static float scalePercent = 0;
 
+	Pixmap pencil;
+	Pixmap eraser;
+
 //=====================================================================================================//
 
 	/**
@@ -197,6 +201,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		LevelLoader loader = new LevelLoader("levels/");
 
+		pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
+		eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
 	}
 
 	@Override
@@ -453,6 +459,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(Inputs.grid()) drawGrid = !drawGrid;
 
 		if(!edit) {
+			Gdx.input.setCursorImage(null, 0, 0);
 			if(tmpbox != null) { world.destroyBody(tmpbox.body); tmpbox = null; }
 			if(tmptriangle != null) { world.destroyBody(tmptriangle.body); tmptriangle = null; }
 			if(tmpgoal != null) { world.destroyBody(tmpgoal.body); tmpgoal = null; }
@@ -525,6 +532,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			} else if (Inputs.c) {
 				if(Edit.toolState == Edit.Tool.paint) {
 					Edit.toolState = Edit.Tool.erase;
+
 				}
 				else if(Edit.toolState == Edit.Tool.erase) {
 					Edit.toolState = Edit.Tool.paint;
@@ -545,6 +553,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 
 			if(Edit.toolState == Edit.Tool.paint) {
+				Gdx.input.setCursorImage(pencil, 0, 0);
 				switch(Edit.typeState) {
 					case box: {
 
@@ -786,6 +795,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					break;
 				}
 			} else if(Edit.toolState == Edit.Tool.erase) {
+				Gdx.input.setCursorImage(eraser, 0, 0);
 				if(Inputs.mouseleft) {
 					Vector2 click = new Vector2(Inputs.mouse);
 					for(int i = 0; i < boxes.size; i++) {
