@@ -307,7 +307,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
 						ball.body.getPosition().y * PIXELS2METERS));
 				}
-				//if(collisionDetector.simhit) break; // Collision detection
+				if(collisionDetector.simhit) break; // Collision detection
 			}
 			collisionDetector.simhit = false;
 			ball.body.setType(BodyDef.BodyType.StaticBody);
@@ -522,227 +522,291 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					world.destroyBody(tmptriangle.body);
 					tmptriangle = null;
 				}
+			} else if (Inputs.c) {
+				if(Edit.toolState == Edit.Tool.paint) {
+					Edit.toolState = Edit.Tool.erase;
+				}
+				else if(Edit.toolState == Edit.Tool.erase) {
+					Edit.toolState = Edit.Tool.paint;
+				}
+
+				if(tmpbox != null) {
+					world.destroyBody(tmpbox.body);
+					tmpbox = null;
+				}
+				if(tmptriangle != null) {
+					world.destroyBody(tmptriangle.body);
+					tmptriangle = null;
+				}
+				if(tmpgoal != null) {
+					world.destroyBody(tmpgoal.body);
+					tmpgoal = null;
+				}
 			}
 
-			switch(Edit.typeState) {
-				case box: {
+			if(Edit.toolState == Edit.Tool.paint) {
+				switch(Edit.typeState) {
+					case box: {
 
-					// Get all inputs to set the boxe's color
-					if(Inputs.y) {
-						Edit.colorState = UserData.Color.blue;
-						updateColor = true;
-					} else if(Inputs.u) {
-						Edit.colorState = UserData.Color.green;
-						updateColor = true;
-					} else if(Inputs.i) {
-						Edit.colorState = UserData.Color.cyan;
-						updateColor = true;
-					} else if(Inputs.o) {
-						Edit.colorState = UserData.Color.magenta;
-						updateColor = true;
-					} else if(Inputs.p) {
-						Edit.colorState = UserData.Color.yellow;
-						updateColor = true;
-					} else {
-						updateColor = false;
-					}
-
-					// Get all inputs to set the boxe's shade
-					if(Inputs.one) {
-						Edit.shadeState = UserData.Shade.zero;
-						updateShade = true;
-					} else if(Inputs.two) {
-						Edit.shadeState = UserData.Shade.one;
-						updateShade = true;
-					} else if(Inputs.three) {
-						Edit.shadeState = UserData.Shade.two;
-						updateShade = true;
-					} else if(Inputs.four) {
-						Edit.shadeState = UserData.Shade.three;
-						updateShade = true;
-					} else if(Inputs.five) {
-						Edit.shadeState = UserData.Shade.four;
-						updateShade = true;
-					} else if(Inputs.six) {
-						Edit.shadeState = UserData.Shade.five;
-						updateShade = true;
-					} else if(Inputs.seven) {
-						Edit.shadeState = UserData.Shade.six;
-						updateShade = true;
-					} else if(Inputs.eight) {
-						Edit.shadeState = UserData.Shade.seven;
-						updateShade = true;
-					} else if(Inputs.nine) {
-						Edit.shadeState = UserData.Shade.eight;
-						updateShade = true;
-					} else {
-						updateShade = false;
-					}
-
-					if(tmpbox == null) {
-						tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
-					} else if(updateColor || updateShade){
-						tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
-					}
-
-					if(!Gdx.input.justTouched()) {
-						Vector2 v = new Vector2(0,0);
-						if(Inputs.ctrl) {
-							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
-							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						// Get all inputs to set the boxe's color
+						if(Inputs.y) {
+							Edit.colorState = UserData.Color.blue;
+							updateColor = true;
+						} else if(Inputs.u) {
+							Edit.colorState = UserData.Color.green;
+							updateColor = true;
+						} else if(Inputs.i) {
+							Edit.colorState = UserData.Color.cyan;
+							updateColor = true;
+						} else if(Inputs.o) {
+							Edit.colorState = UserData.Color.magenta;
+							updateColor = true;
+						} else if(Inputs.p) {
+							Edit.colorState = UserData.Color.yellow;
+							updateColor = true;
 						} else {
-							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
-							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							updateColor = false;
 						}
-						tmpbox.setPos(v);
-					} else {
-						tmpbox.sprite.setAlpha(1.0f);
-						boxes.add(tmpbox);
-						tmpbox = null;
-					}
 
-				} break;
-				case triangle: {
-
-					if(Inputs.q) {
-						Edit.triangleState = UserData.Triangle.TopLeft;
-						updateTriangle = true;
-					} else if(Inputs.w) {
-						Edit.triangleState = UserData.Triangle.BotLeft;
-						updateTriangle = true;
-					} else if(Inputs.e) {
-						Edit.triangleState = UserData.Triangle.BotRight;
-						updateTriangle = true;
-					} else if(Inputs.r) {
-						Edit.triangleState = UserData.Triangle.TopRight;
-						updateTriangle = true;
-					} else {
-						updateTriangle = false;
-					}
-
-					if(Inputs.y) {
-						Edit.colorState = UserData.Color.blue;
-						updateColor = true;
-					} else if(Inputs.u) {
-						Edit.colorState = UserData.Color.green;
-						updateColor = true;
-					} else if(Inputs.i) {
-						Edit.colorState = UserData.Color.cyan;
-						updateColor = true;
-					} else if(Inputs.o) {
-						Edit.colorState = UserData.Color.magenta;
-						updateColor = true;
-					} else if(Inputs.p) {
-						Edit.colorState = UserData.Color.yellow;
-						updateColor = true;
-					} else {
-						updateColor = false;
-					}
-
-					if(Inputs.one) {
-						Edit.shadeState = UserData.Shade.zero;
-						updateShade = true;
-					} else if(Inputs.two) {
-						Edit.shadeState = UserData.Shade.one;
-						updateShade = true;
-					} else if(Inputs.three) {
-						Edit.shadeState = UserData.Shade.two;
-						updateShade = true;
-					} else if(Inputs.four) {
-						Edit.shadeState = UserData.Shade.three;
-						updateShade = true;
-					} else if(Inputs.five) {
-						Edit.shadeState = UserData.Shade.four;
-						updateShade = true;
-					} else if(Inputs.six) {
-						Edit.shadeState = UserData.Shade.five;
-						updateShade = true;
-					} else if(Inputs.seven) {
-						Edit.shadeState = UserData.Shade.six;
-						updateShade = true;
-					} else if(Inputs.eight) {
-						Edit.shadeState = UserData.Shade.seven;
-						updateShade = true;
-					} else if(Inputs.nine) {
-						Edit.shadeState = UserData.Shade.eight;
-						updateShade = true;
-					} else {
-						updateShade = false;
-					}
-
-					if(tmptriangle == null) {
-						tmptriangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent,
-							Edit.colorState, Edit.shadeState, 0.5f);
-					} else if(updateColor || updateShade || updateTriangle){
-						tmptriangle.update(Inputs.mouse, scalePercent, Edit.triangleState,
-							Edit.colorState, Edit.shadeState, 0.5f);
-					}
-
-					if(!Gdx.input.justTouched()) {
-						Vector2 v = new Vector2(0,0);
-						if(Inputs.ctrl) {
-							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
-							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						// Get all inputs to set the boxe's shade
+						if(Inputs.one) {
+							Edit.shadeState = UserData.Shade.zero;
+							updateShade = true;
+						} else if(Inputs.two) {
+							Edit.shadeState = UserData.Shade.one;
+							updateShade = true;
+						} else if(Inputs.three) {
+							Edit.shadeState = UserData.Shade.two;
+							updateShade = true;
+						} else if(Inputs.four) {
+							Edit.shadeState = UserData.Shade.three;
+							updateShade = true;
+						} else if(Inputs.five) {
+							Edit.shadeState = UserData.Shade.four;
+							updateShade = true;
+						} else if(Inputs.six) {
+							Edit.shadeState = UserData.Shade.five;
+							updateShade = true;
+						} else if(Inputs.seven) {
+							Edit.shadeState = UserData.Shade.six;
+							updateShade = true;
+						} else if(Inputs.eight) {
+							Edit.shadeState = UserData.Shade.seven;
+							updateShade = true;
+						} else if(Inputs.nine) {
+							Edit.shadeState = UserData.Shade.eight;
+							updateShade = true;
 						} else {
-							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
-							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							updateShade = false;
 						}
-						tmptriangle.setPos(v);
-					} else {
-						tmptriangle.sprite.setAlpha(1.0f);
-						triangles.add(tmptriangle);
-						tmptriangle = null;
-					}
 
-				} break;
-				case goal: {
+						if(tmpbox == null) {
+							tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						} else if(updateColor || updateShade) {
+							tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						}
 
-					if(tmpgoal == null) {
-						tmpgoal = new Goal(Inputs.mouse, scalePercent, 0.5f);
-					}
-
-					if(!Gdx.input.justTouched()) {
-						Vector2 v = new Vector2(0,0);
-						if(Inputs.ctrl) {
-							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
-							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						if(! Gdx.input.justTouched()) {
+							Vector2 v = new Vector2(0, 0);
+							if(Inputs.ctrl) {
+								v.x = (float) Math.floor(Inputs.mouse.x / midlines) * midlines;
+								v.y = (float) Math.floor(Inputs.mouse.y / midlines) * midlines;
+							} else {
+								v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+								v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							}
+							tmpbox.setPos(v);
 						} else {
-							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
-							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							tmpbox.sprite.setAlpha(1.0f);
+							boxes.add(tmpbox);
+							tmpbox = null;
 						}
-						tmpgoal.setPos(v);
-					} else {
-						tmpgoal.sprite.setAlpha(1.0f);
-						goals.add(tmpgoal);
-						tmpgoal = null;
+
+					}
+					break;
+					case triangle: {
+
+						if(Inputs.q) {
+							Edit.triangleState = UserData.Triangle.TopLeft;
+							updateTriangle = true;
+						} else if(Inputs.w) {
+							Edit.triangleState = UserData.Triangle.BotLeft;
+							updateTriangle = true;
+						} else if(Inputs.e) {
+							Edit.triangleState = UserData.Triangle.BotRight;
+							updateTriangle = true;
+						} else if(Inputs.r) {
+							Edit.triangleState = UserData.Triangle.TopRight;
+							updateTriangle = true;
+						} else {
+							updateTriangle = false;
+						}
+
+						if(Inputs.y) {
+							Edit.colorState = UserData.Color.blue;
+							updateColor = true;
+						} else if(Inputs.u) {
+							Edit.colorState = UserData.Color.green;
+							updateColor = true;
+						} else if(Inputs.i) {
+							Edit.colorState = UserData.Color.cyan;
+							updateColor = true;
+						} else if(Inputs.o) {
+							Edit.colorState = UserData.Color.magenta;
+							updateColor = true;
+						} else if(Inputs.p) {
+							Edit.colorState = UserData.Color.yellow;
+							updateColor = true;
+						} else {
+							updateColor = false;
+						}
+
+						if(Inputs.one) {
+							Edit.shadeState = UserData.Shade.zero;
+							updateShade = true;
+						} else if(Inputs.two) {
+							Edit.shadeState = UserData.Shade.one;
+							updateShade = true;
+						} else if(Inputs.three) {
+							Edit.shadeState = UserData.Shade.two;
+							updateShade = true;
+						} else if(Inputs.four) {
+							Edit.shadeState = UserData.Shade.three;
+							updateShade = true;
+						} else if(Inputs.five) {
+							Edit.shadeState = UserData.Shade.four;
+							updateShade = true;
+						} else if(Inputs.six) {
+							Edit.shadeState = UserData.Shade.five;
+							updateShade = true;
+						} else if(Inputs.seven) {
+							Edit.shadeState = UserData.Shade.six;
+							updateShade = true;
+						} else if(Inputs.eight) {
+							Edit.shadeState = UserData.Shade.seven;
+							updateShade = true;
+						} else if(Inputs.nine) {
+							Edit.shadeState = UserData.Shade.eight;
+							updateShade = true;
+						} else {
+							updateShade = false;
+						}
+
+						if(tmptriangle == null) {
+							tmptriangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						} else if(updateColor || updateShade || updateTriangle) {
+							tmptriangle.update(Inputs.mouse, scalePercent, Edit.triangleState, Edit.colorState, Edit.shadeState, 0.5f);
+						}
+
+						if(! Gdx.input.justTouched()) {
+							Vector2 v = new Vector2(0, 0);
+							if(Inputs.ctrl) {
+								v.x = (float) Math.floor(Inputs.mouse.x / midlines) * midlines;
+								v.y = (float) Math.floor(Inputs.mouse.y / midlines) * midlines;
+							} else {
+								v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+								v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							}
+							tmptriangle.setPos(v);
+						} else {
+							tmptriangle.sprite.setAlpha(1.0f);
+							triangles.add(tmptriangle);
+							tmptriangle = null;
+						}
+
+					}
+					break;
+					case goal: {
+
+						if(tmpgoal == null) {
+							tmpgoal = new Goal(Inputs.mouse, scalePercent, 0.5f);
+						}
+
+						if(! Gdx.input.justTouched()) {
+							Vector2 v = new Vector2(0, 0);
+							if(Inputs.ctrl) {
+								v.x = (float) Math.floor(Inputs.mouse.x / midlines) * midlines;
+								v.y = (float) Math.floor(Inputs.mouse.y / midlines) * midlines;
+							} else {
+								v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+								v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+							}
+							tmpgoal.setPos(v);
+						} else {
+							tmpgoal.sprite.setAlpha(1.0f);
+							goals.add(tmpgoal);
+							tmpgoal = null;
+						}
+					}
+					case gun: {
+
+
+						int num = - 1;
+						Vector2 position = new Vector2(0, 0);
+						if(Inputs.numone) {
+							num = 0;
+							position = GunPosition.one;
+						} else if(Inputs.numtwo) {
+							num = 1;
+							position = GunPosition.two;
+						} else if(Inputs.numthree) {
+							num = 2;
+							position = GunPosition.three;
+						} else if(Inputs.numfour) {
+							num = 3;
+							position = GunPosition.four;
+						} else if(Inputs.numfive) {
+							num = 4;
+							position = GunPosition.five;
+						} else if(Inputs.numsix) {
+							num = 5;
+							position = GunPosition.six;
+						} else if(Inputs.numseven) {
+							num = 6;
+							position = GunPosition.seven;
+						} else if(Inputs.numeight) {
+							num = 7;
+							position = GunPosition.eight;
+						} else if(Inputs.numnine) {
+							num = 8;
+							position = GunPosition.nine;
+						}
+
+						if(num != - 1) {
+							if(guns[num] == null) {
+								guns[num] = new Gun(position, scalePercent, num);
+								currentGun = num;
+								ball.setPos(guns[currentGun].center);
+							} else {
+								world.destroyBody(guns[num].body);
+								guns[num] = null;
+							}
+						}
+					}
+					break;
+				}
+			} else if(Edit.toolState == Edit.Tool.erase) {
+				if(Inputs.mouseleft) {
+					Vector2 click = new Vector2(Inputs.mouse);
+					for(int i = 0; i < boxes.size; i++) {
+						if(Utility.isInsideCircle(click, boxes.get(i).center, boxes.get(i).sprite.getWidth() / 2)) {
+							world.destroyBody(boxes.get(i).body);
+							boxes.removeIndex(i);
+						}
+					}
+					for(int i = 0; i < triangles.size; i++) {
+						if(Utility.isInsideCircle(click, triangles.get(i).center, triangles.get(i).sprite.getWidth() / 2)) {
+							world.destroyBody(triangles.get(i).body);
+							triangles.removeIndex(i);
+						}
+					}
+					for(int i = 0; i < goals.size; i++) {
+						if(Utility.isInsideCircle(click, goals.get(i).center, goals.get(i).sprite.getWidth() / 2)) {
+							world.destroyBody(goals.get(i).body);
+							goals.removeIndex(i);
+						}
 					}
 				}
-				case gun: {
-
-
-					int num = -1;
-					Vector2 position = new Vector2(0,0);
-					if(Inputs.numone) { num = 0; position = GunPosition.one; }
-					else if(Inputs.numtwo)   { num = 1; position = GunPosition.two; }
-					else if(Inputs.numthree) { num = 2; position = GunPosition.three; }
-					else if(Inputs.numfour)  { num = 3; position = GunPosition.four; }
-					else if(Inputs.numfive)  { num = 4; position = GunPosition.five; }
-					else if(Inputs.numsix)   { num = 5; position = GunPosition.six; }
-					else if(Inputs.numseven) { num = 6; position = GunPosition.seven; }
-					else if(Inputs.numeight) { num = 7; position = GunPosition.eight; }
-					else if(Inputs.numnine)  { num = 8; position = GunPosition.nine; }
-
-					if(num != -1) {
-						if(guns[num] == null) {
-							guns[num] = new Gun(position, scalePercent, num);
-							currentGun = num;
-							ball.setPos(guns[currentGun].center);
-						} else {
-							world.destroyBody(guns[num].body);
-							guns[num] = null;
-						}
-					}
-				} break;
 			}
 
 		}
@@ -877,14 +941,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 220);
-			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 250);
-			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 280);
-			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 310);
-			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 340);
-			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 400);
-			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 430);
-			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 460);
-			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 490);
+			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - 250);
+			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 280);
+			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 310);
+			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 340);
+			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 400);
+			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 430);
+			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 460);
+			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 490);
+			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 520);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);

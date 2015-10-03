@@ -174,6 +174,7 @@ class Inputs {
         b = Gdx.input.isKeyJustPressed(Input.Keys.B); // Box1
         g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
         v = Gdx.input.isKeyJustPressed(Input.Keys.V); // Goal
+        c = Gdx.input.isKeyJustPressed(Input.Keys.C); // Erase
 
         y = Gdx.input.isKeyJustPressed(Input.Keys.Y); // Blue
         u = Gdx.input.isKeyJustPressed(Input.Keys.U); // Green
