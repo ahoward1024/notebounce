@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.JsonWriter;
  * Copyright echsoftworks 2015
  */
 @SuppressWarnings("unused")
-public class LevelLoader {
+public class LevelLoader { // TODO Level loader/writer
 
     Array<Level> levels = new Array<Level>();
     int lvlPtr = -1;

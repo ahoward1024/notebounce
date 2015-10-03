@@ -17,6 +17,7 @@ class Inputs {
     static boolean mouseright;   static boolean shiftMouseRight;
     static boolean mouseforward; static boolean shiftMouseFoward;
     static boolean mouseback;    static boolean shiftMouseBack;
+    static boolean clicked;
 
     // Modifiers          // Left                // Right
     static boolean shift; static boolean lshift; static boolean rshift;
@@ -190,16 +191,20 @@ class Inputs {
         eight = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8); // Shade 7
         nine  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9); // Shade 8
 
-        numzero  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0);
-        numone   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1);
-        numtwo   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2);
-        numthree = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_3);
-        numfour  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_4);
-        numfive  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_5);
-        numsix   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_6);
-        numseven = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_7);
-        numeight = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_8);
-        numnine  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_9);
+        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // Triangle BotLeft
+        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // Triangle TopLeft
+        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // Triangle BotRight
+        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // Triangle BotRight
+
+        numone   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1); // Gun pos 1
+        numtwo   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2); // Gun pos 2
+        numthree = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_3); // Gun pos 3
+        numfour  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_4); // Gun pos 4
+        numfive  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_5); // Gun pos 5
+        numsix   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_6); // Gun pos 6
+        numseven = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_7); // Gun pos 7
+        numeight = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_8); // Gun pos 8
+        numnine  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_9); // Gun pos 9
 
         shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT); // Snap to lines
 

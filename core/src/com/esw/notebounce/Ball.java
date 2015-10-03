@@ -58,7 +58,7 @@ public class Ball {
         bodyDef.type = BodyDef.BodyType.StaticBody; // So it doesn't move immediately when created
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = NoteBounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.world.createBody(bodyDef);
 
         CircleShape circleShape = new CircleShape();
         circleShape.setRadius(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS);

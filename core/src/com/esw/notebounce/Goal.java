@@ -21,58 +21,48 @@ public class Goal {
 
     Sprite sprite;
     Body body;
-    Vector2 center;
+    Vector2 center = new Vector2(0,0);
     UserData userData = new UserData(UserData.Type.goal);
+    float scale;
+    float alpha;
 
     Goal(Vector2 v, float scale, float alpha) {
+        userData.color = UserData.Color.goal;
+        this.scale = scale;
+        this.alpha = alpha;
 
         FileHandle image = Gdx.files.internal("art/goal.png");
         sprite = new Sprite(new Texture(image));
-        sprite.setAlpha(alpha);
-        sprite.setCenter(v.x, v.y);
-        sprite.setOriginCenter();
+        sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
+        sprite.setAlpha(alpha);
+        sprite.setPosition(v.x, v.y);
 
-        center = new Vector2(sprite.getX() + (sprite.getWidth() / 2),
-            sprite.getY() + (sprite.getHeight() / 2));
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = NoteBounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.world.createBody(bodyDef);
 
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS,
-            ((sprite.getHeight() * scale) / 2) / NoteBounce.PIXELS2METERS);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(((sprite.getWidth() / 2) * scale)/ NoteBounce.PIXELS2METERS,
+            ((sprite.getHeight() / 2) * scale) / NoteBounce.PIXELS2METERS);
         fixtureDef.shape = shape;
-
         body.createFixture(fixtureDef).setUserData(userData);
-
         shape.dispose();
     }
 
     public void setPos(Vector2 v) {
-        center = v;
-        sprite.setCenter(v.x, v.y);
-        body.setTransform(v.x / NoteBounce.PIXELS2METERS, v.y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
-
-    public void update(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
-        userData.color = color;
-        userData.shade = shade;
-
-        sprite.getTexture().dispose();
-        sprite.setTexture(new Texture("art/tiles/boxes/" + color + shade.ordinal() + ".png"));
-        sprite.setAlpha(alpha);
-        sprite.setCenter(v.x, v.y);
-        sprite.setOriginCenter();
-        sprite.setScale(scale);
-        center = v;
-
-        body.setTransform(v.x / NoteBounce.PIXELS2METERS, v.y / NoteBounce.PIXELS2METERS, 0.0f);
+        sprite.setPosition(v.x, v.y);
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 }

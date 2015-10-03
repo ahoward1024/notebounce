@@ -25,6 +25,8 @@ public class UserData {
         ball,
         sim,
         gun,
+
+        none
     }
 
     // These are capitalized to follow the file naming convention for each of the .pngs

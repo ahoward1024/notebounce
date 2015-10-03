@@ -23,39 +23,9 @@ public class Utility {
     }
 
     /**
-     * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep)
-     * @param edge0 The beginning interpolation value
-     * @param edge1 The ending interpolation value
-     * @param t The timestep of interpolation
-     * @return The point on the interpolation line the number should be after the given timestep
-     */
-    public static float smoothstep(float edge0, float edge1, float t)
-    {
-        // Scale, bias and saturate x to 0..1 range
-        t = MathUtils.clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
-        // Evaluate polynomial
-        return t * t * (3 - (2 * t));
-    }
-
-    /**
-     * An implementation of the smoothstep function (https://en.wikipedia.org/wiki/Smoothstep#Variations)
-     * @param edge0 The beginning interpolation value
-     * @param edge1 The ending interpolation value
-     * @param t The timestep of interpolation
-     * @return The point on the interpolation line the number should be after the given timestep
-     */
-    public static float smootherstep(float edge0, float edge1, float t)
-    {
-        // Scale, and clamp x to 0..1 range
-        t = MathUtils.clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
-        // Evaluate polynomial
-        return t * t * t * (t * ((t * 6) - 15) + 10);
-    }
-
-    /**
      * Test whether a vector point is inside of a particular radius based on the centerpoint c1.
-     * @param c1 The center of the circle.
-     * @param c2 The point to be tested.
+     * @param testpoint The center of the circle.
+     * @param center The point to be tested.
      * @param radius the radius of the circle.
      * @return True if the test point is inside of the circle.
      */
@@ -85,6 +55,7 @@ public class Utility {
      * @param height The height of the screen
      * @return A float value that is the percent in which all assets need to be scaled to fit the screen
      */
+    // TODO scale percentage for 16:10 and 4:3 windows
     public static float findScalePercent(int width, int height) {
         if(width == NoteBounce.basew && height == NoteBounce.baseh) return 1;
 
@@ -98,7 +69,7 @@ public class Utility {
             int div = 1; // Divider
             // If width and height are less than half of the basew and base h
             // then we need to scale further down otherwise we might get a GCD that is too big.
-            if(width < NoteBounce.basew /2 & height < NoteBounce.baseh /2) {
+            if(width < NoteBounce.basew /2 & height < NoteBounce.baseh / 2) {
                 div = 2;
             }
             // Find the first matching GCD that is less than the base GCD scaled by the div value (if necessary)

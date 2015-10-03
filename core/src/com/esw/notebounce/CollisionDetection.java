@@ -75,21 +75,21 @@ public class CollisionDetection implements ContactListener {
         UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
-       /* if(!udb.getType().equals(UserData.Type.sim)) {
-            System.out.println("UD a: " + uda.toString()); // DEBUG
-            System.out.println("UD b: " + udb.toString()); // DEBUG
-        } */ // DEBUG
+       //if(!udb.getType().equals(UserData.Type.sim)) {
+        //    System.out.println("UD a: " + uda.toString()); // DEBUG
+        //    System.out.println("UD b: " + udb.toString()); // DEBUG
+        //}  // DEBUG
 
-        int notePtr = NoteBounce.getNotePtr();
+        int notePtr = NoteBounce.notePtr;
 
         if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.gun))
         { simhit = true; }
 
-        // Test if goal was hit
+        // Test if tmpgoal was hit
         if(uda.color.equals(UserData.Color.goal) && udb.type.equals(UserData.Type.ball)) {
-            NoteBounce.setGoalHit(true);
-            // Play the goal noise if it was not already playing
-            if(!NoteBounce.goalNoisePlaying()) {
+            NoteBounce.goalHit = true;
+            // Play the tmpgoal noise if it was not already playing
+            if(!NoteBounce.goalNoisePlaying) {
                 NoteBounce.playGoalNoise();//goalNoise.play();
             }
         }
@@ -110,7 +110,7 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
-        // Play a note if the ball hits anything besides the gun or goal
+        // Play a note if the ball hits anything besides the gun or tmpgoal
         if(udb.type.equals(UserData.Type.ball) && !uda.type.equals(UserData.Type.gun) &&
             !uda.color.equals(UserData.Color.goal)) {
             if(thresholdVelocityY(fb, 2.0f)) NoteBounce.playNote(0);

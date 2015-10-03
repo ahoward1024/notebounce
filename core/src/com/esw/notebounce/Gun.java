@@ -40,7 +40,7 @@ public class Gun {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = NoteBounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.world.createBody(bodyDef);
 
         FileHandle fileHandle = Gdx.files.internal("fixtures/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
@@ -87,6 +87,7 @@ public class Gun {
         sprite.setRotation(angle);
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
         // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT. I can't explain this one...
-
     }
+
+    // TODO set/reset the gun's rotation. Set in the same way as the GunPosition
 }

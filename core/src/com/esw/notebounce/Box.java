@@ -20,38 +20,41 @@ public class Box {
 
     Sprite sprite;
     Body body;
-    Vector2 center;
+    Vector2 center = new Vector2(0,0);
     UserData userData = new UserData(UserData.Type.box);
+    float scale;
+    float alpha;
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
         userData.color = color;
         userData.shade = shade;
-
+        this.scale = scale;
+        this.alpha = alpha;
 
         // Example blue0.png. Call ordinal on shade because we cannot have ints;
         FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
             userData.shade.ordinal() + ".png");
         sprite = new Sprite(new Texture(image));
-        sprite.setAlpha(alpha);
-        sprite.setCenter(v.x, v.y);
-        sprite.setOriginCenter();
+        sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
+        sprite.setAlpha(alpha);
+        sprite.setPosition(v.x, v.y);
 
-        center = new Vector2(sprite.getX() + (sprite.getWidth() / 2),
-            sprite.getY() + (sprite.getHeight() / 2));
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
-        body = NoteBounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
 
         // Load the edges.json file to get all of the edge types (top, bot, left, right)
-        // This is so we can specify what is the top of the box if we needs
+        // This is so we can specify what is the top of the tmpbox if we needs
         FileHandle fileHandle = Gdx.files.internal("fixtures/boxes.json");
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
@@ -63,31 +66,28 @@ public class Box {
         bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
     }
 
-    // TODO nix this. We want to just add as we go with a addModifier() function
-    /*Box(float x, float y, float scale, UserData.Color color, UserData.Modifier modifier) {
-        userData.color = color;
-        userData.modifiers.add(modifier);
-        create(x, y, scale, 1.0f);
-    }*/
-
-    public void setPos(Vector2 v) {
-        center = v;
-        sprite.setCenter(v.x, v.y);
-        body.setTransform(v.x / NoteBounce.PIXELS2METERS, v.y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
-
     public void update(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
         userData.color = color;
         userData.shade = shade;
 
         sprite.getTexture().dispose();
         sprite.setTexture(new Texture("art/tiles/boxes/" + color + shade.ordinal() + ".png"));
+        sprite.setOrigin(0.0f, 0.0f);
         sprite.setAlpha(alpha);
-        sprite.setCenter(v.x, v.y);
-        sprite.setOriginCenter();
         sprite.setScale(scale);
-        center = v;
 
-        body.setTransform(v.x / NoteBounce.PIXELS2METERS, v.y / NoteBounce.PIXELS2METERS, 0.0f);
+        setPos(v);
+    }
+
+    public void setPos(Vector2 v) {
+        sprite.setPosition(v.x, v.y);
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
+    }
+
+    // TODO add modifiers
+    public void addModifier(UserData.Modifier modifier) {
+
     }
 }

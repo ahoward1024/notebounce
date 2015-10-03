@@ -31,7 +31,7 @@ public class Boundary {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(0.0f, 0.0f);
 
-        body = NoteBounce.getWorld().createBody(bodyDef);
+        body = NoteBounce.world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         EdgeShape edgeShape = new EdgeShape();

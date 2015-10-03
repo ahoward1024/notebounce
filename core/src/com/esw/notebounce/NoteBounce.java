@@ -31,14 +31,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 //=====================================================================================================//
 
-	private static World world;
-	private static boolean playNotes = true;
-	private static boolean goalHit = false;
-	private static boolean goalNoisePlaying = false;
-	private static boolean playRipple = false;
-	private static Sound[] notes = new Sound[8];
-	private static int notePtr = 0;
-	private static Sound goalNoise;
+	static World world;
+	static boolean playNotes = true;
+	static boolean goalHit = false;
+	static boolean goalNoisePlaying = false;
+	static boolean playRipple = false;
+	static Sound[] notes = new Sound[8];
+	static int notePtr = 0;
+	static Sound goalNoise;
 
 	final int velocityIterations = 6;
 	final int positionIterations = 2;
@@ -46,22 +46,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int ScreenWidth  = 0;
 	static int ScreenHeight = 0;
 
-	private OrthographicCamera camera; // Orthographic because 2D
+	OrthographicCamera camera; // Orthographic because 2D
 
-	private Box2DDebugRenderer box2DDebugRenderer;
+	Box2DDebugRenderer box2DDebugRenderer;
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
-	private BitmapFont debugMessage;
-	private ShapeRenderer debugShapeRenderer;
+	BitmapFont debugMessage;
+	ShapeRenderer debugShapeRenderer;
 
-	private SpriteBatch batch;
-	private static Ball ball;
-	private static Sprite ripple;
-	private Sprite crosshair;
+	SpriteBatch batch;
+	static Ball ball;
+	static Sprite ripple;
+	Sprite crosshair;
 
-	private CollisionDetection collisionDetector;
+	CollisionDetection collisionDetector;
 
-	private float goalTextTimer = 0.0f;
-	private float deltaTime = 0.0f;
+	float goalTextTimer = 0.0f;
+	float deltaTime = 0.0f;
 	float timestep = 300.0f;
 	final float timestepNormal = 300.0f;
 	final float timestepSlow = 3000.0f;
@@ -74,28 +74,26 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String gunPositionDebug = "";  // DEBUG
 	String fpsDebug = "FPS: ";     // DEBUG
 
-	private boolean goalWasHit = false;
-	private boolean showGoalHit= false; // Show "GOAL!" text
+	boolean goalWasHit = false;
+	boolean showGoalHit= false; // Show "GOAL!" text
 
-	private boolean ballShot = false; // Is the ball shot?
-	private boolean moveBall = false; // Toggle to lerp the ball back to the gun
+	boolean ballShot = false; // Is the ball shot?
+	boolean moveBall = false; // Toggle to lerp the ball back to the gun
 	boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
 	// TODO create LevelLoader
 
-	private Vector2 mouseClick = new Vector2(0,0);
-	private Vector2 mouseUnClick = new Vector2(0,0);
+	Vector2 mouseClick = new Vector2(0,0);
+	Vector2 mouseUnClick = new Vector2(0,0);
 
 	Vector2 velocity = new Vector2(1,1);
-	private float angle = 0.0f;
-	private float power = 0.0f; // Power of the shot
+	float angle = 0.0f;
+	float power = 0.0f; // Power of the shot
 	final float MAX_POWER = 60.0f; // Maximum power of the shot
-	private float lastUsedAngle = 45.0f;
-	private float lastUsedPower = 12.5f;
-	private boolean shoot = false;
+	boolean shoot = false;
 
-	private boolean touch = false; // Is the mouse clicked or the screen has been touched?
-	private boolean reset = false; // Toggle to reset level
+	boolean touch = false; // Is the mouse clicked or the screen has been touched?
+	boolean reset = false; // Toggle to reset level
 
 	Array<Vector2> simcoords = new Array<Vector2>();
 
@@ -113,6 +111,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	int lines = 0;
 	int midlines = 0;
 
+	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9]
 	// FIXME screen resolutions differ.
 	// 2560x1440, Scale: 133% at 160px
 	// 1920x1080, Scale: 100% at 120px (base resolution)
@@ -172,11 +171,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity * scalePercent), true);
 		world.setContactListener(collisionDetector);
 
-		ball = new Ball(10, 10, scalePercent);
+		ball = new Ball(ScreenWidth / 2, ScreenHeight / 2, scalePercent);
 
-		// experimental();
-
-		// Build the lines for the bounding box that makes it so the ball
+		// Build the lines for the bounding tmpbox that makes it so the ball
 		// does not go off the screen
 		new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, UserData.Edge.bot);
 		new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, UserData.Edge.top);
@@ -237,7 +234,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(guns[currentGun] != null) {
 			v = guns[currentGun].center;
 		} else {
-			v = mouseClick;
+			v = Inputs.mouse; // DEBUG
 		}
 
 		ball.body.setTransform(Utility.lerp(ball.center.x / PIXELS2METERS, v.x / PIXELS2METERS, deltaTime * 10),
@@ -317,7 +314,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(guns[currentGun] != null) {
 				ball.body.setTransform(guns[currentGun].center.x / PIXELS2METERS,
 					guns[currentGun].center.y / PIXELS2METERS, 0.0f);
-			} else {
+			} else { // DEBUG
 				ball.body.setTransform(mouseClick.x / PIXELS2METERS, mouseClick.y / PIXELS2METERS, 0.0f);
 			}
 			ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.ball));
@@ -361,7 +358,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(angle < 0) angle = 360 - (-angle);
 
 			if(guns[currentGun] != null) guns[currentGun].rotate(angle); // Only set the rotation if the ball is not shot
-			else ball.body.setTransform(mouseClick.x / PIXELS2METERS, mouseClick.y / PIXELS2METERS, 0.0f);
+			else ball.body.setTransform(mouseClick.x / PIXELS2METERS, mouseClick.y / PIXELS2METERS, 0.0f); // DEBUG
 		}
 
 		velocity.setAngle(angle);
@@ -372,8 +369,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ballShot = true;
 			ball.body.setType(BodyDef.BodyType.DynamicBody);
 			ball.body.setLinearVelocity(velocity.x * power, velocity.y * power);
-			lastUsedPower = power;
-			lastUsedAngle = angle;
 		}
 
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
@@ -407,7 +402,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
-		// Go to next level if goal was hit
+		// Go to next level if tmpgoal was hit
 		if(goalHit || Inputs.space) { // SPACE IS DEBUG
 			reset();
 			// todo LevelLoader
@@ -432,12 +427,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Render all of the objects in the game world.
 	 */
-	Box box = null; // !!! Move
-	Goal goal = null; // !!! Move
-	Triangle triangle = null;
+	// !!! MOVE
+	Box tmpbox = null;
+	Goal tmpgoal = null;
+	Triangle tmptriangle = null;
 	boolean updateColor = false;
 	boolean updateShade = false;
 	boolean updateTriangle = false;
+	boolean editplace = false;
 	@Override
 	public void render() {
 
@@ -456,6 +453,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(Inputs.grid()) drawGrid = !drawGrid;
 
 		if(!edit) {
+			if(tmpbox != null) { world.destroyBody(tmpbox.body); tmpbox = null; }
+			if(tmptriangle != null) { world.destroyBody(tmptriangle.body); tmptriangle = null; }
+			if(tmpgoal != null) { world.destroyBody(tmpgoal.body); tmpgoal = null; }
+
 			// Update all of the sprites
 			Inputs.getGameInputs();
 			if(drawGrid && Edit.grid == Edit.Grid.on) {
@@ -477,43 +478,56 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				Edit.grid = Edit.Grid.on;
 			}
 
-			// Edit states
-			if(Inputs.b) {
+			// Edit states (also we must reset all tmp objects to null so they don't continue to appear)
+			if(Inputs.b) { // Box
 				Edit.typeState = UserData.Type.box;
-				if(triangle != null) {
-					world.destroyBody(triangle.body);
-					triangle = null;
+				if(tmptriangle != null) {
+					world.destroyBody(tmptriangle.body);
+					tmptriangle = null;
 				}
-				if(goal != null) {
-					world.destroyBody(goal.body);
-					goal = null;
+				if(tmpgoal != null) {
+					world.destroyBody(tmpgoal.body);
+					tmpgoal = null;
 				}
-			} else if(Inputs.t) {
+			} else if(Inputs.t) { // Triangle
 				Edit.typeState = UserData.Type.triangle;
-				if(box != null) {
-					world.destroyBody(box.body);
-					box = null;
-				}if(goal != null) {
-					world.destroyBody(goal.body);
-					goal = null;
+				if(tmpbox != null) {
+					world.destroyBody(tmpbox.body);
+					tmpbox = null;
+				}if(tmpgoal != null) {
+					world.destroyBody(tmpgoal.body);
+					tmpgoal = null;
 				}
-			} else if(Inputs.g) {
+			} else if(Inputs.g) { // Gun
 				Edit.typeState = UserData.Type.gun;
-			} else if(Inputs.v) {
-				Edit.typeState = UserData.Type.goal;
-				if(box != null) {
-					world.destroyBody(box.body);
-					box = null;
+				if(tmpbox != null) {
+					world.destroyBody(tmpbox.body);
+					tmpbox = null;
 				}
-				if(triangle != null) {
-					world.destroyBody(triangle.body);
-					triangle = null;
+				if(tmptriangle != null) {
+					world.destroyBody(tmptriangle.body);
+					tmptriangle = null;
+				}
+				if(tmpgoal != null) {
+					world.destroyBody(tmpgoal.body);
+					tmpgoal = null;
+				}
+			} else if(Inputs.v) { // Goal
+				Edit.typeState = UserData.Type.goal;
+				if(tmpbox != null) {
+					world.destroyBody(tmpbox.body);
+					tmpbox = null;
+				}
+				if(tmptriangle != null) {
+					world.destroyBody(tmptriangle.body);
+					tmptriangle = null;
 				}
 			}
 
 			switch(Edit.typeState) {
 				case box: {
 
+					// Get all inputs to set the boxe's color
 					if(Inputs.y) {
 						Edit.colorState = UserData.Color.blue;
 						updateColor = true;
@@ -533,6 +547,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						updateColor = false;
 					}
 
+					// Get all inputs to set the boxe's shade
 					if(Inputs.one) {
 						Edit.shadeState = UserData.Shade.zero;
 						updateShade = true;
@@ -564,33 +579,42 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						updateShade = false;
 					}
 
-					if(box == null) {
-						box = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+					if(tmpbox == null) {
+						tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
 					} else if(updateColor || updateShade){
-						box.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
 					}
-					if(!Inputs.mouseleft) {
-						box.setPos(Inputs.mouse);
+
+					if(!Gdx.input.justTouched()) {
+						Vector2 v = new Vector2(0,0);
+						if(Inputs.ctrl) {
+							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
+							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						} else {
+							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+						}
+						tmpbox.setPos(v);
 					} else {
-						box.sprite.setAlpha(1.0f);
-						boxes.add(box);
-						box = null;
+						tmpbox.sprite.setAlpha(1.0f);
+						boxes.add(tmpbox);
+						tmpbox = null;
 					}
 
 				} break;
 				case triangle: {
 
 					if(Inputs.q) {
-						Edit.triangleState = UserData.Triangle.BotLeft;
+						Edit.triangleState = UserData.Triangle.TopLeft;
 						updateTriangle = true;
 					} else if(Inputs.w) {
-						Edit.triangleState = UserData.Triangle.TopLeft;
+						Edit.triangleState = UserData.Triangle.BotLeft;
 						updateTriangle = true;
 					} else if(Inputs.e) {
 						Edit.triangleState = UserData.Triangle.BotRight;
 						updateTriangle = true;
 					} else if(Inputs.r) {
-						Edit.triangleState = UserData.Triangle.BotRight;
+						Edit.triangleState = UserData.Triangle.TopRight;
 						updateTriangle = true;
 					} else {
 						updateTriangle = false;
@@ -646,42 +670,56 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						updateShade = false;
 					}
 
-					if(triangle == null) {
-						triangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent,
+					if(tmptriangle == null) {
+						tmptriangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent,
 							Edit.colorState, Edit.shadeState, 0.5f);
 					} else if(updateColor || updateShade || updateTriangle){
-						triangle.update(Inputs.mouse, scalePercent, Edit.triangleState,
+						tmptriangle.update(Inputs.mouse, scalePercent, Edit.triangleState,
 							Edit.colorState, Edit.shadeState, 0.5f);
 					}
 
-					if(!Inputs.mouseleft) {
-						triangle.setPos(Inputs.mouse);
+					if(!Gdx.input.justTouched()) {
+						Vector2 v = new Vector2(0,0);
+						if(Inputs.ctrl) {
+							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
+							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						} else {
+							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+						}
+						tmptriangle.setPos(v);
 					} else {
-						triangle.sprite.setAlpha(1.0f);
-						triangles.add(triangle);
-						triangle = null;
+						tmptriangle.sprite.setAlpha(1.0f);
+						triangles.add(tmptriangle);
+						tmptriangle = null;
 					}
 
 				} break;
 				case goal: {
-					if(goal == null) {
-						goal = new Goal(Inputs.mouse, scalePercent, 0.5f);
+
+					if(tmpgoal == null) {
+						tmpgoal = new Goal(Inputs.mouse, scalePercent, 0.5f);
 					}
 
-					if(!Inputs.mouseleft) {
-						goal.setPos(Inputs.mouse);
+					if(!Gdx.input.justTouched()) {
+						Vector2 v = new Vector2(0,0);
+						if(Inputs.ctrl) {
+							v.x = (float)Math.floor(Inputs.mouse.x / midlines) * midlines;
+							v.y = (float)Math.floor(Inputs.mouse.y / midlines) * midlines;
+						} else {
+							v.x = (float) Math.floor(Inputs.mouse.x / lines) * lines;
+							v.y = (float) Math.floor(Inputs.mouse.y / lines) * lines;
+						}
+						tmpgoal.setPos(v);
 					} else {
-						goal.sprite.setAlpha(1.0f);
-						goals.add(goal);
-						goal = null;
+						tmpgoal.sprite.setAlpha(1.0f);
+						goals.add(tmpgoal);
+						tmpgoal = null;
 					}
 				}
 				case gun: {
-					if(box != null) {
-						world.destroyBody(box.body);
-						box = null;
-					}
-					// TODO triangle null
+
+
 					int num = -1;
 					Vector2 position = new Vector2(0,0);
 					if(Inputs.numone) { num = 0; position = GunPosition.one; }
@@ -713,10 +751,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Update the debug strings
 		inputDebug = "mouse X: " + Inputs.mouse.x + " | mouse Y: " + Inputs.mouse.y +
-			" | Angle: " + String.format("%.2f", angle) +
-			" | Last Angle: " + String.format("%.2f", lastUsedAngle);
+			" | Angle: " + String.format("%.2f", angle);
 		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
-			mouseUnClick + " | Power: " + power + " | Last Power: " + lastUsedPower;
+			mouseUnClick + " | Power: " + power;
 		if(ball != null) {
 			ballPositionDebug = "Ball X: " + String.format("%.4f", ball.center.x) +
 				" (" + String.format("%.4f", ball.body.getWorldCenter().x * PIXELS2METERS) + ") " +
@@ -742,23 +779,23 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		batch.begin();   // Start the batch drawing
 
-		if(box != null) {
-			box.sprite.draw(batch);
+		if(tmpbox != null) {
+			tmpbox.sprite.draw(batch);
 		}
 		// Draw the boxes array
 		for(Box b : boxes) {
 			b.sprite.draw(batch);
 		}
 
-		if(triangle != null) {
-			triangle.sprite.draw(batch);
+		if(tmptriangle != null) {
+			tmptriangle.sprite.draw(batch);
 		}
 		for(Triangle t : triangles) {
 			t.sprite.draw(batch);
 		}
 
-		if(goal != null) {
-			goal.sprite.draw(batch);
+		if(tmpgoal != null) {
+			tmpgoal.sprite.draw(batch);
 		}
 		for(Goal g : goals) {
 			g.sprite.draw(batch);
@@ -798,13 +835,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			crosshair.draw(batch);
 			batch.end(); // Have to stop the sprite batch for the shape renderer lines to draw
 			debugShapeRenderer.begin();
-			debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.PURPLE);
+			debugShapeRenderer.setColor(Color.PURPLE);
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, Inputs.mouse.x, Inputs.mouse.y);
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x + 100, mouseClick.y); //+X
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x - 100, mouseClick.y); //-X
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y + 100); //+Y
 			debugShapeRenderer.line(mouseClick.x, mouseClick.y, mouseClick.x, mouseClick.y - 100); //-Y
-			debugShapeRenderer.setColor(com.badlogic.gdx.graphics.Color.ORANGE);
+			debugShapeRenderer.setColor(Color.ORANGE);
 			debugShapeRenderer.arc(mouseClick.x, mouseClick.y, 100, 0.0f, angle, 32);
 			debugShapeRenderer.end();
 			batch.begin(); // Restart the sprite batch
@@ -826,8 +863,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, ballVelocityDebug, 10, ScreenHeight - 100);
-		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - 130);
-		//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 130);
+
 		String g;
 		if(world.getGravity().x == 0) {
 			if(world.getGravity().y > 0) g = "Up";
@@ -837,33 +873,40 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(world.getGravity().x > 0) g = "Right";
 			else g = "Left";
 		}
-		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 160);
+		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 130);
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 220);
 			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 250);
 			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 280);
-			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState, 10, ScreenHeight - 310);
+			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 310);
+			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 340);
+			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 400);
+			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 430);
+			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 460);
+			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 490);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
-			ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2,
-			ScreenHeight - 10);
+		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2, ScreenHeight - 10);
+		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+			ScreenHeight - 40);
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
-		debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-		box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		if(edit) {
+			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		}
 
 		if(drawGrid) {
 			int linewidth = 5;
 			debugShapeRenderer.begin();
 			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.RED));
 			for(int i = 0; i < ScreenWidth; i += midlines) {
-				drawDottedLine(linewidth, i, 0, i, ScreenWidth);
+				drawDottedLine(linewidth, i, 0, i, ScreenHeight);
 				drawDottedLine(linewidth, 0, i, ScreenWidth, i);
 			}
 			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.GRAY));
@@ -873,26 +916,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 			debugShapeRenderer.end();
 		}
-	}
-
-	/**
-	 * Gets the Box2D physics world for the game.
-	 * @return The current Box2D world.
-	 */
-	public static World getWorld() { return world; }
-
-	public static Ball getBall() { return ball; }
-
-	public static void setGoalHit(boolean b) {
-		goalHit = b;
-	}
-
-	public static boolean playNotes() {
-		return playNotes;
-	}
-
-	public static boolean goalNoisePlaying() {
-		return goalNoisePlaying;
 	}
 
 	public static void playGoalNoise() {
@@ -911,14 +934,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public static void playNote(int i) {
 		notes[i].play();
-	}
-
-	public static int getNotePtr() {
-		return notePtr;
-	}
-
-	public static int notesLength() {
-		return notes.length;
 	}
 
 	public enum ImpulseType {
@@ -986,6 +1001,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			shoot = true;
 			touch = false;
 			mouseUnClick.x = x; mouseUnClick.y = y;
+		} else if(edit) {
+			editplace = true;
+		} else {
+			editplace = false;
 		}
 		return false;
 	}
