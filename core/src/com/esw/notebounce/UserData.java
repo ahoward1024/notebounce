@@ -14,7 +14,7 @@ public class UserData {
     Color color = Color.none;
     Shade shade = Shade.zero;
     public Edge edge = Edge.none; // Has to be public so BodyEditorLoader can set it.
-    Array<Modifier> modifiers = new Array<Modifier>();
+    ModifierType[] modifierTypes = new ModifierType[4];
     int id = -1; // ID number for guns
 
     public enum Type {
@@ -73,19 +73,26 @@ public class UserData {
     }
 
     public enum Modifier {
+        accelerator,
+        dampener,
+        gravity,
+    }
+
+    public enum ModifierType {
         acceleratorUp,
         acceleratorDown,
         acceleratorLeft,
         acceleratorRight,
-        acceleratorAll,
 
         dampenerUp,
         dampenerDown,
         dampenerLeft,
         dampenerRight,
-        dampenerAll,
 
-        gravity,
+        gravityUp,
+        gravityDown,
+        gravityLeft,
+        gravityRight,
 
         none
     }
@@ -100,7 +107,7 @@ public class UserData {
         this.color = userData.color;
         this.shade = userData.shade;
         this.edge = userData.edge;
-        this.modifiers = userData.modifiers;
+        this.modifierTypes = userData.modifierTypes;
     }
 
     @Override
@@ -109,9 +116,9 @@ public class UserData {
         if(triangle != Triangle.none) output += " : " + triangle;
         if(edge != Edge.none) output += " : " + edge;
         output += " : " + color + " : " + shade.ordinal();
-        if(modifiers.size > 0) {
+        if(modifierTypes.length > 0) {
             output += "[";
-            for(Modifier mod : modifiers) {
+            for(ModifierType mod : modifierTypes) {
                 output += ", " + mod.name();
             }
             output += "]";

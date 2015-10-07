@@ -182,6 +182,20 @@ class Inputs {
         o = Gdx.input.isKeyJustPressed(Input.Keys.O); // Cyan
         p = Gdx.input.isKeyJustPressed(Input.Keys.P); // Magenta
 
+        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // Triangle BotLeft
+        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // Triangle TopLeft
+        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // Triangle BotRight
+        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // Triangle BotRight
+
+        a = Gdx.input.isKeyPressed(Input.Keys.A); // Acceleration modifier
+        s = Gdx.input.isKeyPressed(Input.Keys.S); // Gravity modifier
+        d = Gdx.input.isKeyPressed(Input.Keys.D); // Dampen modifier
+
+        up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
+        down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
+        left  = Gdx.input.isKeyJustPressed(Input.Keys.LEFT); // Modifier left
+        right = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT); // Modifier right
+
         one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Shade 0
         two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // Shade 1
         three = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3); // Shade 2
@@ -191,11 +205,6 @@ class Inputs {
         seven = Gdx.input.isKeyJustPressed(Input.Keys.NUM_7); // Shade 6
         eight = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8); // Shade 7
         nine  = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9); // Shade 8
-
-        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // Triangle BotLeft
-        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // Triangle TopLeft
-        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // Triangle BotRight
-        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // Triangle BotRight
 
         numone   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1); // Gun pos 1
         numtwo   = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2); // Gun pos 2

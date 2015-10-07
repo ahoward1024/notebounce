@@ -11,6 +11,7 @@ public class Edit {
     public static UserData.Color colorState = UserData.Color.blue;
     public static UserData.Shade shadeState = UserData.Shade.zero;
     public static UserData.Triangle triangleState = UserData.Triangle.BotLeft;
+    public static UserData.Modifier modifierState = UserData.Modifier.accelerator;
     public static Grid grid = Grid.off;
 
     public enum Tool {

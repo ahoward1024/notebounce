@@ -24,6 +24,7 @@ public class Box {
     UserData userData = new UserData(UserData.Type.box);
     float scale;
     float alpha;
+    Sprite[] modifierSprites = new Sprite[5];
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
         userData.color = color;
@@ -84,10 +85,14 @@ public class Box {
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
 
-    // TODO add modifiers
-    public void addModifier(UserData.Modifier modifier) {
-
+        for(int i = 0; i < modifierSprites.length; i++) {
+            if(modifierSprites[i] != null) {
+                modifierSprites[i].setOrigin(0.0f, 0.0f);
+                modifierSprites[i].setScale(scale);
+                modifierSprites[i].setAlpha(alpha);
+                modifierSprites[i].setPosition(sprite.getX(), sprite.getY());
+            }
+        }
     }
 }

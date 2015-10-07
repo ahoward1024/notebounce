@@ -106,7 +106,7 @@ public class Triangle {
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 
-    // TODO add modifiers
+    // TODO add modifierSprites
     public void addModifier(UserData.Modifier modifier) {
 
     }

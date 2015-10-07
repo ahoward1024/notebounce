@@ -388,13 +388,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
-		// Destroy the current ball in the world (if there is one) so another can be shot
-		// Stop any sound (if it was playing)
-		// This essentially "resets" the level
-		if(Inputs.f && ballShot) {
-			reset();
-		}
-
 		if(moveBall) {
 			moveBall();
 		}
@@ -440,6 +433,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	boolean updateColor = false;
 	boolean updateShade = false;
 	boolean updateTriangle = false;
+	boolean updateModifier = false;
 	boolean editplace = false;
 	@Override
 	public void render() {
@@ -552,12 +546,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				}
 			}
 
+			// Painting
 			if(Edit.toolState == Edit.Tool.paint) {
 				Gdx.input.setCursorImage(pencil, 0, 0);
 				switch(Edit.typeState) {
 					case box: {
 
-						// Get all inputs to set the boxe's color
+						// Get all inputs to set the box's color
 						if(Inputs.y) {
 							Edit.colorState = UserData.Color.blue;
 							updateColor = true;
@@ -577,7 +572,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 							updateColor = false;
 						}
 
-						// Get all inputs to set the boxe's shade
+						// Get all inputs to set the box's shade
 						if(Inputs.one) {
 							Edit.shadeState = UserData.Shade.zero;
 							updateShade = true;
@@ -609,9 +604,111 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 							updateShade = false;
 						}
 
+						// Get inputs to set box's modifierSprites
+						if(Inputs.a) {
+							Edit.modifierState = UserData.Modifier.accelerator;
+							updateModifier = true;
+							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
+								m = UserData.ModifierType.none;
+							}
+							if(tmpbox.modifierSprites[4] != null) {
+								tmpbox.modifierSprites[4] = null;
+							}
+						} else if(Inputs.s) {
+							Edit.modifierState = UserData.Modifier.gravity;
+							updateModifier = true;
+							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
+								m = UserData.ModifierType.none;
+							}
+							if(tmpbox.modifierSprites[4] == null) {
+								tmpbox.modifierSprites[4] = new Sprite(new Texture("art/modifiers/g.png"));
+							}
+						} else if(Inputs.d) {
+							Edit.modifierState = UserData.Modifier.dampener;
+							updateModifier = true;
+							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
+								m = UserData.ModifierType.none;
+							}
+							if(tmpbox.modifierSprites[4] != null) {
+								tmpbox.modifierSprites[4] = null;
+							}
+						} else {
+							updateModifier = false;
+						}
+
+						int id = - 1;
+						UserData.ModifierType tmptype = UserData.ModifierType.none;
+						String file = "";
+						if(Edit.modifierState == UserData.Modifier.accelerator) {
+							if(Inputs.up) {
+								id = 0;
+								tmptype = UserData.ModifierType.acceleratorUp;
+								file = "up";
+							} else if(Inputs.down) {
+								id = 1;
+								tmptype = UserData.ModifierType.acceleratorDown;
+								file = "down";
+							} else if(Inputs.left) {
+								id = 2;
+								tmptype = UserData.ModifierType.acceleratorLeft;
+								file = "left";
+							} else if(Inputs.right) {
+								id = 3;
+								tmptype = UserData.ModifierType.acceleratorRight;
+								file = "right";
+							}
+						} else if(Edit.modifierState == UserData.Modifier.dampener) {
+							if(Inputs.up) {
+								id = 0;
+								tmptype = UserData.ModifierType.dampenerUp;
+								file = "upX";
+							} else if(Inputs.down) {
+								id = 1;
+								tmptype = UserData.ModifierType.dampenerDown;
+								file = "downX";
+							} else if(Inputs.left) {
+								id = 2;
+								tmptype = UserData.ModifierType.dampenerLeft;
+								file = "leftX";
+							} else if(Inputs.right) {
+								id = 3;
+								tmptype = UserData.ModifierType.dampenerRight;
+								file = "rightX";
+							}
+						} else if(Edit.modifierState == UserData.Modifier.gravity) {
+							if(Inputs.up) {
+								id = 0;
+								tmptype = UserData.ModifierType.gravityUp;
+								file = "up";
+							} else if(Inputs.down) {
+								id = 1;
+								tmptype = UserData.ModifierType.gravityDown;
+								file = "down";
+							} else if(Inputs.left) {
+								id = 2;
+								tmptype = UserData.ModifierType.gravityLeft;
+								file = "left";
+							} else if(Inputs.right) {
+								id = 3;
+								tmptype = UserData.ModifierType.gravityRight;
+								file = "right";
+							}
+						}
+
+						if(id != -1) {
+							if(tmpbox.modifierSprites[id] == null) {
+								tmpbox.modifierSprites[id] =
+									new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+								tmpbox.userData.modifierTypes[id] = tmptype;
+							} else {
+								tmpbox.modifierSprites[id] = null;
+								tmpbox.userData.modifierTypes[id] = UserData.ModifierType.none;
+							}
+						}
+
 						if(tmpbox == null) {
 							tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
-						} else if(updateColor || updateShade) {
+						} else if(updateColor || updateShade || updateModifier) {
 							tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
 						}
 
@@ -750,68 +847,71 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					case gun: {
 
 
-						int num = - 1;
+						int id = - 1;
 						Vector2 position = new Vector2(0, 0);
 						if(Inputs.numone) {
-							num = 0;
+							id = 0;
 							position = GunPosition.one;
 						} else if(Inputs.numtwo) {
-							num = 1;
+							id = 1;
 							position = GunPosition.two;
 						} else if(Inputs.numthree) {
-							num = 2;
+							id = 2;
 							position = GunPosition.three;
 						} else if(Inputs.numfour) {
-							num = 3;
+							id = 3;
 							position = GunPosition.four;
 						} else if(Inputs.numfive) {
-							num = 4;
+							id = 4;
 							position = GunPosition.five;
 						} else if(Inputs.numsix) {
-							num = 5;
+							id = 5;
 							position = GunPosition.six;
 						} else if(Inputs.numseven) {
-							num = 6;
+							id = 6;
 							position = GunPosition.seven;
 						} else if(Inputs.numeight) {
-							num = 7;
+							id = 7;
 							position = GunPosition.eight;
 						} else if(Inputs.numnine) {
-							num = 8;
+							id = 8;
 							position = GunPosition.nine;
 						}
 
-						if(num != - 1) {
-							if(guns[num] == null) {
-								guns[num] = new Gun(position, scalePercent, num);
-								currentGun = num;
+						if(id != - 1) {
+							if(guns[id] == null) {
+								guns[id] = new Gun(position, scalePercent, id);
+								currentGun = id;
 								ball.setPos(guns[currentGun].center);
 							} else {
-								world.destroyBody(guns[num].body);
-								guns[num] = null;
+								world.destroyBody(guns[id].body);
+								guns[id] = null;
 							}
 						}
 					}
 					break;
 				}
-			} else if(Edit.toolState == Edit.Tool.erase) {
+			} else if(Edit.toolState == Edit.Tool.erase) { // Erasing
 				Gdx.input.setCursorImage(eraser, 0, 0);
 				if(Inputs.mouseleft) {
 					Vector2 click = new Vector2(Inputs.mouse);
 					for(int i = 0; i < boxes.size; i++) {
-						if(Utility.isInsideCircle(click, boxes.get(i).center, boxes.get(i).sprite.getWidth() / 2)) {
+						if(Utility.isInsideCircle(click, boxes.get(i).center,
+							boxes.get(i).sprite.getWidth() / 2)) {
 							world.destroyBody(boxes.get(i).body);
 							boxes.removeIndex(i);
 						}
 					}
 					for(int i = 0; i < triangles.size; i++) {
-						if(Utility.isInsideCircle(click, triangles.get(i).center, triangles.get(i).sprite.getWidth() / 2)) {
+						if(Utility.isInsideCircle(click, triangles.get(i).center,
+							triangles.get(i).sprite.getWidth() / 2)) {
 							world.destroyBody(triangles.get(i).body);
 							triangles.removeIndex(i);
 						}
 					}
 					for(int i = 0; i < goals.size; i++) {
-						if(Utility.isInsideCircle(click, goals.get(i).center, goals.get(i).sprite.getWidth() / 2)) {
+						if(Utility.isInsideCircle(click, goals.get(i).center,
+							goals.get(i).sprite.getWidth() / 2)) {
 							world.destroyBody(goals.get(i).body);
 							goals.removeIndex(i);
 						}
@@ -855,10 +955,20 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		if(tmpbox != null) {
 			tmpbox.sprite.draw(batch);
+			for(int i = 0; i < tmpbox.modifierSprites.length; i++) {
+				if(tmpbox.modifierSprites[i] != null) {
+					tmpbox.modifierSprites[i].draw(batch);
+				}
+			}
 		}
 		// Draw the boxes array
 		for(Box b : boxes) {
 			b.sprite.draw(batch);
+			for(int i = 0; i < b.modifierSprites.length; i++) {
+				if(b.modifierSprites[i] != null) {
+					b.modifierSprites[i].draw(batch);
+				}
+			}
 		}
 
 		if(tmptriangle != null) {
@@ -954,18 +1064,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - 250);
 			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 280);
 			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 310);
-			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 340);
-			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 400);
-			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 430);
-			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 460);
-			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 490);
-			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 520);
+			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10,
+				ScreenHeight - 340);
+			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 400);
+			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 430);
+			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 460);
+			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 490);
+			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 520);
+			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 550);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
+			ScreenHeight - 10);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2, ScreenHeight - 10);
+		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2,
+			ScreenHeight - 10);
 		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
 			ScreenHeight - 40);
 		batch.end(); // Stop the batch drawing
@@ -1016,8 +1130,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		down,
 		left,
 		right
-	}
-	public static void addImpulseToBall(ImpulseType type) { // FIXME resolution independence (possibly fixed)
+	} // FIXME resolution independence (possibly fixed)
+	public static void addImpulseToBall(ImpulseType type) {
 		float additionalImpulseForce = 1.1f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);

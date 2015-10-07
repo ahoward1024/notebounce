@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by Alex on 9/30/2015.
+ * Copyright echosoftworks 2015
  */
 class GunPosition {
     private static float padding = 30 * NoteBounce.scalePercent;
@@ -16,6 +17,4 @@ class GunPosition {
     public static final Vector2 seven = new Vector2(padding, NoteBounce.ScreenHeight - padding);
     public static final Vector2 eight = new Vector2(NoteBounce.ScreenWidth / 2, NoteBounce.ScreenHeight - padding);
     public static final Vector2 nine = new Vector2(NoteBounce.ScreenWidth - padding, NoteBounce.ScreenHeight - padding);
-
-
 }
