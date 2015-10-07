@@ -90,12 +90,12 @@ public class Box {
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
 
-        for(int i = 0; i < modifierSprites.length; i++) {
-            if(modifierSprites[i] != null) {
-                modifierSprites[i].setOrigin(0.0f, 0.0f);
-                modifierSprites[i].setScale(scale);
-                modifierSprites[i].setAlpha(alpha);
-                modifierSprites[i].setPosition(sprite.getX(), sprite.getY());
+        for(Sprite s : modifierSprites) {
+            if(s != null) {
+                s.setOrigin(0.0f, 0.0f);
+                s.setScale(scale);
+                s.setAlpha(alpha);
+                s.setPosition(sprite.getX(), sprite.getY());
             }
         }
     }

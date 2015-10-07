@@ -643,10 +643,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 							Edit.modifierState = UserData.Modifier.dampener;
 							updateModifier = true;
 							for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
-								if(tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityUp) ||
-									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityDown) ||
-									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityLeft) ||
-									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityRight)) {
+								if(tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityUp ||
+									tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityDown ||
+									tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityLeft ||
+									tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityRight) {
 
 									tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
 									tmpbox.modifierSprites[i] = null;
@@ -720,7 +720,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 						if(id != -1) {
 							if(tmpbox.modifierSprites[id] == null) {
-								tmpbox.modifierSprites[id] = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+								tmpbox.modifierSprites[id] =
+									new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
 								tmpbox.userData.modifierTypes[id] = tmptype;
 							} else {
 								tmpbox.modifierSprites[id] = null;
@@ -815,9 +816,123 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						}
 
 						if(tmptriangle == null) {
-							tmptriangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+							tmptriangle = new Triangle(Edit.triangleState, Inputs.mouse, scalePercent,
+								Edit.colorState, Edit.shadeState, 0.5f);
 						} else if(updateColor || updateShade || updateTriangle) {
-							tmptriangle.update(Inputs.mouse, scalePercent, Edit.triangleState, Edit.colorState, Edit.shadeState, 0.5f);
+							tmptriangle.update(Inputs.mouse, scalePercent, Edit.triangleState,
+								Edit.colorState, Edit.shadeState, 0.5f);
+						}
+
+						// Now we set the modifier attributes because the box (and userdata) is not null.
+						// Get inputs to set box's modifierSprites
+						if(Inputs.a) {
+							Edit.modifierState = UserData.Modifier.accelerator;
+							updateModifier = true;
+						} else if(Inputs.d) {
+							Edit.modifierState = UserData.Modifier.dampener;
+							updateModifier = true;
+						} else {
+							updateModifier = false;
+						}
+
+						int id = - 1;
+						UserData.ModifierType tmptype = UserData.ModifierType.none;
+						String file = "";
+						if(Edit.modifierState == UserData.Modifier.accelerator) {
+							if(Edit.triangleState == UserData.Triangle.BotLeft) {
+								if(Inputs.down) {
+									id = 1;
+									tmptype = UserData.ModifierType.acceleratorDown;
+									file = "down";
+								} else if(Inputs.left) {
+									id = 2;
+									tmptype = UserData.ModifierType.acceleratorLeft;
+									file = "left";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.TopLeft) {
+								if(Inputs.up) {
+									id = 0;
+									tmptype = UserData.ModifierType.acceleratorUp;
+									file = "up";
+								} else if(Inputs.left) {
+									id = 2;
+									tmptype = UserData.ModifierType.acceleratorLeft;
+									file = "left";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.BotRight) {
+								if(Inputs.down) {
+									id = 1;
+									tmptype = UserData.ModifierType.acceleratorDown;
+									file = "down";
+								} else if(Inputs.right) {
+									id = 3;
+									tmptype = UserData.ModifierType.acceleratorRight;
+									file = "right";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.TopRight) {
+								if(Inputs.up) {
+									id = 0;
+									tmptype = UserData.ModifierType.acceleratorUp;
+									file = "up";
+								} else if(Inputs.right) {
+									id = 3;
+									tmptype = UserData.ModifierType.acceleratorRight;
+									file = "right";
+								}
+							}
+						} else if(Edit.modifierState == UserData.Modifier.dampener) {
+							if(Edit.triangleState == UserData.Triangle.BotLeft) {
+								if(Inputs.down) {
+									id = 1;
+									tmptype = UserData.ModifierType.dampenerDown;
+									file = "downX";
+								} else if(Inputs.left) {
+									id = 2;
+									tmptype = UserData.ModifierType.dampenerLeft;
+									file = "leftX";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.TopLeft) {
+								if(Inputs.up) {
+									id = 0;
+									tmptype = UserData.ModifierType.dampenerUp;
+									file = "upX";
+								} else if(Inputs.left) {
+									id = 2;
+									tmptype = UserData.ModifierType.dampenerLeft;
+									file = "leftX";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.BotRight) {
+								if(Inputs.down) {
+									id = 1;
+									tmptype = UserData.ModifierType.dampenerDown;
+									file = "downX";
+								} else if(Inputs.right) {
+									id = 3;
+									tmptype = UserData.ModifierType.dampenerRight;
+									file = "rightX";
+								}
+							} else if(Edit.triangleState == UserData.Triangle.TopRight) {
+								if(Inputs.up) {
+									id = 0;
+									tmptype = UserData.ModifierType.dampenerUp;
+									file = "upX";
+								} else if(Inputs.right) {
+									id = 3;
+									tmptype = UserData.ModifierType.dampenerRight;
+									file = "rightX";
+								}
+							}
+						}
+
+						if(id != -1) {
+							if(tmptriangle.modifierSprites[id] == null) {
+								tmptriangle.modifierSprites[id] =
+									new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+								tmptriangle.userData.modifierTypes[id] = tmptype;
+							} else {
+								tmptriangle.modifierSprites[id] = null;
+								tmptriangle.userData.modifierTypes[id] = UserData.ModifierType.none;
+							}
 						}
 
 						if(! Gdx.input.justTouched()) {
@@ -989,9 +1104,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		if(tmptriangle != null) {
 			tmptriangle.sprite.draw(batch);
+			for(int i = 0; i < tmptriangle.modifierSprites.length; i++) {
+				if(tmptriangle.modifierSprites[i] != null) {
+					tmptriangle.modifierSprites[i].draw(batch);
+				}
+			}
 		}
 		for(Triangle t : triangles) {
 			t.sprite.draw(batch);
+			for(int i = 0; i < t.modifierSprites.length; i++) {
+				if(t.modifierSprites[i] != null) {
+					t.modifierSprites[i].draw(batch);
+				}
+			}
 		}
 
 		if(tmpgoal != null) {

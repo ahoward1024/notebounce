@@ -23,6 +23,7 @@ public class Triangle {
     UserData userData = new UserData(UserData.Type.triangle);
     float scale;
     float alpha;
+    Sprite[] modifierSprites = new Sprite[4];
 
     Triangle(UserData.Triangle triangle, Vector2 v, float scale,
              UserData.Color color, UserData.Shade shade, float alpha)
@@ -104,10 +105,14 @@ public class Triangle {
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
 
-    // TODO add modifierSprites
-    public void addModifier(UserData.Modifier modifier) {
-
+        for(Sprite s : modifierSprites) {
+            if(s != null) {
+                s.setOrigin(0.0f, 0.0f);
+                s.setScale(scale);
+                s.setAlpha(alpha);
+                s.setPosition(sprite.getX(), sprite.getY());
+            }
+        }
     }
 }
