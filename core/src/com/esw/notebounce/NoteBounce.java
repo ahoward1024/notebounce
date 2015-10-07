@@ -1083,18 +1083,18 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10,
 				ScreenHeight - 340);
 			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 400);
-			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 430);
-			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 460);
-			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 490);
-			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 520);
 			if(tmpbox != null && tmpbox.userData != null) {
-				int sp = 560;
-				debugMessage.draw(batch, "Mod Types: ", 30, ScreenHeight - sp);
+				int sp = 430;
+				debugMessage.draw(batch, "Modifier Types: ", 10, ScreenHeight - sp);
 				for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
 					sp += 30;
 					debugMessage.draw(batch, i + ": " + tmpbox.userData.modifierTypes[i], 30, ScreenHeight - sp);
 				}
 			}
+			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 610);
+			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 640);
+			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 670);
+			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 700);
 			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 550);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
