@@ -604,12 +604,27 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 							updateShade = false;
 						}
 
+						// CREATE THE BOX
+						if(tmpbox == null) {
+							tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						} else if(updateColor || updateShade || updateModifier) {
+							tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
+						}
+
+						// Now we set the modifier attributes because the box (and userdata) is not null.
 						// Get inputs to set box's modifierSprites
 						if(Inputs.a) {
 							Edit.modifierState = UserData.Modifier.accelerator;
 							updateModifier = true;
-							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
-								m = UserData.ModifierType.none;
+							for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
+								if(tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityUp) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityDown) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityLeft) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityRight)) {
+
+									tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
+									tmpbox.modifierSprites[i] = null;
+								}
 							}
 							if(tmpbox.modifierSprites[4] != null) {
 								tmpbox.modifierSprites[4] = null;
@@ -617,8 +632,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						} else if(Inputs.s) {
 							Edit.modifierState = UserData.Modifier.gravity;
 							updateModifier = true;
-							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
-								m = UserData.ModifierType.none;
+							for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
+								tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
+								tmpbox.modifierSprites[i] = null;
 							}
 							if(tmpbox.modifierSprites[4] == null) {
 								tmpbox.modifierSprites[4] = new Sprite(new Texture("art/modifiers/g.png"));
@@ -626,8 +642,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 						} else if(Inputs.d) {
 							Edit.modifierState = UserData.Modifier.dampener;
 							updateModifier = true;
-							for(UserData.ModifierType m : tmpbox.userData.modifierTypes) {
-								m = UserData.ModifierType.none;
+							for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
+								if(tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityUp) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityDown) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityLeft) ||
+									tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityRight)) {
+
+									tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
+									tmpbox.modifierSprites[i] = null;
+								}
 							}
 							if(tmpbox.modifierSprites[4] != null) {
 								tmpbox.modifierSprites[4] = null;
@@ -697,19 +720,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 						if(id != -1) {
 							if(tmpbox.modifierSprites[id] == null) {
-								tmpbox.modifierSprites[id] =
-									new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+								tmpbox.modifierSprites[id] = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
 								tmpbox.userData.modifierTypes[id] = tmptype;
 							} else {
 								tmpbox.modifierSprites[id] = null;
 								tmpbox.userData.modifierTypes[id] = UserData.ModifierType.none;
 							}
-						}
-
-						if(tmpbox == null) {
-							tmpbox = new Box(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
-						} else if(updateColor || updateShade || updateModifier) {
-							tmpbox.update(Inputs.mouse, scalePercent, Edit.colorState, Edit.shadeState, 0.5f);
 						}
 
 						if(! Gdx.input.justTouched()) {
@@ -1071,6 +1087,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 460);
 			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 490);
 			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 520);
+			if(tmpbox != null && tmpbox.userData != null) {
+				int sp = 560;
+				debugMessage.draw(batch, "Mod Types: ", 30, ScreenHeight - sp);
+				for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
+					sp += 30;
+					debugMessage.draw(batch, i + ": " + tmpbox.userData.modifierTypes[i], 30, ScreenHeight - sp);
+				}
+			}
 			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 550);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);

@@ -65,6 +65,10 @@ public class Box {
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
         bodyEditorLoader.attachFixture(body, "left", fixtureDef, userData, UserData.Edge.left, base * scale);
         bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
+
+        for(int i = 0; i < userData.modifierTypes.length; i++) {
+            userData.modifierTypes[i] = UserData.ModifierType.none;
+        }
     }
 
     public void update(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {

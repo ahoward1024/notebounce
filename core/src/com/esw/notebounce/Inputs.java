@@ -187,9 +187,9 @@ class Inputs {
         e = Gdx.input.isKeyJustPressed(Input.Keys.E); // Triangle BotRight
         r = Gdx.input.isKeyJustPressed(Input.Keys.R); // Triangle BotRight
 
-        a = Gdx.input.isKeyPressed(Input.Keys.A); // Acceleration modifier
-        s = Gdx.input.isKeyPressed(Input.Keys.S); // Gravity modifier
-        d = Gdx.input.isKeyPressed(Input.Keys.D); // Dampen modifier
+        a = Gdx.input.isKeyJustPressed(Input.Keys.A); // Acceleration modifier
+        s = Gdx.input.isKeyJustPressed(Input.Keys.S); // Gravity modifier
+        d = Gdx.input.isKeyJustPressed(Input.Keys.D); // Dampen modifier
 
         up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
         down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
