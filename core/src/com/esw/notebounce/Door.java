@@ -19,8 +19,6 @@ import aurelienribon.bodyeditor.BodyEditorLoader;
 public class Door {
 
     Sprite sprite;
-    final Sprite openSprite;
-    final Sprite shutSprite;
     Vector2 center = new Vector2(0,0);
     Body body;
     UserData userData = new UserData(UserData.Type.door);
@@ -39,24 +37,71 @@ public class Door {
         horizontal
     }
 
-    Door(Vector2 v, float scale, State state, Plane plane) {
+    Door(Vector2 v, State state, Plane plane, float scale,  float alpha) {
         this.scale = scale;
         this.state = state;
         this.plane = plane;
+        this.alpha = alpha;
 
-        openSprite = new Sprite(new Texture(Gdx.files.internal("art/doors/open" + plane + ".png")));
-        shutSprite = new Sprite(new Texture(Gdx.files.internal("art/doors/shut" + plane + ".png")));
-
-        if(state == State.open) sprite = new Sprite(openSprite);
-        else sprite = new Sprite(shutSprite);
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
 
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
-        //sprite.setAlpha(alpha);
+        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+
+        loadfixtures();
+    }
+
+    public void update(Vector2 v, State state, Plane plane, float scale, float alpha) {
+        sprite.setOrigin(0.0f, 0.0f);
+        sprite.setAlpha(alpha);
+        sprite.setScale(scale);
+
+        this.state = state;
+        this.plane = plane;
+
+        if(state == State.open) open();
+        else shut();
+
+        setPos(v);
+
+        loadfixtures();
+    }
+
+    public void setPos(Vector2 v) {
+        sprite.setPosition(v.x, v.y);
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
+    }
+
+    // TODO collision masking
+    public void open() {
+        Vector2 v = new Vector2(sprite.getX(), sprite.getY());
+
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite.setAlpha(alpha);
+        setPos(v);
+    }
+
+    public void shut() {
+        Vector2 v = new Vector2(sprite.getX(), sprite.getY());
+
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite.setAlpha(alpha);
+        setPos(v);
+    }
+
+    public void loadfixtures() {
+
+        if(body != null) {
+            NoteBounce.world.destroyBody(body);
+            body = null;
+        }
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -78,43 +123,5 @@ public class Door {
         bodyEditorLoader.attachFixture(body, "cap2", fixtureDef, userData, base * scale);
 
         if(state == State.shut) bodyEditorLoader.attachFixture(body, "strut", fixtureDef, userData, base * scale);
-    }
-
-    public void update(Vector2 v, float scale, float alpha) {
-        sprite.setOrigin(0.0f, 0.0f);
-        sprite.setAlpha(alpha);
-        sprite.setScale(scale);
-
-        setPos(v);
-    }
-
-    public void setPos(Vector2 v) {
-        sprite.setPosition(v.x, v.y);
-        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
-        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
-        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
-    }
-
-    // TODO collision masks
-    public void open() {
-        if(state == State.shut) state = State.open;
-        else throw new IllegalStateException("Door is already open!!");
-
-        Vector2 v = new Vector2(sprite.getX(), sprite.getY());
-
-        sprite = new Sprite(openSprite);
-        setPos(v);
-
-
-    }
-
-    public void shut() {
-        if(state == State.open) state = State.shut;
-        else throw new IllegalStateException("Door is already shut!!");
-
-        Vector2 v = new Vector2(sprite.getX(), sprite.getY());
-
-        sprite = new Sprite(shutSprite);
-        setPos(v);
     }
 }

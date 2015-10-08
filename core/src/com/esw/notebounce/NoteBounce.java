@@ -205,10 +205,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
 
-		doors.add(new Door(new Vector2(120, 120), scalePercent, Door.State.open, Door.Plane.vertical));
-		doors.add(new Door(new Vector2(240, 240), scalePercent, Door.State.shut, Door.Plane.vertical));
-		doors.add(new Door(new Vector2(480, 480), scalePercent, Door.State.open, Door.Plane.horizontal));
-		doors.add(new Door(new Vector2(540, 540), scalePercent, Door.State.shut, Door.Plane.horizontal));
 	}
 
 	@Override
@@ -436,10 +432,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Box tmpbox = null;
 	Goal tmpgoal = null;
 	Triangle tmptriangle = null;
+	Door tmpdoor = null;
 	boolean updateColor = false;
 	boolean updateShade = false;
 	boolean updateTriangle = false;
 	boolean updateModifier = false;
+	boolean updateDoor = false;
 	boolean editplace = false;
 	@Override
 	public void render() {
@@ -463,6 +461,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(tmpbox != null) { world.destroyBody(tmpbox.body); tmpbox = null; }
 			if(tmptriangle != null) { world.destroyBody(tmptriangle.body); tmptriangle = null; }
 			if(tmpgoal != null) { world.destroyBody(tmpgoal.body); tmpgoal = null; }
+			if(tmpdoor != null) { world.destroyBody(tmpdoor.body); tmpdoor = null; }
 
 			// Update all of the sprites
 			Inputs.getGameInputs();
@@ -477,6 +476,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
+			// TODO refactor this nastiness
+			// todo create a destroyAllOthers() function
+			// todo simplify the boolean checks
 			Inputs.getEditInputs();
 
 			// Toggle grid
@@ -496,6 +498,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					world.destroyBody(tmpgoal.body);
 					tmpgoal = null;
 				}
+				if(tmpdoor != null) {
+					world.destroyBody(tmpdoor.body);
+					tmpdoor = null;
+				}
 			} else if(Inputs.t) { // Triangle
 				Edit.typeState = UserData.Type.triangle;
 				if(tmpbox != null) {
@@ -505,6 +511,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				if(tmpgoal != null) {
 					world.destroyBody(tmpgoal.body);
 					tmpgoal = null;
+				}
+				if(tmpdoor != null) {
+					world.destroyBody(tmpdoor.body);
+					tmpdoor = null;
 				}
 			} else if(Inputs.g) { // Gun
 				Edit.typeState = UserData.Type.gun;
@@ -520,6 +530,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					world.destroyBody(tmpgoal.body);
 					tmpgoal = null;
 				}
+				if(tmpdoor != null) {
+					world.destroyBody(tmpdoor.body);
+					tmpdoor = null;
+				}
 			} else if(Inputs.v) { // Goal
 				Edit.typeState = UserData.Type.goal;
 				if(tmpbox != null) {
@@ -529,6 +543,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				if(tmptriangle != null) {
 					world.destroyBody(tmptriangle.body);
 					tmptriangle = null;
+				}
+				if(tmpdoor != null) {
+					world.destroyBody(tmpdoor.body);
+					tmpdoor = null;
 				}
 			} else if(Inputs.m) {
 				Edit.typeState = UserData.Type.door;
@@ -563,6 +581,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				if(tmpgoal != null) {
 					world.destroyBody(tmpgoal.body);
 					tmpgoal = null;
+				}
+				if(tmpdoor != null) {
+					world.destroyBody(tmpdoor.body);
+					tmpdoor = null;
 				}
 			}
 
@@ -997,7 +1019,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					}
 					case gun: {
 
-
 						int id = - 1;
 						Vector2 position = new Vector2(0, 0);
 						if(Inputs.numone) {
@@ -1042,6 +1063,39 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					} break;
 					case door: {
 
+						if(Inputs.comma) {
+							Edit.doorState = Door.State.shut;
+							updateDoor = true;
+						} else if(Inputs.period) {
+							Edit.doorState = Door.State.open;
+							updateDoor = true;
+						}
+
+						if(Inputs.semicolon) {
+							Edit.doorPlane = Door.Plane.vertical;
+							updateDoor = true;
+						} else if(Inputs.singlequote) {
+							Edit.doorPlane = Door.Plane.horizontal;
+							updateDoor = true;
+						}
+
+						if(tmpdoor == null) {
+							tmpdoor = new Door(Inputs.mouse, Edit.doorState, Edit.doorPlane, scalePercent, 0.5f);
+						} else if(updateDoor) {
+							tmpdoor.update(Inputs.mouse, Edit.doorState, Edit.doorPlane, scalePercent, 0.5f);
+							updateDoor = false;
+						}
+
+						if(! Gdx.input.justTouched()) {
+							Vector2 v = new Vector2(0, 0);
+							v.x = (float) Math.floor(Inputs.mouse.x / midlines) * midlines;
+							v.y = (float) Math.floor(Inputs.mouse.y / midlines) * midlines;
+							tmpdoor.setPos(v);
+						} else {
+							tmpdoor.sprite.setAlpha(1.0f);
+							doors.add(tmpdoor);
+							tmpdoor = null;
+						}
 					} break;
 				}
 			} else if(Edit.toolState == Edit.Tool.erase) { // Erasing
@@ -1141,6 +1195,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
+		if(tmpdoor != null) {
+			tmpdoor.sprite.draw(batch);
+		}
 		for(Door d : doors) {
 			d.sprite.draw(batch);
 			if(Inputs.l) {
@@ -1239,14 +1296,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10,
 				ScreenHeight - 340);
 			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 400);
-			if(tmpbox != null && tmpbox.userData != null) {
-				int sp = 430;
-				debugMessage.draw(batch, "Modifier Types: ", 10, ScreenHeight - sp);
-				for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
-					sp += 30;
-					debugMessage.draw(batch, i + ": " + tmpbox.userData.modifierTypes[i], 30, ScreenHeight - sp);
-				}
-			}
+			debugMessage.draw(batch, "Door: " + Edit.doorState + " | " + Edit.doorPlane, 10, ScreenHeight - 430);
 			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 610);
 			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 640);
 			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 670);

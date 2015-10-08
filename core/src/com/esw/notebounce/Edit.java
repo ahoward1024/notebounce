@@ -12,6 +12,8 @@ public class Edit {
     public static UserData.Shade shadeState = UserData.Shade.zero;
     public static UserData.Triangle triangleState = UserData.Triangle.BotLeft;
     public static UserData.Modifier modifierState = UserData.Modifier.accelerator;
+    public static Door.State doorState = Door.State.shut;
+    public static Door.Plane doorPlane = Door.Plane.vertical;
     public static Grid grid = Grid.off;
 
     public enum Tool {

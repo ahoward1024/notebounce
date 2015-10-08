@@ -194,8 +194,10 @@ class Inputs {
         d = Gdx.input.isKeyJustPressed(Input.Keys.D); // Dampen modifier
 
         m = Gdx.input.isKeyJustPressed(Input.Keys.M); // Doors
-        comma = Gdx.input.isKeyJustPressed(Input.Keys.COMMA);
-        period = Gdx.input.isKeyJustPressed(Input.Keys.PERIOD);
+        comma = Gdx.input.isKeyJustPressed(Input.Keys.COMMA); // Door shut
+        period = Gdx.input.isKeyJustPressed(Input.Keys.PERIOD); // Door open
+        semicolon = Gdx.input.isKeyJustPressed(Input.Keys.SEMICOLON); // Door open
+        singlequote = Gdx.input.isKeyJustPressed(Input.Keys.APOSTROPHE); // Door open
 
         up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
         down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
