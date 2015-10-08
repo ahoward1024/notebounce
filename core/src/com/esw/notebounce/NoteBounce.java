@@ -101,6 +101,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	Array<Box> boxes = new Array<Box>();
 	Array<Goal> goals = new Array<Goal>();
 	Array<Triangle> triangles = new Array<Triangle>();
+	Array<Door> doors = new Array<Door>();
 	Gun[] guns = new Gun[9];
 	static int currentGun = 0;
 	static int currentBox = 0;
@@ -203,6 +204,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
+
+		doors.add(new Door(new Vector2(120, 120), scalePercent, Door.State.open, Door.Plane.vertical));
+		doors.add(new Door(new Vector2(240, 240), scalePercent, Door.State.shut, Door.Plane.vertical));
+		doors.add(new Door(new Vector2(480, 480), scalePercent, Door.State.open, Door.Plane.horizontal));
+		doors.add(new Door(new Vector2(540, 540), scalePercent, Door.State.shut, Door.Plane.horizontal));
 	}
 
 	@Override
@@ -495,7 +501,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				if(tmpbox != null) {
 					world.destroyBody(tmpbox.body);
 					tmpbox = null;
-				}if(tmpgoal != null) {
+				}
+				if(tmpgoal != null) {
 					world.destroyBody(tmpgoal.body);
 					tmpgoal = null;
 				}
@@ -523,12 +530,25 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					world.destroyBody(tmptriangle.body);
 					tmptriangle = null;
 				}
+			} else if(Inputs.m) {
+				Edit.typeState = UserData.Type.door;
+				if(tmpbox != null) {
+					world.destroyBody(tmpbox.body);
+					tmpbox = null;
+				}
+				if(tmptriangle != null) {
+					world.destroyBody(tmptriangle.body);
+					tmptriangle = null;
+				}
+				if(tmpgoal != null) {
+					world.destroyBody(tmpgoal.body);
+					tmpgoal = null;
+				}
 			} else if (Inputs.c) {
 				if(Edit.toolState == Edit.Tool.paint) {
 					Edit.toolState = Edit.Tool.erase;
 
-				}
-				else if(Edit.toolState == Edit.Tool.erase) {
+				} else if(Edit.toolState == Edit.Tool.erase) {
 					Edit.toolState = Edit.Tool.paint;
 				}
 
@@ -1019,8 +1039,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 								guns[id] = null;
 							}
 						}
-					}
-					break;
+					} break;
+					case door: {
+
+					} break;
 				}
 			} else if(Edit.toolState == Edit.Tool.erase) { // Erasing
 				Gdx.input.setCursorImage(eraser, 0, 0);
@@ -1118,6 +1140,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				}
 			}
 		}
+
+		for(Door d : doors) {
+			d.sprite.draw(batch);
+			if(Inputs.l) {
+				if(d.state == Door.State.open) d.shut();
+				else d.open();
+			}
+		}
+
 
 		if(tmpgoal != null) {
 			tmpgoal.sprite.draw(batch);

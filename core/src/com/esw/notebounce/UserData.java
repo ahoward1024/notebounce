@@ -25,6 +25,7 @@ public class UserData {
         ball,
         sim,
         gun,
+        door,
 
         none
     }

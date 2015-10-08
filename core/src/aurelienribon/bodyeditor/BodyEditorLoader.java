@@ -115,6 +115,10 @@ public class BodyEditorLoader {
         }
     }
 
+    public void attachFixture(Body body, String name, FixtureDef fd, UserData userData, float scale) {
+        attachFixture(body, name, fd, userData, UserData.Edge.none, scale);
+    }
+
     /**
      * Gets the origin point attached to the given name. Since the point is
      * normalized in [0,1] coordinates, it needs to be scaled to your body

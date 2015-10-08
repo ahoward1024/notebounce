@@ -63,7 +63,7 @@ class Inputs {
     static boolean n;            static boolean N;
     static boolean m;            static boolean M;
     static boolean comma;        static boolean leftangle;
-    static boolean dot;          static boolean rightangle;
+    static boolean period;          static boolean rightangle;
     static boolean forwardslash; static boolean question;
     static boolean space;
 
@@ -161,6 +161,8 @@ class Inputs {
         space = Gdx.input.isKeyJustPressed(Input.Keys.SPACE); // Next level
 
         tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
+
+        l = Gdx.input.isKeyJustPressed(Input.Keys.L);
     }
 
     /**
@@ -190,6 +192,10 @@ class Inputs {
         a = Gdx.input.isKeyJustPressed(Input.Keys.A); // Acceleration modifier
         s = Gdx.input.isKeyJustPressed(Input.Keys.S); // Gravity modifier
         d = Gdx.input.isKeyJustPressed(Input.Keys.D); // Dampen modifier
+
+        m = Gdx.input.isKeyJustPressed(Input.Keys.M); // Doors
+        comma = Gdx.input.isKeyJustPressed(Input.Keys.COMMA);
+        period = Gdx.input.isKeyJustPressed(Input.Keys.PERIOD);
 
         up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
         down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
