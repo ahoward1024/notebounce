@@ -71,7 +71,7 @@ public class Box {
         }
     }
 
-    public void update(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, float alpha) {
+    public void update(Vector2 v, UserData.Color color, UserData.Shade shade, float alpha) {
         userData.color = color;
         userData.shade = shade;
 

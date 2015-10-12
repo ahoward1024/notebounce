@@ -36,11 +36,12 @@ public class Door {
         horizontal
     }
 
-    Door(Vector2 v, State state, Plane plane, float scale,  float alpha) {
+    Door(Vector2 v, State state, Plane plane, float scale,  float alpha, int id) {
         this.scale = scale;
         this.state = state;
         this.plane = plane;
         this.alpha = alpha;
+        userData.id = id;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
 

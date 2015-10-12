@@ -102,6 +102,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<Goal> goals = new Array<Goal>();
 	static Array<Triangle> triangles = new Array<Triangle>();
 	static Array<Door> doors = new Array<Door>();
+	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
 	static Gun[] guns = new Gun[9];
 	static int currentGun = 0;
 	static int currentBox = 0;
@@ -448,6 +449,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(Edit.tmptriangle != null) { world.destroyBody(Edit.tmptriangle.body); Edit.tmptriangle = null; }
 			if(Edit.tmpgoal != null) { world.destroyBody(Edit.tmpgoal.body); Edit.tmpgoal = null; }
 			if(Edit.tmpdoor != null) { world.destroyBody(Edit.tmpdoor.body); Edit.tmpdoor = null; }
+			if(Edit.tmpswitch != null) { world.destroyBody(Edit.tmpswitch.body); Edit.tmpswitch = null; }
 
 			// Update all of the sprites
 			Inputs.getGameInputs();
@@ -462,7 +464,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
-			Edit.editLevel();
+			Edit.editLevel(); // TODO massively clean up editing
 		}
 
 		// ================ RENDER ================//
@@ -493,6 +495,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			Vector2 tmp = simcoords.get(i);
 			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite.getWidth()/2) * scalePercent);
 		}
+
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
@@ -537,10 +540,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 		for(Door d : doors) {
 			d.sprite.draw(batch);
-			if(Inputs.l) {
-				if(d.state == Door.State.open) d.shut();
-				else d.open();
-			}
+		}
+
+		if(Edit.tmpswitch != null) {
+			Edit.tmpswitch.sprite.draw(batch);
+		}
+		for(DoorSwitch ds : switches) {
+			ds.sprite.draw(batch);
 		}
 
 
@@ -655,6 +661,16 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(edit) {
 			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
 			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+
+			// If we are in edit mode we are going to draw lines between the door and the switch it
+			// corresponds to.
+			debugShapeRenderer.begin();
+			for(int i = 0; i < doors.size && i < switches.size; i++) {
+				Vector2 d = doors.get(i).center;
+				Vector2 s = switches.get(i).center;
+				debugShapeRenderer.line(d,s);
+			}
+			debugShapeRenderer.end();
 		}
 
 		if(Edit.drawGrid) {
