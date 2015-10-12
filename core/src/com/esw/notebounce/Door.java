@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
@@ -57,6 +56,9 @@ public class Door {
     }
 
     public void update(Vector2 v, State state, Plane plane, float scale, float alpha) {
+        this.scale = scale;
+        this.alpha = alpha;
+
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setAlpha(alpha);
         sprite.setScale(scale);
@@ -84,7 +86,9 @@ public class Door {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite.setOrigin(0.0f, 0.0f);
         sprite.setAlpha(alpha);
+        sprite.setScale(scale);
         setPos(v);
     }
 
@@ -92,7 +96,9 @@ public class Door {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite.setOrigin(0.0f, 0.0f);
         sprite.setAlpha(alpha);
+        sprite.setScale(scale);
         setPos(v);
     }
 
