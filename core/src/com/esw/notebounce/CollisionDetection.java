@@ -75,15 +75,18 @@ public class CollisionDetection implements ContactListener {
         UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
-       //if(!udb.getType().equals(UserData.Type.sim)) {
+        //if(!udb.getType().equals(UserData.Type.sim)) {
         //    System.out.println("UD a: " + uda.toString()); // DEBUG
         //    System.out.println("UD b: " + udb.toString()); // DEBUG
         //}  // DEBUG
 
         int notePtr = NoteBounce.notePtr;
 
-        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.gun))
-        { simhit = true; }
+        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.gun) &&
+            !uda.type.equals(UserData.Type.doorswitch))
+        {
+            simhit = true;
+        }
 
         // Test if tmpgoal was hit
         if(uda.color.equals(UserData.Color.goal) && udb.type.equals(UserData.Type.ball)) {
@@ -110,9 +113,10 @@ public class CollisionDetection implements ContactListener {
             }
         }
 
-        // Play a note if the ball hits anything besides the gun or tmpgoal
+        // Play a note if the ball hits anything besides the gun or tmpgoal or doors or switches
         if(udb.type.equals(UserData.Type.ball) && !uda.type.equals(UserData.Type.gun) &&
-            !uda.color.equals(UserData.Color.goal)) {
+            !uda.type.equals(UserData.Color.goal) && !uda.type.equals(UserData.Type.door) &&
+            !uda.type.equals(UserData.Type.doorswitch)) {
             if(thresholdVelocityY(fb, 2.0f)) NoteBounce.playNote(0);
             else if((uda.edge.equals(UserData.Edge.left) ||
                 uda.edge.equals(UserData.Edge.right)) && thresholdVelocityX(fb, 2.0f)) {
@@ -122,6 +126,19 @@ public class CollisionDetection implements ContactListener {
 
         if(udb.type.equals(UserData.Type.ball) && uda.type.equals(UserData.Type.gun)) {
             NoteBounce.currentGun = uda.id;
+        }
+
+        // Door switching
+        // TODO fix playing notes on door collision
+        if(udb.type.equals(UserData.Type.ball) && uda.type.equals(UserData.Type.doorswitch)) {
+            DoorSwitch s = NoteBounce.switches.get(uda.id);
+            if(s.active) {
+                s.trip();
+                Door d = NoteBounce.doors.get(uda.id);
+                d.body.getFixtureList().first().setSensor(!d.body.getFixtureList().first().isSensor());
+                if(d.state == Door.State.open) d.shut();
+                else if(d.state == Door.State.shut) d.open();
+            }
         }
 
         // If notes are allowed to be played at this time then we handle all of the

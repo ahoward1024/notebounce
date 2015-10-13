@@ -224,8 +224,6 @@ public class Edit {
                     // CREATE THE BOX
                     if(tmpbox == null) {
                         tmpbox = new Box(Inputs.mouse, NoteBounce.scalePercent, colorState, shadeState, 0.5f);
-                    } else {
-                        tmpbox.update(Inputs.mouse, colorState, shadeState, 0.5f);
                     }
 
                     // Now we set the modifier attributes because the box (and userdata) is not null.
@@ -341,7 +339,12 @@ public class Edit {
                         }
                     }
 
-                    if(! Gdx.input.justTouched()) {
+                    if(Gdx.input.justTouched()) {
+                        tmpbox.sprite.setAlpha(1.0f);
+                        NoteBounce.boxes.add(tmpbox);
+                        tmpbox = null;
+
+                    } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.ctrl) {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
@@ -350,11 +353,7 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmpbox.setPos(v);
-                    } else {
-                        tmpbox.sprite.setAlpha(1.0f);
-                        NoteBounce.boxes.add(tmpbox);
-                        tmpbox = null;
+                        tmpbox.update(v, colorState, shadeState, 0.5f);
                     }
 
                 }
@@ -405,9 +404,6 @@ public class Edit {
 
                     if(tmptriangle == null) {
                         tmptriangle = new Triangle(triangleState, Inputs.mouse, NoteBounce.scalePercent,
-                                colorState, shadeState, 0.5f);
-                    } else {
-                        tmptriangle.update(Inputs.mouse, NoteBounce.scalePercent, triangleState,
                                 colorState, shadeState, 0.5f);
                     }
 
@@ -519,7 +515,11 @@ public class Edit {
                         }
                     }
 
-                    if(! Gdx.input.justTouched()) {
+                    if(Gdx.input.justTouched()) {
+                        tmptriangle.sprite.setAlpha(1.0f);
+                        NoteBounce.triangles.add(tmptriangle);
+                        tmptriangle = null;
+                    } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.ctrl) {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
@@ -528,12 +528,10 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmptriangle.setPos(v);
-                    } else {
-                        tmptriangle.sprite.setAlpha(1.0f);
-                        NoteBounce.triangles.add(tmptriangle);
-                        tmptriangle = null;
+                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState, 0.5f);
                     }
+
+
 
                 }
                 break;

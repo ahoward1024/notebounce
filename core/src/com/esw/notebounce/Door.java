@@ -82,25 +82,22 @@ public class Door {
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 
-    // TODO collision masking
     public void open() {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/open" + plane + ".png")));
         sprite.setOrigin(0.0f, 0.0f);
-        sprite.setAlpha(alpha);
         sprite.setScale(scale);
-        setPos(v);
+        sprite.setPosition(v.x, v.y);
     }
 
     public void shut() {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/shut" + plane + ".png")));
         sprite.setOrigin(0.0f, 0.0f);
-        sprite.setAlpha(alpha);
         sprite.setScale(scale);
-        setPos(v);
+        sprite.setPosition(v.x, v.y);
     }
 
     public void loadfixtures() {
@@ -126,9 +123,10 @@ public class Door {
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        bodyEditorLoader.attachFixture(body, "strut", fixtureDef, userData, base * scale);
         bodyEditorLoader.attachFixture(body, "cap1", fixtureDef, userData, base * scale);
         bodyEditorLoader.attachFixture(body, "cap2", fixtureDef, userData, base * scale);
 
-        if(state == State.shut) bodyEditorLoader.attachFixture(body, "strut", fixtureDef, userData, base * scale);
+        if(state == State.open) body.getFixtureList().first().setSensor(true);
     }
 }

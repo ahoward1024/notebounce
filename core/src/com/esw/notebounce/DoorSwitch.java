@@ -24,6 +24,8 @@ public class DoorSwitch {
 
     UserData userData = new UserData(UserData.Type.doorswitch);
 
+    boolean active = true;
+
     DoorSwitch(Vector2 v, float scale, float alpha, int id) {
         this.scale = scale;
         this.alpha = alpha;
@@ -40,14 +42,13 @@ public class DoorSwitch {
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
 
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.KinematicBody;
+        bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
 
         body = NoteBounce.world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 1.0f;
-        fixtureDef.restitution = 0.0f;
+        fixtureDef.isSensor = true;
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(((sprite.getWidth() / 16) * scale) / NoteBounce.PIXELS2METERS,
@@ -72,6 +73,7 @@ public class DoorSwitch {
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
 
+        active = false;
     }
 
 

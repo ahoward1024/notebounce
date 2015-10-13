@@ -114,14 +114,18 @@ public class UserData {
 
     @Override
     public String toString() {
-        String output = "" + type;
-        if(triangle != Triangle.none) output += " : " + triangle;
-        if(edge != Edge.none) output += " : " + edge;
-        output += " : " + color + " : " + shade.ordinal();
-        if(modifierTypes.length > 0) {
-            output += "[";
+        String output = "Type: [" + type + "]";
+        if(triangle != Triangle.none) output += " Triangle : [" + triangle + "]";
+        if(edge != Edge.none) output += " Edge : [" + edge + "]";
+        if(color != Color.none) output += " Color : [" + color + "] Shade : [" + shade.ordinal() + "]";
+        ModifierType m = null;
+        for(ModifierType mod : modifierTypes) {
+            m = mod;
+        }
+        if(m != null) {
+            output += " Modifiers : [";
             for(ModifierType mod : modifierTypes) {
-                output += ", " + mod.name();
+                if(mod != null) output += ", " + mod.name();
             }
             output += "]";
         }
