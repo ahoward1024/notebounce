@@ -69,36 +69,32 @@ public class CollisionDetection implements ContactListener {
     public void beginContact(Contact c) {
         final float lastNoteTime = 0.8f; // The minimum time between two notes
 
-        Fixture fa = c.getFixtureA();
-        Fixture fb = c.getFixtureB();
+        Fixture fa = c.getFixtureA(); // Static or kinematic fixture
+        Fixture fb = c.getFixtureB(); // Dynamic fixture
 
         UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
-        //if(!udb.getType().equals(UserData.Type.sim)) {
-        //    System.out.println("UD a: " + uda.toString()); // DEBUG
-        //    System.out.println("UD b: " + udb.toString()); // DEBUG
+        //if(udb.type.equals(UserData.Type.sim)) {
+        //if(udb.type.equals(UserData.Type.ball)) {
+            //System.out.println("UD a: " + uda.toString()); // DEBUG
+            //System.out.println("UD b: " + udb.toString()); // DEBUG
         //}  // DEBUG
 
         int notePtr = NoteBounce.notePtr;
 
-        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.gun) &&
-            !uda.type.equals(UserData.Type.doorswitch))
-        {
-            simhit = true;
-        }
-
-        // Test if tmpgoal was hit
-        if(uda.color.equals(UserData.Color.goal) && udb.type.equals(UserData.Type.ball)) {
-            NoteBounce.goalHit = true;
-            // Play the tmpgoal noise if it was not already playing
-            if(!NoteBounce.goalNoisePlaying) {
-                NoteBounce.playGoalNoise();//goalNoise.play();
+        // SIMULATION BALL: =============================================================================
+        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
+            if(uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun)) {
+                simhit = true;
             }
         }
 
+        // SEMI DEBUG:
+        // We need to calculate this for the simulation and the ball itself
+        // todo clean this up later
         if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))
-            && uda.type.equals(UserData.Color.yellow)) {
+            && uda.color.equals(UserData.Color.yellow)) {
             if(uda.edge.equals(UserData.Edge.top)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
             }
@@ -112,34 +108,99 @@ public class CollisionDetection implements ContactListener {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
             }
         }
+        //===============================================================================================
 
-        // Play a note if the ball hits anything besides the gun or tmpgoal or doors or switches
-        if(udb.type.equals(UserData.Type.ball) && !uda.type.equals(UserData.Type.gun) &&
-            !uda.type.equals(UserData.Color.goal) && !uda.type.equals(UserData.Type.door) &&
-            !uda.type.equals(UserData.Type.doorswitch)) {
-            if(thresholdVelocityY(fb, 2.0f)) NoteBounce.playNote(0);
-            else if((uda.edge.equals(UserData.Edge.left) ||
-                uda.edge.equals(UserData.Edge.right)) && thresholdVelocityX(fb, 2.0f)) {
-                NoteBounce.playNote(0);
+        // BALL: ========================================================================================
+
+        if(udb.type.equals(UserData.Type.ball)) {
+            // If the ball hits a goal.
+            if(uda.type.equals(UserData.Type.goal)) {
+                NoteBounce.goalHit = true;
+                // Play the goal noise if it was not already playing
+                if(!NoteBounce.goalNoisePlaying) {
+                    NoteBounce.playGoalNoise();//goalNoise.play();
+                }
+            }
+
+            if(NoteBounce.playNotes) {
+                // If the ball hits anything that plays will play a note, play a note.
+
+                if(uda.type.equals(UserData.Type.box)) {
+                    switch(uda.color) {
+                        case blue: {
+                            NoteBounce.playNote(1);
+                        }
+                        break;
+                        case green: {
+                            NoteBounce.playNote(2);
+                        }
+                        break;
+                        case cyan: {
+                            NoteBounce.playNote(3);
+                        }
+                        break;
+                        case magenta: {
+                            NoteBounce.playNote(4);
+                        }
+                        break;
+                        case yellow: {
+                            NoteBounce.playNote(5);
+                        }
+                        break;
+                    }
+                }
+
+                if(uda.type.equals(UserData.Type.boundary)) {
+                    if(NoteBounce.gravityDirection.equals("Down") ||
+                        NoteBounce.gravityDirection.equals("Up")) {
+                        if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
+                            if(thresholdVelocityY(fb, 3.2f)) {
+                                NoteBounce.playNote(0);
+                            }
+                        } else {
+                            NoteBounce.playNote(0);
+                        }
+                    } else if(NoteBounce.gravityDirection.equals("Left") ||
+                        NoteBounce.gravityDirection.equals("Right")) {
+                        if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
+                            if(thresholdVelocityX(fb, 3.2f)) {
+                                NoteBounce.playNote(0);
+                            }
+                        } else {
+                            NoteBounce.playNote(0);
+                        }
+                    }
+                }
+            }
+
+            // If the ball hits a gun
+            if(uda.type.equals(UserData.Type.gun)) {
+                // If the hit gun is not the current gun
+                if(uda.id != NoteBounce.currentGun) {
+                    NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
+                    // We set reset to true because calling an external function that updates the
+                    // Box2D world while the world is locked (eg. when calculating collisions)
+                    // we will get at assertion
+                    NoteBounce.reset = true;
+                }
+            }
+
+            // If the ball hits a doorswitch
+            // TODO fix playing notes on door collision (??? perhaps do not play notes ???)
+            if(uda.type.equals(UserData.Type.doorswitch)) {
+                DoorSwitch s = NoteBounce.switches.get(uda.id);
+                // Only switch if the door switch is active (has not been hit before)
+                if(s.active) {
+                    s.trip();
+                    Door d = NoteBounce.doors.get(uda.id);
+                    d.body.getFixtureList().first().setSensor(!d.body.getFixtureList().first().isSensor());
+                    if(d.state == Door.State.open) d.shut();
+                    else if(d.state == Door.State.shut) d.open();
+                }
             }
         }
 
-        if(udb.type.equals(UserData.Type.ball) && uda.type.equals(UserData.Type.gun)) {
-            NoteBounce.currentGun = uda.id;
-        }
-
-        // Door switching
-        // TODO fix playing notes on door collision
-        if(udb.type.equals(UserData.Type.ball) && uda.type.equals(UserData.Type.doorswitch)) {
-            DoorSwitch s = NoteBounce.switches.get(uda.id);
-            if(s.active) {
-                s.trip();
-                Door d = NoteBounce.doors.get(uda.id);
-                d.body.getFixtureList().first().setSensor(!d.body.getFixtureList().first().isSensor());
-                if(d.state == Door.State.open) d.shut();
-                else if(d.state == Door.State.shut) d.open();
-            }
-        }
+        //===============================================================================================
 
         // If notes are allowed to be played at this time then we handle all of the
         // collisions involved with a note block.

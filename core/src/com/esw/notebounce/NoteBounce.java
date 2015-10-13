@@ -29,6 +29,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	public static final int basew = 1920, baseh = 1080;
 	public static final float originalGravity = -200.0f;
 	public static float gravity = originalGravity;
+	public static String gravityDirection = "Down";
 
 //=====================================================================================================//
 
@@ -62,7 +63,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	CollisionDetection collisionDetector;
 
 	float goalTextTimer = 0.0f;
-	float deltaTime = 0.0f;
+	static float deltaTime = 0.0f;
 	float timestep = 300.0f;
 	final float timestepNormal = 300.0f;
 	final float timestepSlow = 3000.0f;
@@ -75,12 +76,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String gunPositionDebug = "";  // DEBUG
 	String fpsDebug = "FPS: ";     // DEBUG
 
-	boolean goalWasHit = false;
+	static boolean goalWasHit = false;
 	boolean showGoalHit= false; // Show "GOAL!" text
 
-	boolean ballShot = false; // Is the ball shot?
-	boolean moveBall = false; // Toggle to lerp the ball back to the gun
-	boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
+	static boolean ballShot = false; // Is the ball shot?
+	static boolean moveBall = false; // Toggle to lerp the ball back to the gun
+	static boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
 	// TODO create LevelLoader
 
@@ -91,12 +92,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	float angle = 0.0f;
 	float power = 0.0f; // Power of the shot
 	final float MAX_POWER = 60.0f; // Maximum power of the shot
-	boolean shoot = false;
+	static boolean shoot = false;
 
 	boolean touch = false; // Is the mouse clicked or the screen has been touched?
-	boolean reset = false; // Toggle to reset level
+	static boolean reset = false; // Toggle to reset level
 
-	Array<Vector2> simcoords = new Array<Vector2>();
+	static Array<Vector2> simcoords = new Array<Vector2>();
 
 	static Array<Box> boxes = new Array<Box>();
 	static Array<Goal> goals = new Array<Goal>();
@@ -106,7 +107,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<Mine> mines = new Array<Mine>();
 	static Gun[] guns = new Gun[9];
 	static int currentGun = 0;
-	static int currentBox = 0;
 
 	boolean edit = false;
 
@@ -217,7 +217,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Reset the state of the current level so the ball can be shot again.
 	 */
-	void reset() {
+	static void reset() {
 		ballShot = false;
 		ball.body.setType(BodyDef.BodyType.StaticBody);
 		moveBall = true;
@@ -235,7 +235,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Move the ball through linear interpolation back to the gun.
 	 */
-	void moveBall() {
+	static void moveBall() {
 		shoot = false;
 		Vector2 v;
 		if(guns[currentGun] != null) {
@@ -257,7 +257,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Update all of the variables needed to simulate physics.
 	 */
-	public void updatePhysics() {
+	void updatePhysics() {
 		world.step(1.0f / timestep, velocityIterations, positionIterations);
 		world.clearForces();
 	}
@@ -306,6 +306,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				steps = 2;
 				simDrawColor = Color.RED;
 			}
+			// todo perhaps keep a count of the amount of collisions and stop the loop after a certain
+			// todo number of them have happened ???
 			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 			// up the loop will not break causing it to run every iteration and will cause framerate issues.
 			for(int i = 0; i < 1000; i++) { // DEBUG
@@ -332,7 +334,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
-	public void update() {
+	void update() {
 		// Snap the times
 		collisionDetector.updateTimes(deltaTime);
 
@@ -413,6 +415,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		if(touch) simulate();
+
+		if(reset) reset();
 	}
 
 	void drawDottedLine(int dotDist, float x1, float y1, float x2, float y2) {
@@ -626,16 +630,15 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
 		debugMessage.draw(batch, ballVelocityDebug, 10, ScreenHeight - 100);
 
-		String g;
 		if(world.getGravity().x == 0) {
-			if(world.getGravity().y > 0) g = "Up";
-			else g = "Down";
+			if(world.getGravity().y > 0) gravityDirection = "Up";
+			else gravityDirection = "Down";
 		}
 		else {
-			if(world.getGravity().x > 0) g = "Right";
-			else g = "Left";
+			if(world.getGravity().x > 0) gravityDirection = "Right";
+			else gravityDirection = "Left";
 		}
-		debugMessage.draw(batch, "Gravity : " + g, 10, ScreenHeight - 130);
+		debugMessage.draw(batch, "Gravity : " + gravityDirection, 10, ScreenHeight - 130);
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 220);
@@ -696,13 +699,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
-	public static void playGoalNoise() {
+	static void playGoalNoise() {
 		goalNoise.play();
 		goalNoisePlaying = true;
 		playNotes = false;
 	}
 
-	public static void playRipple() {
+	static void playRipple() {
 		playRipple = true;
 		ripple = new Sprite(new Texture(Gdx.files.internal("art/ripple.png")));
 		ripple.setCenter((ball.body.getPosition().x * PIXELS2METERS),
@@ -710,7 +713,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ripple.setScale(0.1f, 0.1f);
 	}
 
-	public static void playNote(int i) {
+	static void playNote(int i) {
+		System.out.println("Playing note");
 		notes[i].play();
 	}
 
@@ -720,7 +724,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		left,
 		right
 	} // FIXME resolution independence (possibly fixed)
-	public static void addImpulseToBall(ImpulseType type) {
+	static void addImpulseToBall(ImpulseType type) {
 		float additionalImpulseForce = 1.1f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);
