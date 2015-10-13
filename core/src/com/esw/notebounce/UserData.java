@@ -27,6 +27,7 @@ public class UserData {
         gun,
         door,
         doorswitch,
+        mine,
 
         none
     }

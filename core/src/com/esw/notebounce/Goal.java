@@ -31,8 +31,7 @@ public class Goal {
         this.scale = scale;
         this.alpha = alpha;
 
-        FileHandle image = Gdx.files.internal("art/goal.png");
-        sprite = new Sprite(new Texture(image));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/goal.png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setAlpha(alpha);

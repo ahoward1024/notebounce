@@ -40,10 +40,36 @@ public class Edit {
     static Triangle tmptriangle = null;
     static Door tmpdoor = null;
     static DoorSwitch tmpswitch = null;
+    static Mine tmpmine = null;
 
     static boolean drawGrid = false;
 
-
+    public static void destroyAll() {
+        if(tmpbox != null) {
+            NoteBounce.world.destroyBody(tmpbox.body);
+            tmpbox = null;
+        }
+        if(tmptriangle != null) {
+            NoteBounce.world.destroyBody(tmptriangle.body);
+            tmptriangle = null;
+        }
+        if(tmpgoal != null) {
+            NoteBounce.world.destroyBody(tmpgoal.body);
+            tmpgoal = null;
+        }
+        if(tmpdoor != null) {
+            NoteBounce.world.destroyBody(tmpdoor.body);
+            tmpdoor = null;
+        }
+        if(tmpswitch != null) {
+            NoteBounce.world.destroyBody(tmpswitch.body);
+            tmpswitch = null;
+        }
+        if(tmpmine != null) {
+            NoteBounce.world.destroyBody(tmpmine.body);
+            tmpmine = null;
+        }
+    }
 
     public static void editLevel() {
         // todo create a destroyAllOthers() function
@@ -59,98 +85,22 @@ public class Edit {
         // Edit states (also we must reset all tmp objects to null so they don't continue to appear)
         if(Inputs.b) { // Box
             typeState = UserData.Type.box;
-            if(tmptriangle != null) {
-                NoteBounce.world.destroyBody(tmptriangle.body);
-                tmptriangle = null;
-            }
-            if(tmpgoal != null) {
-                NoteBounce.world.destroyBody(tmpgoal.body);
-                tmpgoal = null;
-            }
-            if(tmpdoor != null) {
-                NoteBounce.world.destroyBody(tmpdoor.body);
-                tmpdoor = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
+            destroyAll();
         } else if(Inputs.t) { // Triangle
             typeState = UserData.Type.triangle;
-            if(tmpbox != null) {
-                NoteBounce.world.destroyBody(tmpbox.body);
-                tmpbox = null;
-            }
-            if(tmpgoal != null) {
-                NoteBounce.world.destroyBody(tmpgoal.body);
-                tmpgoal = null;
-            }
-            if(tmpdoor != null) {
-                NoteBounce.world.destroyBody(tmpdoor.body);
-                tmpdoor = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
+            destroyAll();
         } else if(Inputs.g) { // Gun
             typeState = UserData.Type.gun;
-            if(tmpbox != null) {
-                NoteBounce.world.destroyBody(tmpbox.body);
-                tmpbox = null;
-            }
-            if(tmptriangle != null) {
-                NoteBounce.world.destroyBody(tmptriangle.body);
-                tmptriangle = null;
-            }
-            if(tmpgoal != null) {
-                NoteBounce.world.destroyBody(tmpgoal.body);
-                tmpgoal = null;
-            }
-            if(tmpdoor != null) {
-                NoteBounce.world.destroyBody(tmpdoor.body);
-                tmpdoor = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
+            destroyAll();
         } else if(Inputs.v) { // Goal
             typeState = UserData.Type.goal;
-            if(tmpbox != null) {
-                NoteBounce.world.destroyBody(tmpbox.body);
-                tmpbox = null;
-            }
-            if(tmptriangle != null) {
-                NoteBounce.world.destroyBody(tmptriangle.body);
-                tmptriangle = null;
-            }
-            if(tmpdoor != null) {
-                NoteBounce.world.destroyBody(tmpdoor.body);
-                tmpdoor = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
-        } else if(Inputs.m) {
+            destroyAll();
+        } else if(Inputs.l) {
             typeState = UserData.Type.door;
-            if(tmpbox != null) {
-                NoteBounce.world.destroyBody(tmpbox.body);
-                tmpbox = null;
-            }
-            if(tmptriangle != null) {
-                NoteBounce.world.destroyBody(tmptriangle.body);
-                tmptriangle = null;
-            }
-            if(tmpgoal != null) {
-                NoteBounce.world.destroyBody(tmpgoal.body);
-                tmpgoal = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
+            destroyAll();
+        } else if(Inputs.m) {
+            typeState = UserData.Type.mine;
+            destroyAll();
         } else if (Inputs.c) {
             if(toolState == Tool.paint) {
                 toolState = Tool.erase;
@@ -158,27 +108,7 @@ public class Edit {
             } else if(toolState == Tool.erase) {
                 toolState = Tool.paint;
             }
-
-            if(tmpbox != null) {
-                NoteBounce.world.destroyBody(tmpbox.body);
-                tmpbox = null;
-            }
-            if(tmptriangle != null) {
-                NoteBounce.world.destroyBody(tmptriangle.body);
-                tmptriangle = null;
-            }
-            if(tmpgoal != null) {
-                NoteBounce.world.destroyBody(tmpgoal.body);
-                tmpgoal = null;
-            }
-            if(tmpdoor != null) {
-                NoteBounce.world.destroyBody(tmpdoor.body);
-                tmpdoor = null;
-            }
-            if(tmpswitch != null) {
-                NoteBounce.world.destroyBody(tmpswitch.body);
-                tmpswitch = null;
-            }
+            destroyAll();
         }
 
         // Painting
@@ -631,9 +561,8 @@ public class Edit {
                         tmpdoor = new Door(Inputs.mouse, doorState, doorPlane,
                             NoteBounce.scalePercent, 0.5f, NoteBounce.doors.size);
                     } else {
-                        tmpdoor.update(Inputs.mouse, doorState, doorPlane,
-                            NoteBounce.scalePercent, 0.5f);
-                        Vector2 v = new Vector2(0, 0);
+                        tmpdoor.update(Inputs.mouse, doorState, doorPlane);
+                        Vector2 v = new Vector2(0,0);
                         v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
                         v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
                         tmpdoor.setPos(v);
@@ -671,6 +600,22 @@ public class Edit {
                         NoteBounce.switches.add(tmpswitch);
                         tmpswitch = null;
                         typeState = UserData.Type.door;
+                    }
+                } break;
+                case mine: {
+                    if(tmpmine == null) {
+                        tmpmine = new Mine(Inputs.mouse, NoteBounce.scalePercent, 0.5f);
+                    } else {
+                        Vector2 v = new Vector2(0,0);
+                        v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
+                        v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
+                        tmpmine.update(v);
+                    }
+
+                    if(Gdx.input.justTouched()) {
+                        tmpmine.sprite.setAlpha(1.0f);
+                        NoteBounce.mines.add(tmpmine);
+                        tmpmine = null;
                     }
                 } break;
             }

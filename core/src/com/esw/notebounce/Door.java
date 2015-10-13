@@ -56,13 +56,8 @@ public class Door {
         loadfixtures();
     }
 
-    public void update(Vector2 v, State state, Plane plane, float scale, float alpha) {
-        this.scale = scale;
-        this.alpha = alpha;
-
+    public void update(Vector2 v, State state, Plane plane) {
         sprite.setOrigin(0.0f, 0.0f);
-        sprite.setAlpha(alpha);
-        sprite.setScale(scale);
 
         this.state = state;
         this.plane = plane;

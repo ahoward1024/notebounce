@@ -103,6 +103,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<Triangle> triangles = new Array<Triangle>();
 	static Array<Door> doors = new Array<Door>();
 	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
+	static Array<Mine> mines = new Array<Mine>();
 	static Gun[] guns = new Gun[9];
 	static int currentGun = 0;
 	static int currentBox = 0;
@@ -440,16 +441,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
 		// as the input states will not be updated since the last frame which could cause keys
 		// to always be pressed or never be pressed etc...
-		if(Inputs.edit()) edit = !edit; // Grab the edit key (tab) first
+		if(Inputs.edit()) {
+			edit = ! edit; // Grab the edit key (tab) first
+		}
 		if(Inputs.grid()) Edit.drawGrid = !Edit.drawGrid;
 
 		if(!edit) {
 			Gdx.input.setCursorImage(null, 0, 0);
-			if(Edit.tmpbox != null) { world.destroyBody(Edit.tmpbox.body); Edit.tmpbox = null; }
-			if(Edit.tmptriangle != null) { world.destroyBody(Edit.tmptriangle.body); Edit.tmptriangle = null; }
-			if(Edit.tmpgoal != null) { world.destroyBody(Edit.tmpgoal.body); Edit.tmpgoal = null; }
-			if(Edit.tmpdoor != null) { world.destroyBody(Edit.tmpdoor.body); Edit.tmpdoor = null; }
-			if(Edit.tmpswitch != null) { world.destroyBody(Edit.tmpswitch.body); Edit.tmpswitch = null; }
+			Edit.destroyAll();
 
 			// Update all of the sprites
 			Inputs.getGameInputs();
@@ -547,6 +546,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 		for(DoorSwitch ds : switches) {
 			ds.sprite.draw(batch);
+		}
+
+		if(Edit.tmpmine != null) {
+			Edit.tmpmine.sprite.draw(batch);
+		}
+		for(Mine m : mines) {
+			m.sprite.draw(batch);
 		}
 
 
