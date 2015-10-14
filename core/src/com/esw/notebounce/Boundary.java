@@ -23,10 +23,9 @@ public class Boundary {
      * @param y1 The beginning y coordinate.
      * @param x2 The ending x coordinate.
      * @param y2 The ending y coordinate.
-     * @param edgeType Indicates the type of the boundary (bot, top, left, right)
+     * @param edge Indicates the type of the boundary (bot, top, left, right)
      */
-    public Boundary(float x1, float y1, float x2, float y2, UserData.Edge edgeType) {
-        userData.edge = edgeType;
+    public Boundary(float x1, float y1, float x2, float y2, UserData.Edge edge) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(0.0f, 0.0f);
@@ -38,6 +37,8 @@ public class Boundary {
         edgeShape.set(x1 / NoteBounce.PIXELS2METERS, y1 / NoteBounce.PIXELS2METERS,
             x2 / NoteBounce.PIXELS2METERS, y2 / NoteBounce.PIXELS2METERS);
         fixtureDef.shape = edgeShape;
+
+        userData.edge = edge;
 
         body.createFixture(fixtureDef).setUserData(userData);
 

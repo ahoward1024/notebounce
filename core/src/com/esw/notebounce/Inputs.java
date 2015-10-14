@@ -201,6 +201,8 @@ class Inputs {
 
         m = Gdx.input.isKeyJustPressed(Input.Keys.M); // Mine
 
+        n = Gdx.input.isKeyJustPressed(Input.Keys.N); // With lctrl for new level
+
         up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
         down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
         left  = Gdx.input.isKeyJustPressed(Input.Keys.LEFT); // Modifier left

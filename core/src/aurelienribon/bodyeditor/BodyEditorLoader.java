@@ -94,6 +94,7 @@ public class BodyEditorLoader {
             fd.shape = polygonShape;
 
             userData.edge = edge;
+
             body.createFixture(fd).setUserData(userData);
 
             for (int ii=0, nn=vertices.length; ii<nn; ii++) {

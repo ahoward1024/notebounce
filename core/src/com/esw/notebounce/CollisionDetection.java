@@ -62,6 +62,10 @@ public class CollisionDetection implements ContactListener {
          return Math.abs(f.getBody().getLinearVelocity().y) > velY;
     }
 
+    //              0   1     2     3
+    // EDGES     : [TOP, BOT, LEFT, RIGHT]
+    // MODIFIERS : [UP, DOWN, LEFT, RIGHT]
+
     /**
      * Handles the beginning of a Box2D collision.
      * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
@@ -76,36 +80,49 @@ public class CollisionDetection implements ContactListener {
         UserData udb = (UserData)fb.getUserData(); // Dynamic user data
 
         //if(udb.type.equals(UserData.Type.sim)) {
-        //if(udb.type.equals(UserData.Type.ball)) {
-            //System.out.println("UD a: " + uda.toString()); // DEBUG
-            //System.out.println("UD b: " + udb.toString()); // DEBUG
-        //}  // DEBUG
+        if(udb.type.equals(UserData.Type.ball)) {
+            System.out.println("UD a: " + uda.toString()); // DEBUG
+            System.out.println("UD b: " + udb.toString()); // DEBUG
+        }  // DEBUG
 
         int notePtr = NoteBounce.notePtr;
 
+        //DEBUG
+        if(udb.type.equals(UserData.Type.sim)) simhit = true;
+
         // SIMULATION BALL: =============================================================================
-        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
+        /*if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
             if(uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun)) {
                 simhit = true;
             }
-        }
+        }*/
 
         // SEMI DEBUG:
         // We need to calculate this for the simulation and the ball itself
         // todo clean this up later
-        if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))
-            && uda.color.equals(UserData.Color.yellow)) {
-            if(uda.edge.equals(UserData.Edge.top)) {
+        if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))) {
+            if(uda.edge.equals(UserData.Edge.top) &&
+                (uda.modifierTypes[0]).equals(UserData.ModifierType.acceleratorUp)) {
+                System.out.println("Impulse up");
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
             }
-            else if(uda.edge.equals(UserData.Edge.bot)) {
+            else if(uda.edge.equals(UserData.Edge.bot) &&
+                (uda.modifierTypes[1]).equals(UserData.ModifierType.acceleratorDown)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
+                System.out.println("Impulse down");
+
             }
-            else if(uda.edge.equals(UserData.Edge.left)) {
+            else if(uda.edge.equals(UserData.Edge.left) &&
+                (uda.modifierTypes[2]).equals(UserData.ModifierType.acceleratorLeft)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
+                System.out.println("Impulse left");
+
             }
-            else if(uda.edge.equals(UserData.Edge.right)) {
+            else if(uda.edge.equals(UserData.Edge.right) &&
+                (uda.modifierTypes[3]).equals(UserData.ModifierType.acceleratorRight)) {
                 NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
+                System.out.println("Impulse right");
+
             }
         }
         //===============================================================================================
@@ -122,6 +139,7 @@ public class CollisionDetection implements ContactListener {
                 }
             }
 
+            // FIXME notes play continuously when on top of a box
             if(NoteBounce.playNotes) {
                 // If the ball hits anything that plays will play a note, play a note.
 

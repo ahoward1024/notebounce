@@ -24,17 +24,14 @@ public class Goal {
     Vector2 center = new Vector2(0,0);
     UserData userData = new UserData(UserData.Type.goal);
     float scale;
-    float alpha;
 
-    Goal(Vector2 v, float scale, float alpha) {
+    Goal(Vector2 v, float scale) {
         userData.color = UserData.Color.goal;
         this.scale = scale;
-        this.alpha = alpha;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/goal.png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
-        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
@@ -63,5 +60,14 @@ public class Goal {
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
+    }
+
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":";
+        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t}";
+        return s;
     }
 }

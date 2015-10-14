@@ -90,4 +90,12 @@ public class Gun {
     }
 
     // TODO set/reset the gun's rotation. Set in the same way as the GunPosition
+
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "}\n";
+        s += "\t\t}";
+        return s;
+    }
 }

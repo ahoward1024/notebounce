@@ -100,8 +100,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<Vector2> simcoords = new Array<Vector2>();
 
 	static Array<Box> boxes = new Array<Box>();
-	static Array<Goal> goals = new Array<Goal>();
 	static Array<Triangle> triangles = new Array<Triangle>();
+	static Array<Goal> goals = new Array<Goal>();
 	static Array<Door> doors = new Array<Door>();
 	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
 	static Array<Mine> mines = new Array<Mine>();
@@ -714,7 +714,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	static void playNote(int i) {
-		System.out.println("Playing note");
 		notes[i].play();
 	}
 

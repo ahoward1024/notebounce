@@ -22,7 +22,6 @@ public class Door {
     Body body;
     UserData userData = new UserData(UserData.Type.door);
     float scale;
-    float alpha;
     State state;
     Plane plane;
 
@@ -36,18 +35,16 @@ public class Door {
         horizontal
     }
 
-    Door(Vector2 v, State state, Plane plane, float scale,  float alpha, int id) {
+    Door(Vector2 v, State state, Plane plane, float scale, int id) {
         this.scale = scale;
         this.state = state;
         this.plane = plane;
-        this.alpha = alpha;
         userData.id = id;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
 
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
-        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
@@ -123,5 +120,15 @@ public class Door {
         bodyEditorLoader.attachFixture(body, "cap2", fixtureDef, userData, base * scale);
 
         if(state == State.open) body.getFixtureList().first().setSensor(true);
+    }
+
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"state\":\"" + state + "\",\n";
+        s += "\t\t\t\"plane\":\"" + plane + "\"\n";
+        s += "\t\t}";
+        return s;
     }
 }

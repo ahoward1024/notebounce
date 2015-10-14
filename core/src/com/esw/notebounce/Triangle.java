@@ -22,17 +22,15 @@ public class Triangle {
     Vector2 center = new Vector2(0,0);
     UserData userData = new UserData(UserData.Type.triangle);
     float scale;
-    float alpha;
     Sprite[] modifierSprites = new Sprite[4];
 
     Triangle(UserData.Triangle triangle, Vector2 v, float scale,
-             UserData.Color color, UserData.Shade shade, float alpha)
+             UserData.Color color, UserData.Shade shade)
     {
         userData.color = color;
         userData.shade = shade;
         userData.triangle = triangle;
         this.scale = scale;
-        this.alpha = alpha;
 
         loadSprite(v);
         loadFixture();
@@ -44,7 +42,6 @@ public class Triangle {
         sprite = new Sprite(new Texture(image));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
-        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
@@ -86,7 +83,7 @@ public class Triangle {
     }
 
     public void update(Vector2 v, float scale, UserData.Triangle triangle,
-                       UserData.Color color, UserData.Shade shade, float alpha) {
+                       UserData.Color color, UserData.Shade shade) {
         sprite.getTexture().dispose();
         NoteBounce.world.destroyBody(body); // NOTE: we must destroy the body so we can create the new one
 
@@ -94,7 +91,6 @@ public class Triangle {
         userData.shade = shade;
         userData.triangle = triangle;
         this.scale = scale;
-        this.alpha = alpha;
 
         loadSprite(v);
         loadFixture();
@@ -111,7 +107,6 @@ public class Triangle {
             if(s != null) {
                 s.setOrigin(0.0f, 0.0f);
                 s.setScale(scale);
-                s.setAlpha(alpha);
                 s.setPosition(sprite.getX(), sprite.getY());
             }
         }
@@ -120,20 +115,19 @@ public class Triangle {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":\n";
-        s += "\t\t\t{\n";
-        s += "\t\t\t\t\"x\":" + sprite.getX() + ",\n";
-        s += "\t\t\t\t\"y\":" + sprite.getY() + ",\n";
-        s += "\t\t\t},\n";
+        s += "\t\t\t\"position\":";
+        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
         s += "\t\t\t\"color\":" + "\"" + userData.color + "\",\n";
-        s += "\t\t\t\"shade\":" + userData.shade.ordinal() + ",\n";
-        s += "\t\t\t\"modifiers\":\n";
-        s += "\t\t\t[\n";
-        for(UserData.ModifierType mt : userData.modifierTypes) {
-            s+= "\t\t\t\t\"name\":" + "\"" + mt.name() + "\",\n";
+        s += "\t\t\t\"shade\":\"" + userData.shade + "\",\n";
+        s += "\t\t\t\"triangle:\":\"" + userData.triangle + "\",\n";
+        s += "\t\t\t\"modifiers\":[";
+        for(int i = 0; i < userData.modifierTypes.length; i++) {
+            UserData.ModifierType mt = userData.modifierTypes[i];
+            s+= "\"" + mt.name() + "\"";
+            if(i != userData.modifierTypes.length - 1) s += ",";
         }
-        s += "\t\t\t],\n";
-        s += "\t\t}\n";
+        s += "]\n";
+        s += "\t\t}";
         return s;
     }
 }

@@ -23,12 +23,11 @@ public class Mine {
     UserData userData = new UserData(UserData.Type.mine);
     float scale;
 
-    Mine(Vector2 v, float scale, float alpha) {
+    Mine(Vector2 v, float scale) {
         this.scale = scale;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/mine.png")));
         sprite.setOrigin(0.0f, 0.0f);
-        sprite.setAlpha(alpha);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
 
@@ -61,4 +60,11 @@ public class Mine {
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "}\n";
+        s += "\t\t}";
+        return s;
+    }
 }

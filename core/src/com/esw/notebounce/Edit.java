@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 /**
  * Created by Alex on 9/28/2015.
@@ -45,6 +46,8 @@ public class Edit {
     static DoorSwitch tmpswitch = null;
     static Mine tmpmine = null;
 
+    static int startgun = -1;
+
     static boolean drawGrid = false;
 
     public static void destroyAll() {
@@ -74,6 +77,7 @@ public class Edit {
         }
     }
 
+    static boolean saved = false;
     public static void editLevel() {
         // todo create a destroyAllOthers() function
         // todo create a destroyAll() function
@@ -85,12 +89,23 @@ public class Edit {
             grid = Grid.on;
         }
 
+        // Save level
         if(Inputs.lctrl && Inputs.s) {
             // TODO save
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             JFrame jFrame = new JFrame("Save");
             String levelname = JOptionPane.showInputDialog(jFrame, "Level name:");
-            System.out.println("Calling save level for : " + levelname);
-            LevelLoader.saveLevel(levelname);
+            if(levelname != null && !levelname.equals("")) {
+                LevelLoader.saveLevel(levelname);
+            } else {
+                System.out.println("Level name null. Not saving.");
+            }
+        } else if(Inputs.lctrl && Inputs.n) {
+            destroyAll();
         }
 
         // Edit states (also we must reset all tmp objects to null so they don't continue to appear)
@@ -106,13 +121,13 @@ public class Edit {
         } else if(Inputs.v && !Inputs.lctrl) { // Goal
             typeState = UserData.Type.goal;
             destroyAll();
-        } else if(Inputs.l && !Inputs.lctrl) {
+        } else if(Inputs.l && !Inputs.lctrl) { // Door
             typeState = UserData.Type.door;
             destroyAll();
-        } else if(Inputs.m && !Inputs.lctrl) {
+        } else if(Inputs.m && !Inputs.lctrl) { // Mine
             typeState = UserData.Type.mine;
             destroyAll();
-        } else if (Inputs.c && !Inputs.lctrl) {
+        } else if (Inputs.c && !Inputs.lctrl) { // Paint/Erase
             if(toolState == Tool.paint) {
                 toolState = Tool.erase;
 
@@ -164,7 +179,7 @@ public class Edit {
 
                     // CREATE THE BOX
                     if(tmpbox == null) {
-                        tmpbox = new Box(Inputs.mouse, NoteBounce.scalePercent, colorState, shadeState, 0.5f);
+                        tmpbox = new Box(Inputs.mouse, NoteBounce.scalePercent, colorState, shadeState);
                     }
 
                     // Now we set the modifier attributes because the box (and userdata) is not null.
@@ -294,7 +309,7 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmpbox.update(v, colorState, shadeState, 0.5f);
+                        tmpbox.update(v, colorState, shadeState);
                     }
 
                 }
@@ -345,7 +360,7 @@ public class Edit {
 
                     if(tmptriangle == null) {
                         tmptriangle = new Triangle(triangleState, Inputs.mouse, NoteBounce.scalePercent,
-                                colorState, shadeState, 0.5f);
+                                colorState, shadeState);
                     }
 
                     // Now we set the modifier attributes because the box (and userdata) is not null.
@@ -469,7 +484,7 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState, 0.5f);
+                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState);
                     }
                 }
                 break;
@@ -478,7 +493,7 @@ public class Edit {
                     // Create a temporary goal if there is not already one
                     // Otherwise we update the temporary
                     if(tmpgoal == null) {
-                        tmpgoal = new Goal(Inputs.mouse, NoteBounce.scalePercent, 0.5f);
+                        tmpgoal = new Goal(Inputs.mouse, NoteBounce.scalePercent);
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -538,6 +553,7 @@ public class Edit {
                     // destroy that gun.
                     if(id != - 1) {
                         if(NoteBounce.guns[id] == null) {
+                            startgun = id;
                             NoteBounce.guns[id] = new Gun(position, NoteBounce.scalePercent, id);
                             NoteBounce.currentGun = id;
                             NoteBounce.ball.setPos(NoteBounce.guns[NoteBounce.currentGun].center);
@@ -567,7 +583,7 @@ public class Edit {
                     // temporary door.
                     if(tmpdoor == null) {
                         tmpdoor = new Door(Inputs.mouse, doorState, doorPlane,
-                            NoteBounce.scalePercent, 0.5f, NoteBounce.doors.size);
+                            NoteBounce.scalePercent, NoteBounce.doors.size);
                     } else {
                         tmpdoor.update(Inputs.mouse, doorState, doorPlane);
                         Vector2 v = new Vector2(0,0);
@@ -591,7 +607,7 @@ public class Edit {
                     // If there is not already a switch we create one.
                     // Else we update the temporary switch.
                     if(tmpswitch == null) {
-                        tmpswitch = new DoorSwitch(Inputs.mouse, NoteBounce.scalePercent, 0.5f,
+                        tmpswitch = new DoorSwitch(Inputs.mouse, NoteBounce.scalePercent,
                             NoteBounce.switches.size);
                     } else {
                         Vector2 v = new Vector2(0,0);
@@ -612,7 +628,7 @@ public class Edit {
                 } break;
                 case mine: {
                     if(tmpmine == null) {
-                        tmpmine = new Mine(Inputs.mouse, NoteBounce.scalePercent, 0.5f);
+                        tmpmine = new Mine(Inputs.mouse, NoteBounce.scalePercent);
                     } else {
                         Vector2 v = new Vector2(0,0);
                         v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;

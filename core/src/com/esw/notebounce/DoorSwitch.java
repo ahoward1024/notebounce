@@ -20,22 +20,19 @@ public class DoorSwitch {
     Body body;
 
     float scale;
-    float alpha;
 
     UserData userData = new UserData(UserData.Type.doorswitch);
 
     boolean active = true;
 
-    DoorSwitch(Vector2 v, float scale, float alpha, int id) {
+    DoorSwitch(Vector2 v, float scale, int id) {
         this.scale = scale;
-        this.alpha = alpha;
 
         userData.id = id;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/switch.png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
-        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
@@ -58,7 +55,6 @@ public class DoorSwitch {
     }
 
     public void update(Vector2 v) {
-        sprite.setAlpha(alpha);
         sprite.setPosition(v.x, v.y);
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
@@ -76,5 +72,11 @@ public class DoorSwitch {
         active = false;
     }
 
-
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "}\n";
+        s += "\t\t}";
+        return s;
+    }
 }

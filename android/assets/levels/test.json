@@ -1,1 +1,33 @@
-{"center":{"x":10,"y":10}}
+{
+	"boxes":
+	[
+		{
+			"position":{"x":900.0,"y":720.0},
+			"color":"blue",
+			"shade":"zero",
+			"modifiers":["acceleratorUp","acceleratorDown","acceleratorLeft","acceleratorRight"]
+		}
+	],
+	"triangles":
+	[
+	],
+	"goals":
+	[
+	],
+	"doors":
+	[
+	],
+	"switches":
+	[
+	],
+	"mines":
+	[
+	],
+	"guns":
+	[
+		{
+			"position":{"x":840.0,"y":420.0}
+		},
+	],
+	"startgun":4
+}
