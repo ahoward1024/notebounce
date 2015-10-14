@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 /**
  * Created by Alex on 9/28/2015.
  * Copyright echosoftworks 2015
@@ -82,26 +85,34 @@ public class Edit {
             grid = Grid.on;
         }
 
+        if(Inputs.lctrl && Inputs.s) {
+            // TODO save
+            JFrame jFrame = new JFrame("Save");
+            String levelname = JOptionPane.showInputDialog(jFrame, "Level name:");
+            System.out.println("Calling save level for : " + levelname);
+            LevelLoader.saveLevel(levelname);
+        }
+
         // Edit states (also we must reset all tmp objects to null so they don't continue to appear)
-        if(Inputs.b) { // Box
+        else if(Inputs.b && !Inputs.lctrl) { // Box
             typeState = UserData.Type.box;
             destroyAll();
-        } else if(Inputs.t) { // Triangle
+        } else if(Inputs.t && !Inputs.lctrl) { // Triangle
             typeState = UserData.Type.triangle;
             destroyAll();
-        } else if(Inputs.g) { // Gun
+        } else if(Inputs.g && !Inputs.lctrl) { // Gun
             typeState = UserData.Type.gun;
             destroyAll();
-        } else if(Inputs.v) { // Goal
+        } else if(Inputs.v && !Inputs.lctrl) { // Goal
             typeState = UserData.Type.goal;
             destroyAll();
-        } else if(Inputs.l) {
+        } else if(Inputs.l && !Inputs.lctrl) {
             typeState = UserData.Type.door;
             destroyAll();
-        } else if(Inputs.m) {
+        } else if(Inputs.m && !Inputs.lctrl) {
             typeState = UserData.Type.mine;
             destroyAll();
-        } else if (Inputs.c) {
+        } else if (Inputs.c && !Inputs.lctrl) {
             if(toolState == Tool.paint) {
                 toolState = Tool.erase;
 
@@ -173,7 +184,7 @@ public class Edit {
                         if(tmpbox.modifierSprites[4] != null) {
                             tmpbox.modifierSprites[4] = null;
                         }
-                    } else if(Inputs.s) {
+                    } else if(Inputs.s && !Inputs.lctrl) {
                         modifierState = UserData.Modifier.gravity;
                         for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
                             tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
@@ -276,7 +287,7 @@ public class Edit {
 
                     } else {
                         Vector2 v = new Vector2(0, 0);
-                        if(Inputs.ctrl) {
+                        if(Inputs.lshift) {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
                         } else {
@@ -451,7 +462,7 @@ public class Edit {
                         tmptriangle = null;
                     } else {
                         Vector2 v = new Vector2(0, 0);
-                        if(Inputs.ctrl) {
+                        if(Inputs.lshift) {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
                         } else {
@@ -460,9 +471,6 @@ public class Edit {
                         }
                         tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState, 0.5f);
                     }
-
-
-
                 }
                 break;
                 case goal: {
@@ -473,7 +481,7 @@ public class Edit {
                         tmpgoal = new Goal(Inputs.mouse, NoteBounce.scalePercent, 0.5f);
                     } else {
                         Vector2 v = new Vector2(0, 0);
-                        if(Inputs.ctrl) {
+                        if(Inputs.lshift) {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
                         } else {

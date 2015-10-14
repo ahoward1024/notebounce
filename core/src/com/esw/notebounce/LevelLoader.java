@@ -31,10 +31,7 @@ public class LevelLoader { // TODO Level loader/writer
     }
     private Level loadLevel(int level) {
         lvlPtr = level;
-        // TODO 1 json reader
-        JsonReader jsonReader = new JsonReader();
-        // TODO 2 push all bodies/fixtures to the world
-        // TODO 3 push all the sprites to the renderer
+
         return null;
     }
 
@@ -53,27 +50,27 @@ public class LevelLoader { // TODO Level loader/writer
         lvlPtr = 0;
     }
 
-    public void experimental() {
-        Ball theball = new Ball(10, 10, 1);
+    public static void saveLevel(String levelname) {
 
-        FileHandle output = new FileHandle("levels/test.json");
-        Json json = new Json();
-        json.setOutputType(JsonWriter.OutputType.json);
-        json.addClassTag("ball", Ball.class);
-        json.setElementType(Ball.class, "center", Vector2.class);
-        json.setSerializer(Ball.class, new Json.Serializer<Ball>() {
-            public void write(Json json, Ball ball, Class knownType) {
-                json.writeObjectStart();
-                json.writeValue("center", ball.center);
-                json.writeObjectEnd();
-            }
+        String string = "{\n";
+        string += "\t{\"boxes\":\n";
+        string += "\t[\n";
+        for(Box b : NoteBounce.boxes) {
+            if(b != null) string += b.toString();
+        }
+        string += "\t]}\n";
 
-            public Ball read(Json json, JsonValue jsonValue, Class type) {
-                return null;
-            }
-        });
-        System.out.println(json.prettyPrint(theball));
-        json.toJson(theball, output);
+        string += "\t{\"triangles\":\n";
+        string += "\t[\n";
+        for(Triangle t : NoteBounce.triangles) {
+            if(t != null) string += t.toString();
+        }
+        string += "\t]}\n";
+
+
+
+        string += "}\n";
+        System.out.println(string);
     }
 
     public Level loadNextLevel() {

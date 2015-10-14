@@ -226,11 +226,9 @@ class Inputs {
         numeight = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_8); // Gun pos 8
         numnine  = Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_9); // Gun pos 9
 
-        shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT); // Snap to lines
+        lshift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT); // Snap to lines
 
-        ctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Snap to midlines
-
-
+        lctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Snap to midlines
 
     } // TODO edit inputs ??? more ???
 

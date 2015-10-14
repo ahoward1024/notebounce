@@ -102,6 +102,10 @@ public class UserData {
 
     UserData(Type type) {
         this.type = type;
+        modifierTypes[0] = ModifierType.none;
+        modifierTypes[1] = ModifierType.none;
+        modifierTypes[2] = ModifierType.none;
+        modifierTypes[3] = ModifierType.none;
     }
 
     public UserData(UserData userData) {

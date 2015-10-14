@@ -8,6 +8,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+
+import java.io.Serializable;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
@@ -98,5 +102,25 @@ public class Box {
                 s.setPosition(sprite.getX(), sprite.getY());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":\n";
+        s += "\t\t\t{\n";
+        s += "\t\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\t\"y\":" + sprite.getY() + ",\n";
+        s += "\t\t\t},\n";
+        s += "\t\t\t\"color\":" + "\"" + userData.color + "\",\n";
+        s += "\t\t\t\"shade\":" + userData.shade.ordinal() + ",\n";
+        s += "\t\t\t\"modifiers\":\n";
+        s += "\t\t\t[\n";
+        for(UserData.ModifierType mt : userData.modifierTypes) {
+            s+= "\t\t\t\t\"name\":" + "\"" + mt.name() + "\",\n";
+        }
+        s += "\t\t\t],\n";
+        s += "\t\t}\n";
+        return s;
     }
 }

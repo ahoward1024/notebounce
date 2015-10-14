@@ -98,6 +98,7 @@ public class Triangle {
 
         loadSprite(v);
         loadFixture();
+        setPos(v);
     }
 
     public void setPos(Vector2 v) {
@@ -114,5 +115,25 @@ public class Triangle {
                 s.setPosition(sprite.getX(), sprite.getY());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        String s = "\t\t{\n";
+        s += "\t\t\t\"position\":\n";
+        s += "\t\t\t{\n";
+        s += "\t\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\t\"y\":" + sprite.getY() + ",\n";
+        s += "\t\t\t},\n";
+        s += "\t\t\t\"color\":" + "\"" + userData.color + "\",\n";
+        s += "\t\t\t\"shade\":" + userData.shade.ordinal() + ",\n";
+        s += "\t\t\t\"modifiers\":\n";
+        s += "\t\t\t[\n";
+        for(UserData.ModifierType mt : userData.modifierTypes) {
+            s+= "\t\t\t\t\"name\":" + "\"" + mt.name() + "\",\n";
+        }
+        s += "\t\t\t],\n";
+        s += "\t\t}\n";
+        return s;
     }
 }
