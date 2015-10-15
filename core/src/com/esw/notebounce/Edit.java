@@ -77,9 +77,11 @@ public class Edit {
             NoteBounce.world.destroyBody(tmpmine.body);
             tmpmine = null;
         }
+        modifiers = UserData.createModifierArray();
     }
 
     static boolean saved = false;
+    UserData.Triangle lastTriangleState = UserData.Triangle.BotLeft;
     public static void editLevel() {
         // todo create a destroyAllOthers() function
         // todo create a destroyAll() function
@@ -211,12 +213,6 @@ public class Edit {
                             id = 3;
                             file = "right";
                         }
-
-                        if(id != -1) {
-                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
-                            else modifiers[id] = modifierState;
-                        }
-
                     } else if(modifierState == UserData.Modifier.dampener) {
                         if(Inputs.up) {
                             id = 0;
@@ -230,11 +226,6 @@ public class Edit {
                         } else if(Inputs.right) {
                             id = 3;
                             file = "rightX";
-                        }
-
-                        if(id != -1) {
-                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
-                            else modifiers[id] = modifierState;
                         }
                     } else if(modifierState == UserData.Modifier.gravity) {
                         if(Inputs.up) {
@@ -251,10 +242,6 @@ public class Edit {
                             file = "right";
                         }
 
-                        if(id != -1) {
-                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
-                            else modifiers[id] = modifierState;
-                        }
                     }
 
                     if(id != -1) {
@@ -262,11 +249,12 @@ public class Edit {
                             tmpbox.modifierSprites[id] =
                                     new Sprite(
                                         new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-
                         } else {
                             tmpbox.modifierSprites[id] = null;
-
                         }
+
+                        if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
+                        else modifiers[id] = modifierState;
                     }
 
                     if(Gdx.input.justTouched()) {
@@ -292,12 +280,24 @@ public class Edit {
 
                     if(Inputs.q) {
                         triangleState = UserData.Triangle.TopLeft;
+                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
+                            tmptriangle.modifierSprites[i] = null;
+                        modifiers = UserData.createModifierArray();
                     } else if(Inputs.w) {
                         triangleState = UserData.Triangle.BotLeft;
+                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
+                            tmptriangle.modifierSprites[i] = null;
+                        modifiers = UserData.createModifierArray();
                     } else if(Inputs.e) {
                         triangleState = UserData.Triangle.BotRight;
+                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
+                            tmptriangle.modifierSprites[i] = null;
+                        modifiers = UserData.createModifierArray();
                     } else if(Inputs.r) {
                         triangleState = UserData.Triangle.TopRight;
+                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
+                            tmptriangle.modifierSprites[i] = null;
+                        modifiers = UserData.createModifierArray();
                     }
 
                     if(Inputs.y) {
@@ -346,104 +346,89 @@ public class Edit {
                     }
 
                     int id = - 1;
-                    UserData.ModifierType tmptype = UserData.ModifierType.none;
                     String file = "";
                     if(modifierState == UserData.Modifier.accelerator) {
                         if(triangleState == UserData.Triangle.BotLeft) {
                             if(Inputs.down) {
                                 id = 1;
-                                tmptype = UserData.ModifierType.acceleratorDown;
                                 file = "down";
                             } else if(Inputs.left) {
                                 id = 2;
-                                tmptype = UserData.ModifierType.acceleratorLeft;
                                 file = "left";
                             }
                         } else if(triangleState == UserData.Triangle.TopLeft) {
                             if(Inputs.up) {
                                 id = 0;
-                                tmptype = UserData.ModifierType.acceleratorUp;
                                 file = "up";
                             } else if(Inputs.left) {
                                 id = 2;
-                                tmptype = UserData.ModifierType.acceleratorLeft;
                                 file = "left";
                             }
                         } else if(triangleState == UserData.Triangle.BotRight) {
                             if(Inputs.down) {
                                 id = 1;
-                                tmptype = UserData.ModifierType.acceleratorDown;
                                 file = "down";
                             } else if(Inputs.right) {
                                 id = 3;
-                                tmptype = UserData.ModifierType.acceleratorRight;
                                 file = "right";
                             }
                         } else if(triangleState == UserData.Triangle.TopRight) {
                             if(Inputs.up) {
                                 id = 0;
-                                tmptype = UserData.ModifierType.acceleratorUp;
                                 file = "up";
                             } else if(Inputs.right) {
                                 id = 3;
-                                tmptype = UserData.ModifierType.acceleratorRight;
                                 file = "right";
                             }
                         }
+
                     } else if(modifierState == UserData.Modifier.dampener) {
                         if(triangleState == UserData.Triangle.BotLeft) {
                             if(Inputs.down) {
                                 id = 1;
-                                tmptype = UserData.ModifierType.dampenerDown;
                                 file = "downX";
                             } else if(Inputs.left) {
                                 id = 2;
-                                tmptype = UserData.ModifierType.dampenerLeft;
                                 file = "leftX";
                             }
                         } else if(triangleState == UserData.Triangle.TopLeft) {
                             if(Inputs.up) {
                                 id = 0;
-                                tmptype = UserData.ModifierType.dampenerUp;
                                 file = "upX";
                             } else if(Inputs.left) {
                                 id = 2;
-                                tmptype = UserData.ModifierType.dampenerLeft;
                                 file = "leftX";
                             }
                         } else if(triangleState == UserData.Triangle.BotRight) {
                             if(Inputs.down) {
                                 id = 1;
-                                tmptype = UserData.ModifierType.dampenerDown;
                                 file = "downX";
                             } else if(Inputs.right) {
                                 id = 3;
-                                tmptype = UserData.ModifierType.dampenerRight;
                                 file = "rightX";
                             }
                         } else if(triangleState == UserData.Triangle.TopRight) {
                             if(Inputs.up) {
                                 id = 0;
-                                tmptype = UserData.ModifierType.dampenerUp;
                                 file = "upX";
                             } else if(Inputs.right) {
                                 id = 3;
-                                tmptype = UserData.ModifierType.dampenerRight;
                                 file = "rightX";
                             }
                         }
+
                     }
 
-                    /*if(id != -1) {
+                    if(id != -1) {
                         if(tmptriangle.modifierSprites[id] == null) {
                             tmptriangle.modifierSprites[id] =
                                     new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-                            tmptriangle.userData.modifierTypes[id] = tmptype;
+                            modifiers[id] = modifierState;
                         } else {
                             tmptriangle.modifierSprites[id] = null;
-                            tmptriangle.userData.modifierTypes[id] = UserData.ModifierType.none;
+                            modifiers[id] = UserData.Modifier.none;
                         }
-                    }*/
+                    }
 
                     if(Gdx.input.justTouched()) {
                         tmptriangle.sprite.setAlpha(1.0f);
@@ -458,7 +443,7 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState);
+                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState, modifiers);
                     }
                 }
                 break;

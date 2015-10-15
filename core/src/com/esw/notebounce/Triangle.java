@@ -33,7 +33,7 @@ public class Triangle {
         this.scale = scale;
 
         loadSprite(v);
-        loadFixture();
+        loadFixture(UserData.createModifierArray());
     }
 
     private void loadSprite(Vector2 v) {
@@ -48,7 +48,7 @@ public class Triangle {
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
     }
 
-    private void loadFixture() {
+    private void loadFixture(UserData.Modifier[] modifiers) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
@@ -63,27 +63,37 @@ public class Triangle {
 
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+        float basescale = base * scale;
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(trianglesFile);
-       /* bodyEditorLoader.attachFixture(body, "hyp", fixtureDef, userData, UserData.Edge.hyp, base * scale);
+       bodyEditorLoader.attachFixture(body, "hyp", fixtureDef, base * scale,
+           userData, UserData.Edge.hyp, UserData.Modifier.none);
 
         if(userData.triangle == UserData.Triangle.BotLeft) {
-            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
-            bodyEditorLoader.attachFixture(body, "left", fixtureDef, userData, UserData.Edge.left, base * scale);
+            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, basescale,
+                userData, UserData.Edge.bot, modifiers[1]);
+            bodyEditorLoader.attachFixture(body, "left", fixtureDef, basescale,
+                userData, UserData.Edge.left, modifiers[2]);
         } else if(userData.triangle == UserData.Triangle.TopLeft) {
-            bodyEditorLoader.attachFixture(body, "top", fixtureDef, userData, UserData.Edge.top, base * scale);
-            bodyEditorLoader.attachFixture(body, "left", fixtureDef, userData, UserData.Edge.left, base * scale);
+            bodyEditorLoader.attachFixture(body, "top", fixtureDef, basescale,
+                userData, UserData.Edge.top, modifiers[0]);
+            bodyEditorLoader.attachFixture(body, "left", fixtureDef, basescale,
+                userData, UserData.Edge.left, modifiers[2]);
         } else if(userData.triangle == UserData.Triangle.BotRight) {
-            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
-            bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
+            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, basescale,
+                userData, UserData.Edge.bot, modifiers[1]);
+            bodyEditorLoader.attachFixture(body, "right", fixtureDef, basescale,
+                userData, UserData.Edge.right, modifiers[3]);
         } else if(userData.triangle == UserData.Triangle.TopRight) {
-            bodyEditorLoader.attachFixture(body, "top", fixtureDef, userData, UserData.Edge.top, base * scale);
-            bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
-        }*/
+            bodyEditorLoader.attachFixture(body, "top", fixtureDef, basescale,
+                userData, UserData.Edge.top, modifiers[0]);
+            bodyEditorLoader.attachFixture(body, "right", fixtureDef,basescale,
+                userData, UserData.Edge.right, modifiers[3]);
+        }
     }
 
     public void update(Vector2 v, float scale, UserData.Triangle triangle,
-                       UserData.Color color, UserData.Shade shade) {
+                       UserData.Color color, UserData.Shade shade, UserData.Modifier[] modifiers) {
         sprite.getTexture().dispose();
         NoteBounce.world.destroyBody(body); // NOTE: we must destroy the body so we can create the new one
 
@@ -93,7 +103,7 @@ public class Triangle {
         this.scale = scale;
 
         loadSprite(v);
-        loadFixture();
+        loadFixture(modifiers);
         setPos(v);
     }
 

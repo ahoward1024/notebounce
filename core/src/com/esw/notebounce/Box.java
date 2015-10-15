@@ -109,9 +109,9 @@ public class Box {
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef, base * scale,
             userData, UserData.Edge.bot, modifiers[1]);
         bodyEditorLoader.attachFixture(body, "left", fixtureDef, base * scale,
-            userData, UserData.Edge.left, modifiers[1]);
+            userData, UserData.Edge.left, modifiers[2]);
         bodyEditorLoader.attachFixture(body, "right", fixtureDef, base * scale,
-            userData, UserData.Edge.right, modifiers[1]);
+            userData, UserData.Edge.right, modifiers[3]);
 
 
     }
