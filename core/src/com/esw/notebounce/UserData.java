@@ -13,7 +13,7 @@ public class UserData {
     Shade shade = Shade.none;
     public Edge edge = Edge.none; // Public so BodyEditorLoader can set it
     public Modifier modifier = Modifier.none;
-    int id = -1; // ID number for guns
+    public int id = -1; // ID number for guns
 
 
     // FIXME URGENT UserData needs to be __PER FIXTURE__ NOT per object
@@ -96,6 +96,7 @@ public class UserData {
         this.color = userData.color;
         this.shade = userData.shade;
         this.modifier = userData.modifier;
+        this.id = userData.id;
     }
 
     public static Modifier[] createModifierArray() {

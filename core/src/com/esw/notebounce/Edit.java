@@ -242,6 +242,7 @@ public class Edit {
                             tmpbox.modifierStrings[id] = file;
                         } else {
                             tmpbox.modifierSprites[id] = null;
+                            tmpbox.modifierStrings[id] = null;
                         }
 
                         if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
@@ -465,7 +466,7 @@ public class Edit {
                 case gun: {
 
                     // Use the numberkey pad to select where a gun should be placed/destroyed
-                    int id = - 1;
+                    int id = -1;
                     Vector2 position = new Vector2(0, 0);
                     if(Inputs.numone) {
                         id = 0;
@@ -499,12 +500,13 @@ public class Edit {
                     // If the id has been set to anything other than one we check to see if there is
                     // a gun in that spot yet. If there is not we place a new gun, if there is we
                     // destroy that gun.
-                    if(id != - 1) {
+                    if(id != -1) {
                         if(NoteBounce.guns[id] == null) {
                             startgun = id;
                             NoteBounce.guns[id] = new Gun(position, NoteBounce.scalePercent, id);
                             NoteBounce.currentGun = id;
                             NoteBounce.ball.setPos(NoteBounce.guns[NoteBounce.currentGun].center);
+                            System.out.println("Set id to: " + id);
                         } else {
                             NoteBounce.world.destroyBody(NoteBounce.guns[id].body);
                             NoteBounce.guns[id] = null;

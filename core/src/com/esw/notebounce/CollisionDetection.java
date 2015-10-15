@@ -88,14 +88,14 @@ public class CollisionDetection implements ContactListener {
         int notePtr = NoteBounce.notePtr;
 
         //DEBUG
-        if(udb.type.equals(UserData.Type.sim)) simhit = true;
+        //if(udb.type.equals(UserData.Type.sim)) simhit = true;
 
         // SIMULATION BALL: =============================================================================
-        /*if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
+        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
             if(uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun)) {
                 simhit = true;
             }
-        }*/
+        }
 
         // SEMI DEBUG:
         // We need to calculate this for the simulation and the ball itself
@@ -186,12 +186,13 @@ public class CollisionDetection implements ContactListener {
             // If the ball hits a gun
             if(uda.type.equals(UserData.Type.gun)) {
                 // If the hit gun is not the current gun
+                System.out.println("ID of GUN: " + uda.id);
                 if(uda.id != NoteBounce.currentGun) {
-                    NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
+                    //NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
                     // We set reset to true because calling an external function that updates the
                     // Box2D world while the world is locked (eg. when calculating collisions)
                     // we will get at assertion
-                    NoteBounce.reset = true;
+                    //NoteBounce.reset = true;
                 }
             }
 

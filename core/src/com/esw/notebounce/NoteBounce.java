@@ -485,6 +485,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
 				"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
 		}
+
 		if(guns[currentGun] != null) {
 			gunPositionDebug = "Current Gun X: " + String.format("%.2f", guns[currentGun].center.x) +
 			" | Y: " + String.format("%.2f", guns[currentGun].center.y);
