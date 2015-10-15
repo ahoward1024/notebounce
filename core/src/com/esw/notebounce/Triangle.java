@@ -20,25 +20,30 @@ public class Triangle {
     Sprite sprite;
     Body body;
     Vector2 center = new Vector2(0,0);
-    UserData userData = new UserData(UserData.Type.triangle);
+
     float scale;
     Sprite[] modifierSprites = new Sprite[4];
+    String[] modifierStrings = new String[4];
+    UserData.Color color;
+    UserData.Shade shade;
+    UserData.Triangle triangle;
 
     Triangle(UserData.Triangle triangle, Vector2 v, float scale,
              UserData.Color color, UserData.Shade shade)
     {
-        userData.color = color;
-        userData.shade = shade;
-        userData.triangle = triangle;
+        UserData userData = new UserData(UserData.Type.triangle);
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
+        this.triangle = userData.triangle = triangle;
         this.scale = scale;
 
         loadSprite(v);
-        loadFixture(UserData.createModifierArray());
+        loadFixture(userData, UserData.createModifierArray());
     }
 
     private void loadSprite(Vector2 v) {
-        FileHandle image = Gdx.files.internal("art/tiles/triangles/" + userData.color +
-            userData.triangle + userData.shade.ordinal() + ".png");
+        FileHandle image = Gdx.files.internal("art/tiles/triangles/" + color +
+            triangle + shade.ordinal() + ".png");
         sprite = new Sprite(new Texture(image));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
@@ -48,7 +53,7 @@ public class Triangle {
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
     }
 
-    private void loadFixture(UserData.Modifier[] modifiers) {
+    private void loadFixture(UserData userData, UserData.Modifier[] modifiers) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
@@ -94,16 +99,17 @@ public class Triangle {
 
     public void update(Vector2 v, float scale, UserData.Triangle triangle,
                        UserData.Color color, UserData.Shade shade, UserData.Modifier[] modifiers) {
+        UserData userData = new UserData(UserData.Type.triangle);
         sprite.getTexture().dispose();
         NoteBounce.world.destroyBody(body); // NOTE: we must destroy the body so we can create the new one
 
-        userData.color = color;
-        userData.shade = shade;
-        userData.triangle = triangle;
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
+        this.triangle = userData.triangle = triangle;
         this.scale = scale;
 
         loadSprite(v);
-        loadFixture(modifiers);
+        loadFixture(userData, modifiers);
         setPos(v);
     }
 
@@ -127,15 +133,15 @@ public class Triangle {
         String s = "\t\t{\n";
         s += "\t\t\t\"position\":";
         s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
-        s += "\t\t\t\"color\":" + "\"" + userData.color + "\",\n";
-        s += "\t\t\t\"shade\":\"" + userData.shade + "\",\n";
-        s += "\t\t\t\"triangle:\":\"" + userData.triangle + "\",\n";
+        s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
+        s += "\t\t\t\"shade\":\"" + shade + "\",\n";
+        s += "\t\t\t\"triangle\":\"" + triangle + "\",\n";
         s += "\t\t\t\"modifiers\":[";
-        /*for(int i = 0; i < userData.modifierTypes.length; i++) {
-            UserData.ModifierType mt = userData.modifierTypes[i];
-            s+= "\"" + mt.name() + "\"";
-            if(i != userData.modifierTypes.length - 1) s += ",";
-        }*/
+        for(int i = 0; i < modifierSprites.length; i++) {
+            if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
+            else s += "\"none\"";
+            if(i != modifierStrings.length - 1) s += ",";
+        }
         s += "]\n";
         s += "\t\t}";
         return s;

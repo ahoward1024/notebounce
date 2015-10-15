@@ -186,7 +186,6 @@ public class CollisionDetection implements ContactListener {
             // If the ball hits a gun
             if(uda.type.equals(UserData.Type.gun)) {
                 // If the hit gun is not the current gun
-                System.out.println("ID of GUN: " + uda.id);
                 if(uda.id != NoteBounce.currentGun) {
                     //NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
                     // We set reset to true because calling an external function that updates the

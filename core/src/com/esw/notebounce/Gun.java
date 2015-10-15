@@ -47,7 +47,7 @@ public class Gun {
         FixtureDef fixtureDef = new FixtureDef();
         UserData userData = new UserData(UserData.Type.gun);
         userData.id = id;
-        System.out.println("USER DATA ID :" + id);
+
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
         bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, base * scale);

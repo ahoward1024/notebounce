@@ -413,11 +413,14 @@ public class Edit {
                         if(tmptriangle.modifierSprites[id] == null) {
                             tmptriangle.modifierSprites[id] =
                                     new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-                            modifiers[id] = modifierState;
+                            tmptriangle.modifierStrings[id] = file;
                         } else {
                             tmptriangle.modifierSprites[id] = null;
-                            modifiers[id] = UserData.Modifier.none;
+                            tmptriangle.modifierStrings = null;
                         }
+
+                        if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
+                        else modifiers[id] = modifierState;
                     }
 
                     if(Gdx.input.justTouched()) {
@@ -506,7 +509,6 @@ public class Edit {
                             NoteBounce.guns[id] = new Gun(position, NoteBounce.scalePercent, id);
                             NoteBounce.currentGun = id;
                             NoteBounce.ball.setPos(NoteBounce.guns[NoteBounce.currentGun].center);
-                            System.out.println("Set id to: " + id);
                         } else {
                             NoteBounce.world.destroyBody(NoteBounce.guns[id].body);
                             NoteBounce.guns[id] = null;
