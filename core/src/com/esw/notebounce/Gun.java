@@ -49,7 +49,7 @@ public class Gun {
         userData.id = id;
         float base = 0.0f;
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
-        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, UserData.Edge.none, base * scale);
+        bodyEditorLoader.attachFixture(body, "gun", fixtureDef, userData, base * scale);
     }
 
     /**

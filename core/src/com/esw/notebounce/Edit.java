@@ -48,6 +48,8 @@ public class Edit {
 
     static int startgun = -1;
 
+    static UserData.Modifier[] modifiers = UserData.createModifierArray();
+
     static boolean drawGrid = false;
 
     public static void destroyAll() {
@@ -186,112 +188,84 @@ public class Edit {
                     // Get inputs to set box's modifierSprites
                     if(Inputs.a) {
                         modifierState = UserData.Modifier.accelerator;
-                        for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
-                            if(tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityUp) ||
-                                    tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityDown) ||
-                                    tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityLeft) ||
-                                    tmpbox.userData.modifierTypes[i].equals(UserData.ModifierType.gravityRight)) {
-
-                                tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
-                                tmpbox.modifierSprites[i] = null;
-                            }
-                        }
-                        if(tmpbox.modifierSprites[4] != null) {
-                            tmpbox.modifierSprites[4] = null;
-                        }
                     } else if(Inputs.s && !Inputs.lctrl) {
                         modifierState = UserData.Modifier.gravity;
-                        for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
-                            tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
-                            tmpbox.modifierSprites[i] = null;
-                        }
-                        if(tmpbox.modifierSprites[4] == null) {
-                            tmpbox.modifierSprites[4] = new Sprite(new Texture("art/modifiers/g.png"));
-                        }
                     } else if(Inputs.d) {
                         modifierState = UserData.Modifier.dampener;
-                        for(int i = 0; i < tmpbox.userData.modifierTypes.length; i++) {
-                            if(tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityUp ||
-                                    tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityDown ||
-                                    tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityLeft ||
-                                    tmpbox.userData.modifierTypes[i] == UserData.ModifierType.gravityRight) {
-
-                                tmpbox.userData.modifierTypes[i] = UserData.ModifierType.none;
-                                tmpbox.modifierSprites[i] = null;
-                            }
-                        }
-                        if(tmpbox.modifierSprites[4] != null) {
-                            tmpbox.modifierSprites[4] = null;
-                        }
                     }
 
-                    int id = - 1;
-                    UserData.ModifierType tmptype = UserData.ModifierType.none;
+
+                    int id = -1;
                     String file = "";
                     if(modifierState == UserData.Modifier.accelerator) {
                         if(Inputs.up) {
                             id = 0;
-                            tmptype = UserData.ModifierType.acceleratorUp;
                             file = "up";
                         } else if(Inputs.down) {
                             id = 1;
-                            tmptype = UserData.ModifierType.acceleratorDown;
                             file = "down";
                         } else if(Inputs.left) {
                             id = 2;
-                            tmptype = UserData.ModifierType.acceleratorLeft;
                             file = "left";
                         } else if(Inputs.right) {
                             id = 3;
-                            tmptype = UserData.ModifierType.acceleratorRight;
                             file = "right";
                         }
+
+                        if(id != -1) {
+                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
+                            else modifiers[id] = modifierState;
+                        }
+
                     } else if(modifierState == UserData.Modifier.dampener) {
                         if(Inputs.up) {
                             id = 0;
-                            tmptype = UserData.ModifierType.dampenerUp;
                             file = "upX";
                         } else if(Inputs.down) {
                             id = 1;
-                            tmptype = UserData.ModifierType.dampenerDown;
                             file = "downX";
                         } else if(Inputs.left) {
                             id = 2;
-                            tmptype = UserData.ModifierType.dampenerLeft;
                             file = "leftX";
                         } else if(Inputs.right) {
                             id = 3;
-                            tmptype = UserData.ModifierType.dampenerRight;
                             file = "rightX";
+                        }
+
+                        if(id != -1) {
+                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
+                            else modifiers[id] = modifierState;
                         }
                     } else if(modifierState == UserData.Modifier.gravity) {
                         if(Inputs.up) {
                             id = 0;
-                            tmptype = UserData.ModifierType.gravityUp;
                             file = "up";
                         } else if(Inputs.down) {
                             id = 1;
-                            tmptype = UserData.ModifierType.gravityDown;
                             file = "down";
                         } else if(Inputs.left) {
                             id = 2;
-                            tmptype = UserData.ModifierType.gravityLeft;
                             file = "left";
                         } else if(Inputs.right) {
                             id = 3;
-                            tmptype = UserData.ModifierType.gravityRight;
                             file = "right";
+                        }
+
+                        if(id != -1) {
+                            if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
+                            else modifiers[id] = modifierState;
                         }
                     }
 
                     if(id != -1) {
                         if(tmpbox.modifierSprites[id] == null) {
                             tmpbox.modifierSprites[id] =
-                                    new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-                            tmpbox.userData.modifierTypes[id] = tmptype;
+                                    new Sprite(
+                                        new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+
                         } else {
                             tmpbox.modifierSprites[id] = null;
-                            tmpbox.userData.modifierTypes[id] = UserData.ModifierType.none;
+
                         }
                     }
 
@@ -309,7 +283,7 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmpbox.update(v, colorState, shadeState);
+                        tmpbox.update(v, colorState, shadeState, modifiers);
                     }
 
                 }
@@ -460,7 +434,7 @@ public class Edit {
                         }
                     }
 
-                    if(id != -1) {
+                    /*if(id != -1) {
                         if(tmptriangle.modifierSprites[id] == null) {
                             tmptriangle.modifierSprites[id] =
                                     new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
@@ -469,7 +443,7 @@ public class Edit {
                             tmptriangle.modifierSprites[id] = null;
                             tmptriangle.userData.modifierTypes[id] = UserData.ModifierType.none;
                         }
-                    }
+                    }*/
 
                     if(Gdx.input.justTouched()) {
                         tmptriangle.sprite.setAlpha(1.0f);

@@ -12,14 +12,13 @@ public class UserData {
     Color color = Color.none;
     Shade shade = Shade.none;
     public Edge edge = Edge.none; // Public so BodyEditorLoader can set it
-    ModifierType[] modifierTypes = new ModifierType[5];
+    public Modifier modifier = Modifier.none;
     int id = -1; // ID number for guns
 
 
     // FIXME URGENT UserData needs to be __PER FIXTURE__ NOT per object
     // fixme Each object will have to track it's own color, shade, etc but
     // fixme each _fixture_ will have an edge/modifier
-
 
     public enum Type {
         boundary,
@@ -83,6 +82,8 @@ public class UserData {
         accelerator,
         dampener,
         gravity,
+
+        none
     }
 
     // FIXME modifier types should be _per fixture_ so we only need accelerator, dampener, gravity, none
@@ -107,10 +108,6 @@ public class UserData {
 
     UserData(Type type) {
         this.type = type;
-        modifierTypes[0] = ModifierType.none;
-        modifierTypes[1] = ModifierType.none;
-        modifierTypes[2] = ModifierType.none;
-        modifierTypes[3] = ModifierType.none;
     }
 
     public UserData(UserData userData) {
@@ -118,7 +115,16 @@ public class UserData {
         this.triangle = userData.triangle;
         this.color = userData.color;
         this.shade = userData.shade;
-        this.modifierTypes = userData.modifierTypes;
+        this.modifier = userData.modifier;
+    }
+
+    public static Modifier[] createModifierArray() {
+        Modifier[] modifiers = new Modifier[4];
+        modifiers[0] = Modifier.none;
+        modifiers[1] = Modifier.none;
+        modifiers[2] = Modifier.none;
+        modifiers[3] = Modifier.none;
+        return modifiers;
     }
 
     @Override
@@ -128,17 +134,7 @@ public class UserData {
         if(color != Color.none) output += " Color:[" + color + "]";
         if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "]";
         if(edge != Edge.none) output += " Edge:[" + edge + "]";
-        ModifierType m = null;
-        for(ModifierType mod : modifierTypes) {
-            m = mod;
-        }
-        if(m != null) {
-            output += " Modifiers:[";
-            for(ModifierType mod : modifierTypes) {
-                if(mod != null) output += mod.name() +",";
-            }
-            output += "]";
-        }
+        output += "Modifier:[" + modifier + "]";
         return output;
     }
 }

@@ -101,28 +101,20 @@ public class CollisionDetection implements ContactListener {
         // We need to calculate this for the simulation and the ball itself
         // todo clean this up later
         if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))) {
-            if(uda.edge.equals(UserData.Edge.top) &&
-                (uda.modifierTypes[0]).equals(UserData.ModifierType.acceleratorUp)) {
-                System.out.println("Impulse up");
-                NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
-            }
-            else if(uda.edge.equals(UserData.Edge.bot) &&
-                (uda.modifierTypes[1]).equals(UserData.ModifierType.acceleratorDown)) {
-                NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
-                System.out.println("Impulse down");
 
-            }
-            else if(uda.edge.equals(UserData.Edge.left) &&
-                (uda.modifierTypes[2]).equals(UserData.ModifierType.acceleratorLeft)) {
-                NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
-                System.out.println("Impulse left");
+            // Accelerator
+            if(uda.modifier.equals(UserData.Modifier.accelerator)) {
+                if(uda.edge.equals(UserData.Edge.top)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
+                } else if(uda.edge.equals(UserData.Edge.bot)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
 
-            }
-            else if(uda.edge.equals(UserData.Edge.right) &&
-                (uda.modifierTypes[3]).equals(UserData.ModifierType.acceleratorRight)) {
-                NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
-                System.out.println("Impulse right");
+                } else if(uda.edge.equals(UserData.Edge.left)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
 
+                } else if(uda.edge.equals(UserData.Edge.right)) {
+                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
+                }
             }
         }
         //===============================================================================================

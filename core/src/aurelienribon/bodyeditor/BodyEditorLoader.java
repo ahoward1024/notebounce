@@ -70,12 +70,12 @@ public class BodyEditorLoader {
      *
      * @param body The Box2d body you want to attach the fixture to.
      * @param name The name of the fixture you want to load.
-     * @param userData The user data of the fixture
      * @param fd The fixture parameters to apply to the created body fixture.
      * @param scale The desired scale of the body. The default width is 1.
      */
-    public void attachFixture(Body body, String name, FixtureDef fd, UserData userData,
-                              UserData.Edge edge, float scale) {
+    public void attachFixture(Body body, String name, FixtureDef fd, float scale,
+                              UserData userData, UserData.Edge edge, UserData.Modifier modifier) {
+
         RigidBodyModel rbModel = model.rigidBodies.get(name);
         if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
 
@@ -93,9 +93,11 @@ public class BodyEditorLoader {
             polygonShape.set(vertices);
             fd.shape = polygonShape;
 
-            userData.edge = edge;
+            UserData ud = new UserData(userData);
+            ud.edge = edge;
+            ud.modifier = modifier;
 
-            body.createFixture(fd).setUserData(userData);
+            body.createFixture(fd).setUserData(ud);
 
             for (int ii=0, nn=vertices.length; ii<nn; ii++) {
                 free(vertices[ii]);
@@ -117,7 +119,7 @@ public class BodyEditorLoader {
     }
 
     public void attachFixture(Body body, String name, FixtureDef fd, UserData userData, float scale) {
-        attachFixture(body, name, fd, userData, UserData.Edge.none, scale);
+        attachFixture(body, name, fd, scale, userData, UserData.Edge.none, UserData.Modifier.none);
     }
 
     /**

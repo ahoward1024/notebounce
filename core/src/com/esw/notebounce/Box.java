@@ -25,13 +25,15 @@ public class Box {
     Sprite sprite;
     Body body;
     Vector2 center = new Vector2(0,0);
-    UserData userData = new UserData(UserData.Type.box);
     float scale;
     Sprite[] modifierSprites = new Sprite[5];
+    UserData.Color color;
+    UserData.Shade shade;
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade) {
-        userData.color = color;
-        userData.shade = shade;
+        UserData userData = new UserData(UserData.Type.box);
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
         this.scale = scale;
 
         // Example blue0.png. Call ordinal on shade because we cannot have ints;
@@ -44,6 +46,46 @@ public class Box {
 
         center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
         center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+
+        loadFixtures(userData, UserData.createModifierArray());
+    }
+
+    public void update(Vector2 v, UserData.Color color, UserData.Shade shade,
+                       UserData.Modifier[] modifiers) {
+        UserData userData = new UserData(UserData.Type.box);
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
+
+        sprite.getTexture().dispose();
+        sprite.setTexture(new Texture("art/tiles/boxes/" + color + shade.ordinal() + ".png"));
+        sprite.setOrigin(0.0f, 0.0f);
+        sprite.setScale(scale);
+
+        setPos(v);
+        loadFixtures(userData, modifiers);
+    }
+
+    public void setPos(Vector2 v) {
+        sprite.setPosition(v.x, v.y);
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
+
+        for(Sprite s : modifierSprites) {
+            if(s != null) {
+                s.setOrigin(0.0f, 0.0f);
+                s.setScale(scale);
+                s.setPosition(sprite.getX(), sprite.getY());
+            }
+        }
+    }
+
+    public void loadFixtures(UserData userData, UserData.Modifier[] modifiers) {
+
+        if(body != null) {
+            NoteBounce.world.destroyBody(body);
+            body = null;
+        }
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -62,41 +104,16 @@ public class Box {
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
-        bodyEditorLoader.attachFixture(body, "top", fixtureDef, userData, UserData.Edge.top, base * scale);
-        bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
-        bodyEditorLoader.attachFixture(body, "left", fixtureDef, userData, UserData.Edge.left, base * scale);
-        bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
+        bodyEditorLoader.attachFixture(body, "top", fixtureDef, base * scale,
+            userData, UserData.Edge.top, modifiers[0]);
+        bodyEditorLoader.attachFixture(body, "bot", fixtureDef, base * scale,
+            userData, UserData.Edge.bot, modifiers[1]);
+        bodyEditorLoader.attachFixture(body, "left", fixtureDef, base * scale,
+            userData, UserData.Edge.left, modifiers[1]);
+        bodyEditorLoader.attachFixture(body, "right", fixtureDef, base * scale,
+            userData, UserData.Edge.right, modifiers[1]);
 
-        for(int i = 0; i < userData.modifierTypes.length; i++) {
-            userData.modifierTypes[i] = UserData.ModifierType.none;
-        }
-    }
 
-    public void update(Vector2 v, UserData.Color color, UserData.Shade shade) {
-        userData.color = color;
-        userData.shade = shade;
-
-        sprite.getTexture().dispose();
-        sprite.setTexture(new Texture("art/tiles/boxes/" + color + shade.ordinal() + ".png"));
-        sprite.setOrigin(0.0f, 0.0f);
-        sprite.setScale(scale);
-
-        setPos(v);
-    }
-
-    public void setPos(Vector2 v) {
-        sprite.setPosition(v.x, v.y);
-        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
-        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
-        body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
-
-        for(Sprite s : modifierSprites) {
-            if(s != null) {
-                s.setOrigin(0.0f, 0.0f);
-                s.setScale(scale);
-                s.setPosition(sprite.getX(), sprite.getY());
-            }
-        }
     }
 
     @Override
@@ -104,14 +121,14 @@ public class Box {
         String s = "\t\t{\n";
         s += "\t\t\t\"position\":";
         s += "{\"x\":" + sprite.getX() + "\"y\":" + sprite.getY() + "},\n";
-        s += "\t\t\t\"color\":" + "\"" + userData.color + "\",\n";
-        s += "\t\t\t\"shade\":\"" + userData.shade + "\",\n";
+        s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
+        s += "\t\t\t\"shade\":\"" + shade + "\",\n";
         s += "\t\t\t\"modifiers\":[";
-        for(int i = 0; i < userData.modifierTypes.length; i++) {
+        /*for(int i = 0; i < userData.modifierTypes.length; i++) {
             UserData.ModifierType mt = userData.modifierTypes[i];
             s+= "\"" + mt.name() + "\"";
             if(i != userData.modifierTypes.length - 1) s += ",";
-        }
+        }*/
         s += "]\n";
         s += "\t\t}";
         return s;

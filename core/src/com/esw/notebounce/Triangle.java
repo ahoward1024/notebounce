@@ -65,7 +65,7 @@ public class Triangle {
         if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(trianglesFile);
-        bodyEditorLoader.attachFixture(body, "hyp", fixtureDef, userData, UserData.Edge.hyp, base * scale);
+       /* bodyEditorLoader.attachFixture(body, "hyp", fixtureDef, userData, UserData.Edge.hyp, base * scale);
 
         if(userData.triangle == UserData.Triangle.BotLeft) {
             bodyEditorLoader.attachFixture(body, "bot", fixtureDef, userData, UserData.Edge.bot, base * scale);
@@ -79,7 +79,7 @@ public class Triangle {
         } else if(userData.triangle == UserData.Triangle.TopRight) {
             bodyEditorLoader.attachFixture(body, "top", fixtureDef, userData, UserData.Edge.top, base * scale);
             bodyEditorLoader.attachFixture(body, "right", fixtureDef, userData, UserData.Edge.right, base * scale);
-        }
+        }*/
     }
 
     public void update(Vector2 v, float scale, UserData.Triangle triangle,
@@ -121,11 +121,11 @@ public class Triangle {
         s += "\t\t\t\"shade\":\"" + userData.shade + "\",\n";
         s += "\t\t\t\"triangle:\":\"" + userData.triangle + "\",\n";
         s += "\t\t\t\"modifiers\":[";
-        for(int i = 0; i < userData.modifierTypes.length; i++) {
+        /*for(int i = 0; i < userData.modifierTypes.length; i++) {
             UserData.ModifierType mt = userData.modifierTypes[i];
             s+= "\"" + mt.name() + "\"";
             if(i != userData.modifierTypes.length - 1) s += ",";
-        }
+        }*/
         s += "]\n";
         s += "\t\t}";
         return s;
