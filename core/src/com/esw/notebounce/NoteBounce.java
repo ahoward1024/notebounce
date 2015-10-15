@@ -503,6 +503,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		batch.begin();   // Start the batch drawing
 
+		// TODO clean up edit/game rendering
+
 		if(Edit.tmpbox != null) {
 			Edit.tmpbox.sprite.draw(batch);
 			for(int i = 0; i < Edit.tmpbox.modifierSprites.length; i++) {
@@ -510,6 +512,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					Edit.tmpbox.modifierSprites[i].draw(batch);
 				}
 			}
+			if(Edit.tmpbox.gravity) Edit.tmpbox.gravitySprite.draw(batch);
 		}
 		// Draw the boxes array
 		for(Box b : boxes) {
@@ -519,6 +522,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					b.modifierSprites[i].draw(batch);
 				}
 			}
+			if(b.gravity) b.gravitySprite.draw(batch);
 		}
 
 		if(Edit.tmptriangle != null) {

@@ -26,9 +26,12 @@ public class Box {
     Body body;
     Vector2 center = new Vector2(0,0);
     float scale;
-    Sprite[] modifierSprites = new Sprite[5];
     UserData.Color color;
     UserData.Shade shade;
+    boolean gravity = false;
+    Sprite gravitySprite;
+    Sprite[] modifierSprites = new Sprite[4];
+    String[] modifierStrings = new String[4];
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade) {
         UserData userData = new UserData(UserData.Type.box);
@@ -40,6 +43,7 @@ public class Box {
         FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
             userData.shade.ordinal() + ".png");
         sprite = new Sprite(new Texture(image));
+        gravitySprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/g.png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
@@ -78,10 +82,15 @@ public class Box {
                 s.setPosition(sprite.getX(), sprite.getY());
             }
         }
+
+        if(gravity) {
+            gravitySprite.setOrigin(0.0f, 0.0f);
+            gravitySprite.setScale(scale);
+            gravitySprite.setPosition(sprite.getX(), sprite.getY());
+        }
     }
 
     public void loadFixtures(UserData userData, UserData.Modifier[] modifiers) {
-
         if(body != null) {
             NoteBounce.world.destroyBody(body);
             body = null;
@@ -112,23 +121,22 @@ public class Box {
             userData, UserData.Edge.left, modifiers[2]);
         bodyEditorLoader.attachFixture(body, "right", fixtureDef, base * scale,
             userData, UserData.Edge.right, modifiers[3]);
-
-
     }
 
     @Override
     public String toString() {
         String s = "\t\t{\n";
         s += "\t\t\t\"position\":";
-        s += "{\"x\":" + sprite.getX() + "\"y\":" + sprite.getY() + "},\n";
+        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
         s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
         s += "\t\t\t\"shade\":\"" + shade + "\",\n";
+        s += "\t\t\t\"gravity\":\"" + gravity + "\",\n";
         s += "\t\t\t\"modifiers\":[";
-        /*for(int i = 0; i < userData.modifierTypes.length; i++) {
-            UserData.ModifierType mt = userData.modifierTypes[i];
-            s+= "\"" + mt.name() + "\"";
-            if(i != userData.modifierTypes.length - 1) s += ",";
-        }*/
+        for(int i = 0; i < modifierSprites.length; i++) {
+            if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
+            else s += "\"none\"";
+            if(i != modifierStrings.length - 1) s += ",";
+        }
         s += "]\n";
         s += "\t\t}";
         return s;

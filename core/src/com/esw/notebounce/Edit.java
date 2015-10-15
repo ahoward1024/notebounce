@@ -196,10 +196,15 @@ public class Edit {
                         modifierState = UserData.Modifier.dampener;
                     }
 
+                    if(modifierState == UserData.Modifier.gravity) {
+                        tmpbox.gravity = true;
+                    } else {
+                        tmpbox.gravity = false;
+                    }
 
                     int id = -1;
                     String file = "";
-                    if(modifierState == UserData.Modifier.accelerator) {
+                    if(modifierState == UserData.Modifier.accelerator || modifierState == UserData.Modifier.gravity) {
                         if(Inputs.up) {
                             id = 0;
                             file = "up";
@@ -227,21 +232,6 @@ public class Edit {
                             id = 3;
                             file = "rightX";
                         }
-                    } else if(modifierState == UserData.Modifier.gravity) {
-                        if(Inputs.up) {
-                            id = 0;
-                            file = "up";
-                        } else if(Inputs.down) {
-                            id = 1;
-                            file = "down";
-                        } else if(Inputs.left) {
-                            id = 2;
-                            file = "left";
-                        } else if(Inputs.right) {
-                            id = 3;
-                            file = "right";
-                        }
-
                     }
 
                     if(id != -1) {
@@ -249,6 +239,7 @@ public class Edit {
                             tmpbox.modifierSprites[id] =
                                     new Sprite(
                                         new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
+                            tmpbox.modifierStrings[id] = file;
                         } else {
                             tmpbox.modifierSprites[id] = null;
                         }
@@ -258,10 +249,8 @@ public class Edit {
                     }
 
                     if(Gdx.input.justTouched()) {
-                        tmpbox.sprite.setAlpha(1.0f);
                         NoteBounce.boxes.add(tmpbox);
                         tmpbox = null;
-
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {

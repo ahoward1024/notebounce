@@ -86,26 +86,6 @@ public class UserData {
         none
     }
 
-    // FIXME modifier types should be _per fixture_ so we only need accelerator, dampener, gravity, none
-    public enum ModifierType {
-        acceleratorUp,
-        acceleratorDown,
-        acceleratorLeft,
-        acceleratorRight,
-
-        dampenerUp,
-        dampenerDown,
-        dampenerLeft,
-        dampenerRight,
-
-        gravityUp,
-        gravityDown,
-        gravityLeft,
-        gravityRight,
-
-        none
-    }
-
     UserData(Type type) {
         this.type = type;
     }

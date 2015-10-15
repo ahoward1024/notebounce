@@ -2,10 +2,16 @@
 	"boxes":
 	[
 		{
-			"position":{"x":900.0,"y":720.0},
+			"position":{"x":480.0,"y":720.0},
 			"color":"blue",
 			"shade":"zero",
-			"modifiers":["acceleratorUp","acceleratorDown","acceleratorLeft","acceleratorRight"]
+			"modifiers":["none","none","none","none","none"]
+		},
+		{
+			"position":{"x":1440.0,"y":600.0},
+			"color":"blue",
+			"shade":"zero",
+			"modifiers":["up","none","left","none","none"]
 		}
 	],
 	"triangles":
