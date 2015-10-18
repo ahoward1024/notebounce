@@ -17,6 +17,10 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+
+import javafx.stage.Screen;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -26,10 +30,11 @@ import com.badlogic.gdx.utils.Array;
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
-	public static final int basew = 1920, baseh = 1080;
 	public static final float originalGravity = -200.0f;
 	public static float gravity = originalGravity;
 	public static String gravityDirection = "Down";
+
+	public static final int basew = 1920, baseh = 1080;
 
 //=====================================================================================================//
 
@@ -49,6 +54,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int ScreenHeight = 0;
 
 	OrthographicCamera camera; // Orthographic because 2D
+	Viewport viewport;
 
 	Box2DDebugRenderer box2DDebugRenderer;
 	Matrix4 debugMatrix; // For Box2D's debug drawing projection
@@ -59,6 +65,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Ball ball;
 	static Sprite ripple;
 	Sprite crosshair;
+	ShapeRenderer shapeRenderer;
 
 	CollisionDetection collisionDetector;
 
@@ -115,17 +122,20 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9]
 	// FIXME screen resolutions differ.
+	// 16:9 RESOLUTIONS:
 	// 2560x1440, Scale: 133% at 160px
 	// 1920x1080, Scale: 100% at 120px (base resolution)
 	// 1280x720, Scale: 66% at 80px
-	// 1280x768, Scale: 53% at 64px
 	// 800x480, Scale: 33% at 40px
 	// FIXME this will be accomplished best by making a scale parameter and scaling all objects
 	// fixme to their appropriate size based on the device's screen resolution.
 
-	static float scalePercent = 0;
+	// ASPECT RATIOS
+	// 1.7777778 = 16:9
+	// 1.6       = 16:10
+	// 1.3333334 = 4:3
 
-
+	static float scalePercent = 1.0f;
 
 //=====================================================================================================//
 
@@ -139,16 +149,38 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ScreenHeight = height;
 	}
 
+	public static int bufferWidth = 0;
+	public static int bufferHeight = 0;
+
+	public static int scaleWidth = 1920;
+	public static int scaleHeight = 1080;
 	/**
 	 * Creates the game world.
 	 */
 	@Override
 	public void create() {
-		scalePercent = Utility.findScalePercent(ScreenWidth, ScreenHeight);
-		lines = (int)(Utility.GCD(basew, baseh) * scalePercent);
+		System.out.println("Screen Width: " + ScreenWidth + " Screen Height: " + ScreenHeight);
+
+		float asr = Utility.getAspectRatio(ScreenWidth, ScreenHeight);
+		System.out.println("Aspect ratio : " + asr);
+
+		Vector2 dim = Utility.getScaleDimension(ScreenWidth, ScreenHeight);
+		scaleWidth = (int)dim.x;
+		scaleHeight = (int)dim.y;
+
+		System.out.println("Scale Width: " + scaleWidth + " Scale Height: " + scaleHeight);
+
+		scalePercent = (float)Utility.GCD(scaleWidth, scaleHeight) / (float)Utility.GCD(basew, baseh);
+
+		lines = scaleWidth / 16;
 		midlines = lines / 2;
 
-		System.out.println(scalePercent + "%");
+		bufferWidth = (ScreenWidth - scaleWidth) / 2;
+		bufferHeight = (ScreenHeight - scaleHeight) / 2;
+
+		System.out.println("Buffer Width: " + bufferWidth + " Buffer Height: " + bufferHeight);
+
+		System.out.println("Scale percent: " + scalePercent + "%");
 
 		Box2D.init(); // MUST initialize Box2D before using it!
 		box2DDebugRenderer = new Box2DDebugRenderer();
@@ -156,7 +188,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.setAutoShapeType(true);
 
 		camera = new OrthographicCamera(ScreenWidth, ScreenHeight);
-		camera.position.set(ScreenWidth / 2, ScreenHeight / 2, 0.0f);
+		camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0.0f);
 		camera.update();
 
 		batch = new SpriteBatch();
@@ -175,7 +207,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity * scalePercent), true);
 		world.setContactListener(collisionDetector);
 
-		ball = new Ball(ScreenWidth / 2, ScreenHeight / 2, scalePercent);
+		ball = new Ball((scaleWidth / 2) + bufferWidth, (scaleHeight / 2) + bufferHeight, scalePercent);
 
 		// Build the lines for the bounding tmpbox that makes it so the ball
 		// does not go off the screen
@@ -203,7 +235,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		Edit.pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		Edit.eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
-
 	}
 
 	@Override
@@ -212,6 +243,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		//ScreenHeight = height;
 		//System.out.println(width + "x" + height);
 		//scalePercent = Utility.findScalePercent(ScreenWidth, ScreenHeight);
+		//viewport.update(width, height);
+		//camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0.0f);
 	}
 
 	/**
@@ -435,8 +468,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	public void render() {
 
 		// OpenGL
-		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
-		Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
+		Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
+		//Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
+		//Gdx.gl.glClearColor(1, 0, 0, 1); // DEBUG: Red
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 
@@ -493,13 +527,18 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		camera.update(); // Update the camera just before drawing
 
+		debugShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+		debugShapeRenderer.setColor(Color.WHITE);
+		debugShapeRenderer.rect(bufferWidth, bufferHeight, scaleWidth, scaleHeight);
+		debugShapeRenderer.end();
+
 		debugShapeRenderer.begin();
 		debugShapeRenderer.setColor(simDrawColor);
 		for(int i = 0; i < simcoords.size; i++) {
 			Vector2 tmp = simcoords.get(i);
 			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite.getWidth()/2) * scalePercent);
 		}
-
 		debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
@@ -662,13 +701,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60,
-			ScreenHeight - 10);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugMessage.draw(batch, "Width: " + ScreenWidth + " | Height: " + ScreenHeight, ScreenWidth / 2,
-			ScreenHeight - 10);
-		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, ScreenWidth / 2, ScreenHeight - 10);
+		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, ScreenWidth / 2,
 			ScreenHeight - 40);
+		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+			ScreenHeight - 70);
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
@@ -691,14 +730,18 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			int linewidth = 5;
 			debugShapeRenderer.begin();
 			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.RED));
-			for(int i = 0; i < ScreenWidth; i += midlines) {
-				drawDottedLine(linewidth, i, 0, i, ScreenHeight);
-				drawDottedLine(linewidth, 0, i, ScreenWidth, i);
+			for(int i = bufferWidth; i <= (scaleWidth + bufferWidth); i += midlines) {
+				drawDottedLine(5, i, bufferHeight, i, (scaleHeight + bufferHeight));
 			}
-			debugShapeRenderer.setColor(new com.badlogic.gdx.graphics.Color(Color.GRAY));
-			for(int i = 0; i < ScreenWidth; i += lines) {
-				debugShapeRenderer.line(i, 0, i, ScreenHeight);
-				debugShapeRenderer.line(0, i, ScreenWidth, i);
+			for(int i = bufferHeight; i <= (scaleHeight + bufferHeight); i += midlines) {
+				drawDottedLine(5, bufferWidth, i, (scaleWidth + bufferWidth), i);
+			}
+			debugShapeRenderer.setColor(Color.GRAY);
+			for(int i = bufferWidth; i <= (scaleWidth + bufferWidth); i += lines) {
+				debugShapeRenderer.line(i, bufferHeight, i, (scaleHeight + bufferHeight));
+			}
+			for(int i = bufferHeight; i <= (scaleHeight + bufferHeight); i += lines) {
+				debugShapeRenderer.line(bufferWidth, i, (scaleWidth + bufferWidth), i);
 			}
 			debugShapeRenderer.end();
 		}
