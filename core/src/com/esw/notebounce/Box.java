@@ -8,10 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 
-import java.io.Serializable;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
@@ -140,5 +139,28 @@ public class Box {
         s += "]\n";
         s += "\t\t}";
         return s;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject jsonObject = new JSONObject();
+
+        JSONObject posMap = new JSONObject();
+        posMap.put("x", sprite.getX());
+        posMap.put("y", sprite.getY());
+        jsonObject.put("position", posMap);
+
+        jsonObject.put("color", color.toString());
+        jsonObject.put("shade", shade.toString());
+        jsonObject.put("gravity", Boolean.toString(gravity));
+
+        JSONArray modifiers = new JSONArray();
+        for (Sprite sprite : modifierSprites) {
+            if (sprite != null) modifiers.put(sprite.toString());
+            else modifiers.put("none");
+        }
+        jsonObject.put("modifiers", modifiers);
+
+        return jsonObject;
+        //return jsonObject.toString();
     }
 }
