@@ -63,6 +63,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	SpriteBatch batch;
 	static Ball ball;
+	static Sprite ballSimSprite;
 	static Sprite ripple;
 	Sprite crosshair;
 	ShapeRenderer shapeRenderer;
@@ -235,6 +236,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		Edit.pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		Edit.eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
+
+		ballSimSprite = new Sprite(new Texture(Gdx.files.internal("art/simball.png")));
+		ballSimSprite.setScale(scalePercent);
 	}
 
 	@Override
@@ -533,15 +537,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.rect(bufferWidth, bufferHeight, scaleWidth, scaleHeight);
 		debugShapeRenderer.end();
 
-		debugShapeRenderer.begin();
-		debugShapeRenderer.setColor(simDrawColor);
-		for(int i = 0; i < simcoords.size; i++) {
-			Vector2 tmp = simcoords.get(i);
-			debugShapeRenderer.circle(tmp.x, tmp.y, (ball.sprite.getWidth()/2) * scalePercent);
-		}
-		debugShapeRenderer.end();
+		//debugShapeRenderer.begin();
+		//debugShapeRenderer.setColor(simDrawColor);
+		// SIMULATION DEBUG DRAWING
+		//debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
+
+		float ballSimAlpha = 0.75f;
+		for(int i = 0; i < simcoords.size; i++) {
+			Vector2 tmp = simcoords.get(i);
+			ballSimSprite.setCenter(tmp.x, tmp.y);
+			ballSimSprite.setAlpha(ballSimAlpha);
+			ballSimSprite.draw(batch);
+			if(ballSimAlpha > 0.0f) ballSimAlpha -= 0.05f;
+			else ballSimAlpha = 0.0f;
+		}
 
 		// TODO clean up edit/game rendering
 
