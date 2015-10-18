@@ -347,7 +347,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// todo number of them have happened ???
 			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 			// up the loop will not break causing it to run every iteration and will cause framerate issues.
-			for(int i = 0; i < 1000; i++) { // DEBUG
+			for(int i = 0; i < 200; i++) { // DEBUG
 				world.step(1.0f / timestep, velocityIterations, positionIterations);
 				if(i % steps == 0) {
 					simcoords.add(new Vector2(ball.body.getPosition().x * PIXELS2METERS,
@@ -420,9 +420,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			if(guns[currentGun] != null) {
-				if((ball.body.getPosition().x * PIXELS2METERS) > guns[currentGun].endX(angle) &&
-					(ball.body.getPosition().y * PIXELS2METERS) > guns[currentGun].endY(angle)) {
+			for(int i = 0; i < guns.length; i++)
+			if(guns[i] != null) {
+				if((ball.body.getPosition().x * PIXELS2METERS) > guns[i].endX(angle) &&
+					(ball.body.getPosition().y * PIXELS2METERS) > guns[i].endY(angle)) {
 					drawBallOver = true;
 				}
 			}
@@ -536,11 +537,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugShapeRenderer.setColor(Color.WHITE);
 		debugShapeRenderer.rect(bufferWidth, bufferHeight, scaleWidth, scaleHeight);
 		debugShapeRenderer.end();
-
-		//debugShapeRenderer.begin();
-		//debugShapeRenderer.setColor(simDrawColor);
-		// SIMULATION DEBUG DRAWING
-		//debugShapeRenderer.end();
 
 		batch.begin();   // Start the batch drawing
 
