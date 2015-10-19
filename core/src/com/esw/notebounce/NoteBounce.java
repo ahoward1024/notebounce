@@ -82,7 +82,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String fpsDebug = "FPS: ";     // DEBUG
 
 	static boolean goalWasHit = false;
-	boolean showGoalHit= false; // Show "GOAL!" text
+	boolean showGoalHit = false; // Show "GOAL!" text
 
 	static boolean ballShot = false; // Is the ball shot?
 	static boolean moveBallToGun = false; // Toggle to lerp the ball back to the gun
@@ -228,13 +228,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
 
-		LevelLoader loader = new LevelLoader("levels/");
-
 		Edit.pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		Edit.eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
 
 		ballSimSprite = new Sprite(new Texture(Gdx.files.internal("art/simball.png")));
 		ballSimSprite.setScale(scalePercent);
+
+		LevelLoader.createLevelsArray("levels/");
+		LevelLoader.loadLevel(LevelLoader.levelPtr);
 	}
 
 	@Override
@@ -468,9 +469,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	public void render() {
 
 		// OpenGL
-		Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
+		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
 		//Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
 		//Gdx.gl.glClearColor(1, 0, 0, 1); // DEBUG: Red
+		Gdx.gl.glClearColor(0, 0, 0, 1); // DEBUG: Black
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 
@@ -501,7 +503,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
-			Edit.editLevel(); // TODO massively clean up editing
+			Edit.editLevel(); // TODO clean up editing
 		}
 
 		// ================ RENDER ================//

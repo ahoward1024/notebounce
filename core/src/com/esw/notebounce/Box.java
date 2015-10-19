@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import java.io.Serializable;
 
+import javax.jws.soap.SOAPBinding;
+
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
@@ -32,6 +34,60 @@ public class Box {
     Sprite gravitySprite;
     Sprite[] modifierSprites = new Sprite[4];
     String[] modifierStrings = new String[4];
+
+    // TODO Rethink modifiers again.
+    // TODO Need a clear goal of what modifiers do.
+
+    Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, boolean gravity, String[] mods) {
+        UserData userData = new UserData(UserData.Type.box);
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
+        this.scale = scale;
+
+        // Example blue0.png. Call ordinal on shade because we cannot have ints;
+        FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
+            userData.shade.ordinal() + ".png");
+        sprite = new Sprite(new Texture(image));
+        gravitySprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/g.png")));
+        sprite.setOrigin(0.0f, 0.0f);
+        sprite.setScale(scale);
+        sprite.setPosition(v.x, v.y);
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
+
+        body = NoteBounce.world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1.0f;
+        fixtureDef.restitution = 0.0f;
+
+        // Load the edges.json file to get all of the edge types (top, bot, left, right)
+        // This is so we can specify what is the top of the tmpbox if we needs
+        FileHandle fileHandle = Gdx.files.internal("fixtures/boxes.json");
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+
+        UserData.Modifier[] modifiers = new UserData.Modifier[4];
+        for(int i = 0; i < mods.length; i++) {
+            if(gravity) {
+                if(!mods[i].equals("none")) modifiers[i] = UserData.Modifier.gravity;
+            } else {
+                if(!mods[i].equals("none")) modifiers[i] = UserData.Modifier.accelerator;
+            }
+        }
+
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        bodyEditorLoader.attachFixture(body, "top", fixtureDef, base * scale,
+            userData, UserData.Edge.top, modifiers[0]);
+        bodyEditorLoader.attachFixture(body, "bot", fixtureDef, base * scale,
+            userData, UserData.Edge.bot, modifiers[1]);
+        bodyEditorLoader.attachFixture(body, "left", fixtureDef, base * scale,
+            userData, UserData.Edge.left, modifiers[2]);
+        bodyEditorLoader.attachFixture(body, "right", fixtureDef, base * scale,
+            userData, UserData.Edge.right, modifiers[3]);
+    }
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade) {
         UserData userData = new UserData(UserData.Type.box);
@@ -126,19 +182,18 @@ public class Box {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":";
-        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\"y\":" + sprite.getY() + ",\n";
         s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
         s += "\t\t\t\"shade\":\"" + shade + "\",\n";
         s += "\t\t\t\"gravity\":\"" + gravity + "\",\n";
-        s += "\t\t\t\"modifiers\":[";
         for(int i = 0; i < modifierSprites.length; i++) {
+            s += "\t\t\t\"m" + i + "\":";
             if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
             else s += "\"none\"";
-            if(i != modifierStrings.length - 1) s += ",";
+            if(i != modifierStrings.length - 1) s += ",\n";
         }
-        s += "]\n";
-        s += "\t\t}";
+        s += "\n\t\t}";
         return s;
     }
 }

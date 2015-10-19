@@ -1,0 +1,27 @@
+{
+	"boxes":[
+		{
+			"x":80.0,
+			"y":80.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":1120.0,
+			"y":560.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		}
+	],
+	"startgun":4
+}
