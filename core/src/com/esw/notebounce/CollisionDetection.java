@@ -187,11 +187,11 @@ public class CollisionDetection implements ContactListener {
             if(uda.type.equals(UserData.Type.gun)) {
                 // If the hit gun is not the current gun
                 if(uda.id != NoteBounce.currentGun) {
-                    //NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
+                    NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
                     // We set reset to true because calling an external function that updates the
                     // Box2D world while the world is locked (eg. when calculating collisions)
                     // we will get at assertion
-                    //NoteBounce.reset = true;
+                    NoteBounce.reset = true;
                 }
             }
 

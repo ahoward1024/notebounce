@@ -44,49 +44,24 @@ public class Utility {
         return GCD(b,a%b);
     }
 
-    /**
-     * Find a scaling number for the width and the height of the screen based
-     * on the greatest common divisor value. If the width and height parameters are
-     * less than the base resolution's width and height (for our purposes 1920x1080 is what all
-     * of the art assets are created at) then we scale down to the first matching GCD of the
-     * width and height after the base GCD. Otherwise if width and height are bigger we find the
-     * first matching GCD greater than the base width and height.
-     * @param width The width of the screen
-     * @param height The height of the screen
-     * @return A float value that is the percent in which all assets need to be scaled to fit the screen
-     */
-    // TODO scale percentage for 16:10 and 4:3 windows
-    public static float findScalePercent(int width, int height) {
-        if(width == NoteBounce.basew && height == NoteBounce.baseh) return 1;
+    public static float getAspectRatio(int a, int b) {
+        return  (float)a / (float)b;
+    }
 
-        Array<Integer> numbers = new Array<Integer>();
-        int m;
-        if(width > height) m = height;
-        else m = width;
-        
-        // If the width and height are less than the base width and height
-        if(width < NoteBounce.basew && height < NoteBounce.baseh) {
-            int div = 1; // Divider
-            // If width and height are less than half of the basew and base h
-            // then we need to scale further down otherwise we might get a GCD that is too big.
-            if(width < NoteBounce.basew /2 & height < NoteBounce.baseh / 2) {
-                div = 2;
-            }
-            // Find the first matching GCD that is less than the base GCD scaled by the div value (if necessary)
-            for(int i = m; i >= 1; i--) {
-                if(width % i == 0 && height % i == 0 && i < GCD(NoteBounce.basew /div, NoteBounce.baseh /div)) {
-                    return ((float)i / GCD(NoteBounce.basew /div, NoteBounce.baseh /div));
-                }
-            }
-        } else if(width > NoteBounce.basew && height > NoteBounce.baseh){
-            // If the width and height are greater than the base width and height
-            // then we set the scale value to the greatest matching GCD above the base GCD
-            for(int i = m; i >= 1; i--) {
-                if(width % i == 0 && height % i == 0 && i > GCD(NoteBounce.baseh, NoteBounce.basew)) {
-                    return ((float)i / GCD(NoteBounce.basew, NoteBounce.baseh));
+
+    static float dimscaling = 0.5625f;
+    public static Vector2 getScaleDimension(int width, int height) {
+        Vector2 dim = new Vector2(0,0);
+        float w = 0;
+        for(int i = width; i > 9; i--) {
+            float s = i * dimscaling;
+            if(i % 8 == 0) {
+                if((s % 8 == 0) && (s <= height)) {
+                    w = i; break;
                 }
             }
         }
-        return -1;
+        dim.x = w; dim.y = w * 0.5625f;
+        return dim;
     }
 }
