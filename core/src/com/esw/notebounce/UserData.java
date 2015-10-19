@@ -15,11 +15,6 @@ public class UserData {
     public Modifier modifier = Modifier.none;
     public int id = -1; // ID number for guns
 
-
-    // FIXME URGENT UserData needs to be __PER FIXTURE__ NOT per object
-    // fixme Each object will have to track it's own color, shade, etc but
-    // fixme each _fixture_ will have an edge/modifier
-
     public enum Type {
         boundary,
         box,

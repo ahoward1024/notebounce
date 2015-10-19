@@ -45,6 +45,7 @@ public class Gun {
         FileHandle fileHandle = Gdx.files.internal("fixtures/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.isSensor = true;
         UserData userData = new UserData(UserData.Type.gun);
         userData.id = id;
 

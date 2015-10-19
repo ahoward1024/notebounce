@@ -17,10 +17,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
-import javafx.stage.Screen;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -88,7 +85,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	boolean showGoalHit= false; // Show "GOAL!" text
 
 	static boolean ballShot = false; // Is the ball shot?
-	static boolean moveBall = false; // Toggle to lerp the ball back to the gun
+	static boolean moveBallToGun = false; // Toggle to lerp the ball back to the gun
 	static boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
 	// TODO create LevelLoader
@@ -121,7 +118,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int lines = 0;
 	static int midlines = 0;
 
-	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9]
+	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9] (maybe fixed ???)
 	// FIXME screen resolutions differ.
 	// 16:9 RESOLUTIONS:
 	// 2560x1440, Scale: 133% at 160px
@@ -257,11 +254,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static void reset() {
 		ballShot = false;
 		ball.body.setType(BodyDef.BodyType.StaticBody);
-		moveBall = true;
+		moveBallToGun = true;
 		playNotes = true;
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
+		guns[currentGun].body.getFixtureList().first().setSensor(false);
 		if(goalWasHit) {
 			if(goalNoisePlaying) goalNoise.stop();
 			goalNoisePlaying = false;
@@ -272,7 +270,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Move the ball through linear interpolation back to the gun.
 	 */
-	static void moveBall() {
+	static void moveBallToGun() {
 		shoot = false;
 		Vector2 v;
 		if(guns[currentGun] != null) {
@@ -287,7 +285,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(Utility.isInsideCircle(ball.center, v, 10.0f)) {
 			ball.body.setTransform(v.x / PIXELS2METERS, v.y / PIXELS2METERS, 0.0f);
 			ball.setSpriteToBodyPosition();
-			moveBall = false;
+			moveBallToGun = false;
 		}
 	}
 
@@ -429,8 +427,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
-		if(moveBall) {
-			moveBall();
+		if(moveBallToGun) {
+			moveBallToGun();
 		}
 
 		if(playRipple) {

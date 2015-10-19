@@ -509,6 +509,7 @@ public class Edit {
                             startgun = id;
                             NoteBounce.guns[id] = new Gun(position, NoteBounce.scalePercent, id);
                             NoteBounce.currentGun = id;
+                            NoteBounce.guns[NoteBounce.currentGun].body.getFixtureList().first().setSensor(false);
                             NoteBounce.ball.setPos(NoteBounce.guns[NoteBounce.currentGun].center);
                         } else {
                             NoteBounce.world.destroyBody(NoteBounce.guns[id].body);
