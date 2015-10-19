@@ -118,15 +118,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int lines = 0;
 	static int midlines = 0;
 
-	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9] (maybe fixed ???)
-	// FIXME screen resolutions differ.
+	// FIXME: Resolutions scaling somehow messes up if the width or height of the window is greater than
+	// fixme the size of the screen. Also, resizing does not work on the desktop. This should not be
+	// fixme a big deal, however, because resize events never get called for android.
 	// 16:9 RESOLUTIONS:
 	// 2560x1440, Scale: 133% at 160px
 	// 1920x1080, Scale: 100% at 120px (base resolution)
 	// 1280x720, Scale: 66% at 80px
 	// 800x480, Scale: 33% at 40px
-	// FIXME this will be accomplished best by making a scale parameter and scaling all objects
-	// fixme to their appropriate size based on the device's screen resolution.
 
 	// ASPECT RATIOS
 	// 1.7777778 = 16:9
@@ -209,10 +208,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Build the lines for the bounding tmpbox that makes it so the ball
 		// does not go off the screen
-		new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, UserData.Edge.bot);
-		new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, UserData.Edge.top);
-		new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, UserData.Edge.left);
-		new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, UserData.Edge.right);
+		new Boundary(bufferWidth, bufferHeight, ScreenWidth - bufferWidth, bufferHeight, UserData.Edge.bot);
+		new Boundary(bufferWidth, ScreenHeight - bufferHeight, ScreenWidth - bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.top);
+		new Boundary(ScreenWidth - bufferWidth, bufferHeight, ScreenWidth - bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.left);
+		new Boundary(bufferWidth, bufferHeight, bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.right);
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("notes/goal.mp3"));
 
@@ -239,13 +238,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	@Override
-	public void resize(int width, int height) {
-		//ScreenWidth = width;
-		//ScreenHeight = height;
-		//System.out.println(width + "x" + height);
-		//scalePercent = Utility.findScalePercent(ScreenWidth, ScreenHeight);
-		//viewport.update(width, height);
-		//camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0.0f);
+	public void resize(int width, int height) { // WARNING: Resizing does not work on the desktop.
+		ScreenWidth = width;
+		ScreenHeight = height;
 	}
 
 	/**
@@ -259,7 +254,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
-		guns[currentGun].body.getFixtureList().first().setSensor(false);
+		if(guns[currentGun] != null) {
+			guns[currentGun].body.getFixtureList().first().setSensor(false);
+		}
 		if(goalWasHit) {
 			if(goalNoisePlaying) goalNoise.stop();
 			goalNoisePlaying = false;
