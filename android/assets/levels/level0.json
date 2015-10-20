@@ -21,6 +21,28 @@
 			"m1":"none",
 			"m2":"none",
 			"m3":"none"
+		},
+		{
+			"x":880.0,
+			"y":320.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"true",
+			"m0":"none",
+			"m1":"down",
+			"m2":"left",
+			"m3":"none"
+		},
+		{
+			"x":240.0,
+			"y":400.0,
+			"color":"magenta",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"upX",
+			"m1":"downX",
+			"m2":"none",
+			"m3":"none"
 		}
 	],
 	"startgun":4

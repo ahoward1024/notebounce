@@ -28,6 +28,11 @@ public class Triangle {
     UserData.Shade shade;
     UserData.Triangle triangle;
 
+    Triangle(Vector2 v, UserData.Triangle triangle, float scale,
+             UserData.Color color, UserData.Shade shade, String[] mods) {
+        
+    }
+
     Triangle(UserData.Triangle triangle, Vector2 v, float scale,
              UserData.Color color, UserData.Shade shade)
     {

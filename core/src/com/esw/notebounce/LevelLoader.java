@@ -68,11 +68,13 @@ public class LevelLoader { // TODO Level loader/writer
     }
 
     // TODO: load a level
-    public static Level loadLevel(int lvl) {
+    public static void loadLevel(int lvl) {
         levelPtr = lvl;
         Level level = levels.get(levelPtr);
 
         JsonValue json = new JsonReader().parse(level.file);
+
+        //BOXES
         JsonValue array = json.get("boxes");
         for(JsonValue jv : array.iterator()) {
             Vector2 v = new Vector2(0,0);
@@ -88,8 +90,33 @@ public class LevelLoader { // TODO Level loader/writer
             Box b = new Box(v, NoteBounce.scalePercent, color, shade, g, strings);
             NoteBounce.boxes.add(b);
         }
+        //===============================================================================================
+        //TRIANGLES
+        array = json.get("triangles");
+        if(array != null) {
+            for(JsonValue jv : array.iterator()) {
+                Vector2 v = new Vector2(0, 0);
+                v.x = (jv.getFloat("x") + NoteBounce.bufferWidth);
+                v.y = (jv.getFloat("y") + NoteBounce.bufferHeight);
+                UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
+                UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
+                UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
+                String[] strings = new String[4];
+                for(int i = 0; i < strings.length; i++) {
+                    strings[i] = jv.getString("m" + i);
+                }
+                Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
+                NoteBounce.triangles.add(o);
+            }
+        }
+    }
 
-        return null;
+    public static void loadLevel(String name) {
+
+    }
+
+    public static void loadLevel() {
+
     }
 
     public static void createLevelsArray(String path) {

@@ -43,6 +43,8 @@ public class Box {
         this.color = userData.color = color;
         this.shade = userData.shade = shade;
         this.scale = scale;
+        this.gravity = gravity;
+        this.modifierStrings = mods;
 
         // Example blue0.png. Call ordinal on shade because we cannot have ints;
         FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
@@ -52,6 +54,24 @@ public class Box {
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
+
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+
+        if(gravity) {
+            gravitySprite.setOrigin(0.0f, 0.0f);
+            gravitySprite.setScale(scale);
+            gravitySprite.setPosition(sprite.getX(), sprite.getY());
+        }
+
+        for(int i = 0; i < mods.length; i++) {
+            if(!mods[i].equals("none")) {
+                modifierSprites[i] = new Sprite(new Texture("art/modifiers/" + mods[i] + ".png"));
+                modifierSprites[i].setOrigin(0.0f, 0.0f);
+                modifierSprites[i].setScale(scale);
+                modifierSprites[i].setPosition(sprite.getX(), sprite.getY());
+            }
+        }
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -63,22 +83,22 @@ public class Box {
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
 
-        // Load the edges.json file to get all of the edge types (top, bot, left, right)
-        // This is so we can specify what is the top of the tmpbox if we needs
-        FileHandle fileHandle = Gdx.files.internal("fixtures/boxes.json");
-        float base = 0.0f;
-        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
-
-        UserData.Modifier[] modifiers = new UserData.Modifier[4];
+        UserData.Modifier[] modifiers = UserData.createModifierArray();
         for(int i = 0; i < mods.length; i++) {
-            if(gravity) {
-                if(!mods[i].equals("none")) modifiers[i] = UserData.Modifier.gravity;
-            } else {
-                if(!mods[i].equals("none")) modifiers[i] = UserData.Modifier.accelerator;
+            if(!mods[i].equals("none")) {
+                char c = mods[i].charAt(mods[i].length() - 1);
+                if(gravity) modifiers[i] = UserData.Modifier.gravity;
+                else if(c == 'X') modifiers[i] = UserData.Modifier.dampener;
+                else modifiers[i] = UserData.Modifier.accelerator;
             }
         }
 
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
+        // Load the edges.json file to get all of the edge types (top, bot, left, right)
+        // This is so we can specify what is the top of the tmpbox if we needs
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/boxes.json"));
         bodyEditorLoader.attachFixture(body, "top", fixtureDef, base * scale,
             userData, UserData.Edge.top, modifiers[0]);
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef, base * scale,
@@ -187,7 +207,7 @@ public class Box {
         s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
         s += "\t\t\t\"shade\":\"" + shade + "\",\n";
         s += "\t\t\t\"gravity\":\"" + gravity + "\",\n";
-        for(int i = 0; i < modifierSprites.length; i++) {
+        for(int i = 0; i < modifierStrings.length; i++) {
             s += "\t\t\t\"m" + i + "\":";
             if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
             else s += "\"none\"";
