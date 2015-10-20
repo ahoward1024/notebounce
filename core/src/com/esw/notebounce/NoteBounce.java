@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -111,7 +112,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
 	static Array<Mine> mines = new Array<Mine>();
 	static Gun[] guns = new Gun[9];
-	static int currentGun = -1;
+	static int currentGun = 0;
 
 	boolean edit = false;
 
@@ -234,7 +235,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ballSimSprite = new Sprite(new Texture(Gdx.files.internal("art/simball.png")));
 		ballSimSprite.setScale(scalePercent);
 
-		LevelLoader.createLevelsArray("levels/");
+		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
 		LevelLoader.loadLevel(LevelLoader.levelPtr);
 	}
 

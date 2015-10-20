@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -21,10 +22,6 @@ public class LevelLoader { // TODO Level loader/writer
 
     static Array<Level> levels = new Array<Level>();
     static int levelPtr = 0;
-
-    LevelLoader(String path) {
-        createLevelsArray(path);
-    }
 
     public static void unloadLevel() {
 
@@ -75,7 +72,7 @@ public class LevelLoader { // TODO Level loader/writer
         levelPtr = lvl;
         Level level = levels.get(levelPtr);
 
-        JsonValue json = new JsonReader().parse(level.file);
+        JsonValue json = new JsonReader().parse(Gdx.files.internal(level.file.path()));
 
         //BOXES
         JsonValue array = json.get("boxes");
@@ -179,13 +176,12 @@ public class LevelLoader { // TODO Level loader/writer
 
     }
 
-    public static void createLevelsArray(String path) {
-        FileHandle folder = new FileHandle(path);
-        FileHandle[] fileList = folder.list();
+    public static void createLevelsArray(FileHandle fh) {
+        FileHandle[] fileList = fh.list();
         if(fileList.length > 1) {
             for (int i = 0; i < fileList.length; i++) {
                 if (!fileList[i].isDirectory()) {
-                    System.out.println("Loading file: " + fileList[i].path());
+                    System.out.println("Loading file to array: " + fileList[i].path());
                     levels.add(new Level((new FileHandle(fileList[i].path())),
                             fileList[i].name(), i));
                 }
