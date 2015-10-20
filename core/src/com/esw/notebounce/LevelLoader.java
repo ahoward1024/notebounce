@@ -93,21 +93,19 @@ public class LevelLoader { // TODO Level loader/writer
         //===============================================================================================
         //TRIANGLES
         array = json.get("triangles");
-        if(array != null) {
-            for(JsonValue jv : array.iterator()) {
-                Vector2 v = new Vector2(0, 0);
-                v.x = (jv.getFloat("x") + NoteBounce.bufferWidth);
-                v.y = (jv.getFloat("y") + NoteBounce.bufferHeight);
-                UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
-                UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
-                UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
-                String[] strings = new String[4];
-                for(int i = 0; i < strings.length; i++) {
-                    strings[i] = jv.getString("m" + i);
-                }
-                Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
-                NoteBounce.triangles.add(o);
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") + NoteBounce.bufferWidth);
+            v.y = (jv.getFloat("y") + NoteBounce.bufferHeight);
+            UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
+            UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
+            UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
+            String[] strings = new String[4];
+            for(int i = 0; i < strings.length; i++) {
+                strings[i] = jv.getString("m" + i);
             }
+            Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
+            NoteBounce.triangles.add(o);
         }
     }
 
@@ -162,7 +160,7 @@ public class LevelLoader { // TODO Level loader/writer
                 string += "\t],\n";
                 //=======================================================================================
 
-               /* // TRIANGLES
+               // TRIANGLES
                 string += "\t\"triangles\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.triangles.size; i++) {
                     Triangle o = NoteBounce.triangles.get(i);
@@ -176,7 +174,7 @@ public class LevelLoader { // TODO Level loader/writer
                 //=======================================================================================
 
                 // GOALS
-                string += "\t\"goals\":\n\t[\n";
+                /*string += "\t\"goals\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.goals.size; i++) {
                     Goal o = NoteBounce.goals.get(i);
                     if(o != null) {

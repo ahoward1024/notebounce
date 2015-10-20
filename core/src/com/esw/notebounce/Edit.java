@@ -243,7 +243,7 @@ public class Edit {
                             tmpbox.modifierStrings[id] = file;
                         } else {
                             tmpbox.modifierSprites[id] = null;
-                            tmpbox.modifierStrings[id] = null;
+                            tmpbox.modifierStrings[id] = "none";
                         }
 
                         if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
@@ -417,7 +417,7 @@ public class Edit {
                             tmptriangle.modifierStrings[id] = file;
                         } else {
                             tmptriangle.modifierSprites[id] = null;
-                            tmptriangle.modifierStrings = null;
+                            tmptriangle.modifierStrings[id] = "none";
                         }
 
                         if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;

@@ -105,12 +105,12 @@ public class UserData {
 
     @Override
     public String toString() {
-        String output = "Type:[" + type + "]";
-        if(triangle != Triangle.none) output += " Triangle:[" + triangle + "]";
-        if(color != Color.none) output += " Color:[" + color + "]";
-        if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "]";
+        String output = "Type:[" + type + "] |";
+        if(triangle != Triangle.none) output += " Triangle:[" + triangle + "] |";
+        if(color != Color.none) output += " Color:[" + color + "] |";
+        if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "] |";
         if(edge != Edge.none) output += " Edge:[" + edge + "]";
-        output += "Modifier:[" + modifier + "]";
+        if(type == Type.triangle || type == Type.box) output += " Modifier:[" + modifier + "]";
         return output;
     }
 }

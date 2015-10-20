@@ -45,5 +45,30 @@
 			"m3":"none"
 		}
 	],
+	"triangles":
+	[
+		{
+			"x":800.0,
+			"y":80.0,
+			"color":"yellow",
+			"shade":"five",
+			"triangle":"BotLeft",
+			"m0":"none",
+			"m1":"down",
+			"m2":"leftX",
+			"m3":"none"
+		},
+		{
+			"x":400.0,
+			"y":560.0,
+			"color":"green",
+			"shade":"five",
+			"triangle":"TopRight",
+			"m0":"upX",
+			"m1":"none",
+			"m2":"none",
+			"m3":"right"
+		}
+	],
 	"startgun":4
 }
