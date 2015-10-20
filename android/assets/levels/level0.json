@@ -1,8 +1,8 @@
 {
 	"boxes":[
 		{
-			"x":80.0,
-			"y":80.0,
+			"x":120.0,
+			"y":840.0,
 			"color":"blue",
 			"shade":"zero",
 			"gravity":"false",
@@ -12,35 +12,13 @@
 			"m3":"none"
 		},
 		{
-			"x":1120.0,
-			"y":560.0,
+			"x":1680.0,
+			"y":840.0,
 			"color":"blue",
 			"shade":"zero",
 			"gravity":"false",
 			"m0":"none",
 			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":880.0,
-			"y":320.0,
-			"color":"blue",
-			"shade":"zero",
-			"gravity":"true",
-			"m0":"none",
-			"m1":"down",
-			"m2":"left",
-			"m3":"none"
-		},
-		{
-			"x":240.0,
-			"y":400.0,
-			"color":"magenta",
-			"shade":"eight",
-			"gravity":"false",
-			"m0":"upX",
-			"m1":"downX",
 			"m2":"none",
 			"m3":"none"
 		}
@@ -48,27 +26,84 @@
 	"triangles":
 	[
 		{
-			"x":800.0,
-			"y":80.0,
-			"color":"yellow",
-			"shade":"five",
+			"x":120.0,
+			"y":120.0,
+			"color":"blue",
+			"shade":"zero",
 			"triangle":"BotLeft",
 			"m0":"none",
-			"m1":"down",
-			"m2":"leftX",
+			"m1":"none",
+			"m2":"none",
 			"m3":"none"
 		},
 		{
-			"x":400.0,
-			"y":560.0,
-			"color":"green",
-			"shade":"five",
-			"triangle":"TopRight",
-			"m0":"upX",
+			"x":1680.0,
+			"y":120.0,
+			"color":"blue",
+			"shade":"zero",
+			"triangle":"BotRight",
+			"m0":"none",
 			"m1":"none",
 			"m2":"none",
-			"m3":"right"
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":600.0,
+			"color":"blue",
+			"shade":"zero",
+			"triangle":"TopRight",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":840.0,
+			"y":600.0,
+			"color":"blue",
+			"shade":"zero",
+			"triangle":"TopLeft",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":840.0,
+			"y":360.0,
+			"color":"blue",
+			"shade":"zero",
+			"triangle":"BotLeft",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":360.0,
+			"color":"blue",
+			"shade":"zero",
+			"triangle":"BotRight",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
 		}
 	],
-	"startgun":4
+	"guns":
+	[
+		{
+			"x":30.0,
+			"y":540.0,
+			"id":3
+		},
+		{
+			"x":960.0,
+			"y":1050.0,
+			"id":7
+		},
+	],
+	"startgun":3
 }

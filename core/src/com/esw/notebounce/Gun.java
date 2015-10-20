@@ -45,7 +45,6 @@ public class Gun {
         FileHandle fileHandle = Gdx.files.internal("fixtures/gun.json");
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(fileHandle);
         FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.isSensor = true;
         UserData userData = new UserData(UserData.Type.gun);
         userData.id = id;
 
@@ -96,7 +95,8 @@ public class Gun {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + position.x + ",\n";
+        s += "\t\t\t\"y\":" + position.y + ",\n";
         s += "\t\t\t\"id\":" + id + "\n";
         s += "\t\t}";
         return s;

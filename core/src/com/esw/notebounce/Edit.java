@@ -509,7 +509,6 @@ public class Edit {
                             startgun = id;
                             NoteBounce.guns[id] = new Gun(position, NoteBounce.scalePercent, id);
                             NoteBounce.currentGun = id;
-                            NoteBounce.guns[NoteBounce.currentGun].body.getFixtureList().first().setSensor(false);
                             NoteBounce.ball.setPos(NoteBounce.guns[NoteBounce.currentGun].center);
                         } else {
                             NoteBounce.world.destroyBody(NoteBounce.guns[id].body);
@@ -627,6 +626,15 @@ public class Edit {
                             NoteBounce.doors.get(i).sprite.getWidth())) {
                         NoteBounce.world.destroyBody(NoteBounce.doors.get(i).body);
                         NoteBounce.doors.removeIndex(i);
+                    }
+                }
+                for(int i = 0; i < NoteBounce.guns.length; i++) {
+                    if(NoteBounce.guns[i] != null) {
+                        if(Utility.isInsideCircle(click, NoteBounce.guns[i].center,
+                            NoteBounce.guns[i].sprite.getWidth())) {
+                            NoteBounce.world.destroyBody(NoteBounce.guns[i].body);
+                            NoteBounce.guns[i] = null;
+                        }
                     }
                 }
             }

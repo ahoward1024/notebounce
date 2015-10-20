@@ -1,10 +1,13 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+
+import org.omg.CORBA.NO_IMPLEMENT;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -78,8 +81,8 @@ public class LevelLoader { // TODO Level loader/writer
         JsonValue array = json.get("boxes");
         for(JsonValue jv : array.iterator()) {
             Vector2 v = new Vector2(0,0);
-            v.x = (jv.getFloat("x") + NoteBounce.bufferWidth);
-            v.y = (jv.getFloat("y") + NoteBounce.bufferHeight);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
             UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
             boolean g = jv.getBoolean("gravity");
@@ -95,8 +98,8 @@ public class LevelLoader { // TODO Level loader/writer
         array = json.get("triangles");
         for(JsonValue jv : array.iterator()) {
             Vector2 v = new Vector2(0, 0);
-            v.x = (jv.getFloat("x") + NoteBounce.bufferWidth);
-            v.y = (jv.getFloat("y") + NoteBounce.bufferHeight);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
             UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
@@ -107,6 +110,21 @@ public class LevelLoader { // TODO Level loader/writer
             Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
             NoteBounce.triangles.add(o);
         }
+        //===============================================================================================
+        //GUNS
+        array = json.get("guns");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            int id = jv.getInt("id");
+            NoteBounce.guns[id] = new Gun(v, NoteBounce.scalePercent, id);
+        }
+
+        int startgun = json.getInt("startgun");
+
+        NoteBounce.ball.setPos(NoteBounce.guns[startgun].center);
+        NoteBounce.currentGun = startgun;
     }
 
     public static void loadLevel(String name) {
@@ -225,7 +243,7 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
+                */
                 // GUNS
                 string += "\t\"guns\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.guns.length; i++) {
@@ -238,7 +256,7 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-                */
+
                 string += "\t\"startgun\":" + Edit.startgun + "\n";
 
                 string += "}\n";
