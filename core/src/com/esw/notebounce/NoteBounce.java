@@ -111,7 +111,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
 	static Array<Mine> mines = new Array<Mine>();
 	static Gun[] guns = new Gun[9];
-	static int currentGun = 0;
+	static int currentGun = -1;
 
 	boolean edit = false;
 

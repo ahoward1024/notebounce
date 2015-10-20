@@ -111,6 +111,50 @@ public class LevelLoader { // TODO Level loader/writer
             NoteBounce.triangles.add(o);
         }
         //===============================================================================================
+        //GOALS
+        array = json.get("goals");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Goal o = new Goal(v, NoteBounce.scalePercent);
+            NoteBounce.goals.add(o);
+        }
+        //===============================================================================================
+        //DOORS
+        array = json.get("doors");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Door.State state = Door.State.valueOf(jv.getString("state"));
+            Door.Plane plane = Door.Plane.valueOf(jv.getString("plane"));
+            int id = jv.getInt("id");
+            Door o = new Door(v, state, plane, NoteBounce.scalePercent, id);
+            NoteBounce.doors.add(o);
+        }
+        //===============================================================================================
+        //SWITCHES
+        array = json.get("switches");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            int id = jv.getInt("id");
+            DoorSwitch o = new DoorSwitch(v, NoteBounce.scalePercent, id);
+            NoteBounce.switches.add(o);
+        }
+        //===============================================================================================
+        //MINES
+        array = json.get("mines");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Mine o = new Mine(v, NoteBounce.scalePercent);
+            NoteBounce.mines.add(o);
+        }
+        //===============================================================================================
         //GUNS
         array = json.get("guns");
         for(JsonValue jv : array.iterator()) {
@@ -177,7 +221,6 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
                // TRIANGLES
                 string += "\t\"triangles\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.triangles.size; i++) {
@@ -190,9 +233,8 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
                 // GOALS
-                /*string += "\t\"goals\":\n\t[\n";
+                string += "\t\"goals\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.goals.size; i++) {
                     Goal o = NoteBounce.goals.get(i);
                     if(o != null) {
@@ -203,8 +245,6 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
-
                 // DOORS
                 string += "\t\"doors\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.doors.size; i++) {
@@ -217,7 +257,6 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
                 // SWITCHES
                 string += "\t\"switches\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.switches.size; i++) {
@@ -230,7 +269,6 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-
                 // MINES
                 string += "\t\"mines\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.mines.size; i++) {
@@ -243,7 +281,6 @@ public class LevelLoader { // TODO Level loader/writer
                 }
                 string += "\t],\n";
                 //=======================================================================================
-                */
                 // GUNS
                 string += "\t\"guns\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.guns.length; i++) {

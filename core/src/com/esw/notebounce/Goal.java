@@ -65,8 +65,8 @@ public class Goal {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":";
-        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\"y\":" + sprite.getY() + "\n";
         s += "\t\t}";
         return s;
     }
