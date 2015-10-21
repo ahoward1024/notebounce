@@ -4,12 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonWriter;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,170 +14,289 @@ import javax.swing.JOptionPane;
  * Copyright echsoftworks 2015
  */
 @SuppressWarnings("unused")
-public class LevelLoader { // TODO Level loader/writer
+public class LevelLoader {
 
-    Array<Level> levels = new Array<Level>();
-    int lvlPtr = -1;
+    static Array<Level> levels = new Array<Level>();
+    static int levelPtr = 0;
 
-    LevelLoader(String path) {
-        loadAllLevels(path);
-    }
+    public static void unloadLevel() {
 
-    private void unloadLevel() {
-        Level level = levels.get(lvlPtr);
-        for(Box box : level.getBoxesArray()) {
-            box.body.getFixtureList().removeAll(box.body.getFixtureList(), true);
-            box.sprite.getTexture().dispose();
+        for(Box o : NoteBounce.boxes) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
         }
+        NoteBounce.boxes.clear();
+        for(Triangle o : NoteBounce.triangles) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.triangles.clear();
+        for(Goal o : NoteBounce.goals) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.goals.clear();
+        for(Door o : NoteBounce.doors) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.doors.clear();
+        for(DoorSwitch o : NoteBounce.switches) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.switches.clear();
+        for(Mine o : NoteBounce.mines) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.mines.clear();
+        for(Gun o : NoteBounce.guns) {
+            if(o != null) {
+                NoteBounce.world.destroyBody(o.body);
+                o.sprite.getTexture().dispose();
+            }
+        }
+        for(int i = 0; i < NoteBounce.guns.length; i++) {
+            NoteBounce.guns[i] = null;
+        }
+        NoteBounce.world.destroyBody(NoteBounce.ball.body);
+        NoteBounce.ball.sprite.getTexture().dispose();
+        NoteBounce.ball = null;
     }
-    private Level loadLevel(int level) {
-        lvlPtr = level;
 
-        return null;
+    public static void loadLevel(int lvl) {
+        levelPtr = lvl;
+        Level level = levels.get(levelPtr);
+
+        JsonValue json = new JsonReader().parse(Gdx.files.internal(level.file.path()));
+
+        //BOXES
+        JsonValue array = json.get("boxes");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0,0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
+            UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
+            boolean g = jv.getBoolean("gravity");
+            String[] strings = new String[4];
+            for(int i = 0; i < strings.length; i++) {
+                strings[i] = jv.getString("m" + i);
+            }
+            Box b = new Box(v, NoteBounce.scalePercent, color, shade, g, strings);
+            NoteBounce.boxes.add(b);
+        }
+        //===============================================================================================
+        //TRIANGLES
+        array = json.get("triangles");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
+            UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
+            UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
+            String[] strings = new String[4];
+            for(int i = 0; i < strings.length; i++) {
+                strings[i] = jv.getString("m" + i);
+            }
+            Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
+            NoteBounce.triangles.add(o);
+        }
+        //===============================================================================================
+        //GOALS
+        array = json.get("goals");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Goal o = new Goal(v, NoteBounce.scalePercent);
+            NoteBounce.goals.add(o);
+        }
+        //===============================================================================================
+        //DOORS
+        array = json.get("doors");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Door.State state = Door.State.valueOf(jv.getString("state"));
+            Door.Plane plane = Door.Plane.valueOf(jv.getString("plane"));
+            int id = jv.getInt("id");
+            Door o = new Door(v, state, plane, NoteBounce.scalePercent, id);
+            NoteBounce.doors.add(o);
+        }
+        //===============================================================================================
+        //SWITCHES
+        array = json.get("switches");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            int id = jv.getInt("id");
+            DoorSwitch o = new DoorSwitch(v, NoteBounce.scalePercent, id);
+            NoteBounce.switches.add(o);
+        }
+        //===============================================================================================
+        //MINES
+        array = json.get("mines");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            Mine o = new Mine(v, NoteBounce.scalePercent);
+            NoteBounce.mines.add(o);
+        }
+        //===============================================================================================
+        //GUNS
+        array = json.get("guns");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0, 0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            int id = jv.getInt("id");
+            NoteBounce.guns[id] = new Gun(v, NoteBounce.scalePercent, id);
+        }
+
+        int startgun = json.getInt("startgun");
+
+        NoteBounce.ball.setPos(NoteBounce.guns[startgun].center);
+        NoteBounce.currentGun = startgun;
     }
 
-    public void loadAllLevels(String path) {
-        FileHandle folder = new FileHandle(path);
-        FileHandle[] fileList = folder.list();
+    public static void loadLevel(String name) {
+
+    }
+
+    public static void loadLevel() {
+
+    }
+
+    public static void createLevelsArray(FileHandle fileHandle) {
+        FileHandle[] fileList = fileHandle.list();
         if(fileList.length > 1) {
-            for (int i = 0; i < fileList.length; i++) {
-                if (!fileList[i].isDirectory()) {
-                    System.out.println("Loading file: " + fileList[i].path());
-                    levels.add(new Level((new FileHandle(fileList[i].path())),
-                            fileList[i].name(), i));
+            for (FileHandle fh : fileList) {
+                if (!fh.isDirectory()) {
+                    System.out.println("Loading file to array: " + fh.path());
+                    levels.add(new Level(new FileHandle(fh.path()), fh.nameWithoutExtension()));
                 }
             }
         }
-        lvlPtr = 0;
+        levelPtr = 0;
     }
 
     public static void saveLevel(String levelname) {
 
         if(Edit.startgun == -1) { System.out.println("Error! No starting gun!"); return; }
 
-        String string = "{\n";
-
-        // BOXES
-        string += "\t\"boxes\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.boxes.size; i++) {
-            Box o = NoteBounce.boxes.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.boxes.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // TRIANGLES
-        string += "\t\"triangles\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.triangles.size; i++) {
-            Triangle o = NoteBounce.triangles.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.triangles.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // GOALS
-        string += "\t\"goals\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.goals.size; i++) {
-            Goal o = NoteBounce.goals.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.goals.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // DOORS
-        string += "\t\"doors\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.doors.size; i++) {
-            Door o = NoteBounce.doors.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.doors.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // SWITCHES
-        string += "\t\"switches\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.switches.size; i++) {
-            DoorSwitch o = NoteBounce.switches.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.switches.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // MINES
-        string += "\t\"mines\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.mines.size; i++) {
-            Mine o = NoteBounce.mines.get(i);
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.mines.size - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        // GUNS
-        string += "\t\"guns\":\n\t[\n";
-        for(int i = 0; i < NoteBounce.guns.length; i++) {
-            Gun o = NoteBounce.guns[i];
-            if(o != null) {
-                string += o.toString();
-                if(i != NoteBounce.guns.length - 1) string += ",\n";
-                else string += "\n";
-            }
-        }
-        string += "\t],\n";
-//=======================================================================================================
-
-        string += "\t\"startgun\":" + Edit.startgun + "\n";
-
-        string += "}\n";
-
-        // TODO MOVE
-        boolean save = false;
-        FileHandle fileHandle = new FileHandle("levels/" + "test" + ".json");
+        FileHandle fileHandle = new FileHandle("levels/" + levelname + ".json");
         if(fileHandle.exists()) {
-            JFrame jFrame = new JFrame("Overwrite");
-            int ov = JOptionPane.showConfirmDialog(jFrame, "Level exists. Overwrite?", "Overwrite file", JOptionPane.OK_CANCEL_OPTION);
+            int ov = JOptionPane.showConfirmDialog(null, "Level exists. Overwrite?", "Overwrite file",
+                JOptionPane.OK_CANCEL_OPTION);
             if(ov == 0) {
                 System.out.println("Saving: levels/" + levelname + ".json");
+                String string = "{\n";
+
+                // BOXES
+                string += "\t\"boxes\":[\n";
+                for(int i = 0; i < NoteBounce.boxes.size; i++) {
+                    Box o = NoteBounce.boxes.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.boxes.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+               // TRIANGLES
+                string += "\t\"triangles\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.triangles.size; i++) {
+                    Triangle o = NoteBounce.triangles.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.triangles.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+                // GOALS
+                string += "\t\"goals\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.goals.size; i++) {
+                    Goal o = NoteBounce.goals.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.goals.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+                // DOORS
+                string += "\t\"doors\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.doors.size; i++) {
+                    Door o = NoteBounce.doors.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.doors.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+                // SWITCHES
+                string += "\t\"switches\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.switches.size; i++) {
+                    DoorSwitch o = NoteBounce.switches.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.switches.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+                // MINES
+                string += "\t\"mines\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.mines.size; i++) {
+                    Mine o = NoteBounce.mines.get(i);
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.mines.size - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+                // GUNS
+                string += "\t\"guns\":\n\t[\n";
+                for(int i = 0; i < NoteBounce.guns.length; i++) {
+                    Gun o = NoteBounce.guns[i];
+                    if(o != null) {
+                        string += o.toString();
+                        if(i != NoteBounce.guns.length - 1) string += ",\n";
+                        else string += "\n";
+                    }
+                }
+                string += "\t],\n";
+                //=======================================================================================
+
+                string += "\t\"startgun\":" + Edit.startgun + "\n";
+
+                string += "}\n";
                 fileHandle.writeString(string, false);
+
+                Level l = new Level(fileHandle, fileHandle.nameWithoutExtension());
+                levels.add(l);
             }
         }
     }
 
-    public Level loadNextLevel() {
+    public static void loadNextLevel() {
         unloadLevel();
-        lvlPtr++;
-        loadLevel(lvlPtr);
-        // Load the level
-        return null;
-    }
-
-    public int currentLevel() {
-        return -1;
-    }
-
-    public String currentLevelName() {
-        return null;
+        levelPtr++;
+        loadLevel(levelPtr);
     }
 }

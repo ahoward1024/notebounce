@@ -126,58 +126,57 @@ public class CollisionDetection implements ContactListener {
             if(uda.type.equals(UserData.Type.goal)) {
                 NoteBounce.goalHit = true;
                 // Play the goal noise if it was not already playing
-                if(!NoteBounce.goalNoisePlaying) {
-                    NoteBounce.playGoalNoise();//goalNoise.play();
-                }
+                NoteBounce.playGoalNoise();
             }
 
-            // FIXME notes play continuously when on top of a box
             if(NoteBounce.playNotes) {
                 // If the ball hits anything that plays will play a note, play a note.
+
+                int notenum = 0;
 
                 if(uda.type.equals(UserData.Type.box)) {
                     switch(uda.color) {
                         case blue: {
-                            NoteBounce.playNote(1);
+                            notenum = 1;
                         }
                         break;
                         case green: {
-                            NoteBounce.playNote(2);
+                            notenum = 2;
                         }
                         break;
                         case cyan: {
-                            NoteBounce.playNote(3);
+                            notenum = 3;
                         }
                         break;
                         case magenta: {
-                            NoteBounce.playNote(4);
+                            notenum = 4;
                         }
                         break;
                         case yellow: {
-                            NoteBounce.playNote(5);
+                            notenum = 5;
                         }
                         break;
                     }
                 }
 
-                if(uda.type.equals(UserData.Type.boundary)) {
-                    if(NoteBounce.gravityDirection.equals("Down") ||
-                        NoteBounce.gravityDirection.equals("Up")) {
+                if(uda.type.equals(UserData.Type.box) || uda.type.equals(UserData.Type.triangle) ||
+                    uda.type.equals(UserData.Type.boundary)) {
+                    if(NoteBounce.gravityDirection.equals("Down") || NoteBounce.gravityDirection.equals("Up")) {
                         if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
                             if(thresholdVelocityY(fb, 3.2f)) {
-                                NoteBounce.playNote(0);
+                                NoteBounce.playNote(notenum);
                             }
                         } else {
-                            NoteBounce.playNote(0);
+                            NoteBounce.playNote(notenum);
                         }
                     } else if(NoteBounce.gravityDirection.equals("Left") ||
                         NoteBounce.gravityDirection.equals("Right")) {
                         if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
                             if(thresholdVelocityX(fb, 3.2f)) {
-                                NoteBounce.playNote(0);
+                                NoteBounce.playNote(notenum);
                             }
                         } else {
-                            NoteBounce.playNote(0);
+                            NoteBounce.playNote(notenum);
                         }
                     }
                 }
@@ -216,7 +215,6 @@ public class CollisionDetection implements ContactListener {
         // collisions involved with a note block.
        /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
             // TODO reimplement collision detection for each object
-            // TODO different boundary collision detection for each different gravity setting
             // Boundary Edge collision
             if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
                 fa.getUserData().equals("left") || fa.getUserData().equals("right"))

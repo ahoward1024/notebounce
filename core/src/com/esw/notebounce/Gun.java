@@ -84,18 +84,19 @@ public class Gun {
      * Rotate the gun and it's fixture to the specified angle.
      * @param angle The angle the gun needs to be rotated to.
      */
-    public void rotate(float angle) { // TODO clamp gun's rotation values
+    public void rotate(float angle) { // TODO(frankie): clamp gun's rotation values
         sprite.setRotation(angle);
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
         // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT. I can't explain this one...
     }
 
-    // TODO set/reset the gun's rotation. Set in the same way as the GunPosition
+    // TODO(frankie): set/reset the gun's rotation.
 
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + position.x + ",\n";
+        s += "\t\t\t\"y\":" + position.y + ",\n";
         s += "\t\t\t\"id\":" + id + "\n";
         s += "\t\t}";
         return s;

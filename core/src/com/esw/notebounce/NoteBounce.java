@@ -17,10 +17,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
-import javafx.stage.Screen;
 
 /**
  * Created by Alex on 9/21/2015.
@@ -28,6 +25,8 @@ import javafx.stage.Screen;
  */
 @SuppressWarnings("unused")
 public class NoteBounce extends ApplicationAdapter implements InputProcessor {
+
+	final boolean DEBUGBUILD = true;
 
 	public final static float PIXELS2METERS = 100.0f; // Yay globals!
 	public static final float originalGravity = -200.0f;
@@ -41,7 +40,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static World world;
 	static boolean playNotes = true;
 	static boolean goalHit = false;
-	static boolean goalNoisePlaying = false;
+	//static boolean goalNoisePlaying = false;
 	static boolean playRipple = false;
 	static Sound[] notes = new Sound[8];
 	static int notePtr = 0;
@@ -84,14 +83,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String gunPositionDebug = "";  // DEBUG
 	String fpsDebug = "FPS: ";     // DEBUG
 
-	static boolean goalWasHit = false;
-	boolean showGoalHit= false; // Show "GOAL!" text
+	boolean showGoalHit = false; // Show "GOAL!" text
 
 	static boolean ballShot = false; // Is the ball shot?
-	static boolean moveBall = false; // Toggle to lerp the ball back to the gun
+	static boolean moveBallToGun = false; // Toggle to lerp the ball back to the gun
 	static boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
-
-	// TODO create LevelLoader
 
 	Vector2 mouseClick = new Vector2(0,0);
 	Vector2 mouseUnClick = new Vector2(0,0);
@@ -121,15 +117,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int lines = 0;
 	static int midlines = 0;
 
-	// FIXME Aspect ratios (16:10, 4:3 etc) [scale percent is based on 16:9]
-	// FIXME screen resolutions differ.
 	// 16:9 RESOLUTIONS:
 	// 2560x1440, Scale: 133% at 160px
 	// 1920x1080, Scale: 100% at 120px (base resolution)
 	// 1280x720, Scale: 66% at 80px
 	// 800x480, Scale: 33% at 40px
-	// FIXME this will be accomplished best by making a scale parameter and scaling all objects
-	// fixme to their appropriate size based on the device's screen resolution.
 
 	// ASPECT RATIOS
 	// 1.7777778 = 16:9
@@ -212,10 +204,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Build the lines for the bounding tmpbox that makes it so the ball
 		// does not go off the screen
-		new Boundary(0.0f, 0.0f, ScreenWidth, 0.0f, UserData.Edge.bot);
-		new Boundary(0.0f, ScreenHeight, ScreenWidth, ScreenHeight, UserData.Edge.top);
-		new Boundary(ScreenWidth, 0.0f, ScreenWidth, ScreenHeight, UserData.Edge.left);
-		new Boundary(0.0f, 0.0f, 0.0f, ScreenHeight, UserData.Edge.right);
+		new Boundary(bufferWidth, bufferHeight, ScreenWidth - bufferWidth, bufferHeight, UserData.Edge.bot);
+		new Boundary(bufferWidth, ScreenHeight - bufferHeight, ScreenWidth - bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.top);
+		new Boundary(ScreenWidth - bufferWidth, bufferHeight, ScreenWidth - bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.left);
+		new Boundary(bufferWidth, bufferHeight, bufferWidth, ScreenHeight - bufferHeight, UserData.Edge.right);
 
         goalNoise = Gdx.audio.newSound(Gdx.files.internal("notes/goal.mp3"));
 
@@ -232,23 +224,20 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
 
-		LevelLoader loader = new LevelLoader("levels/");
-
 		Edit.pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
 		Edit.eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
 
 		ballSimSprite = new Sprite(new Texture(Gdx.files.internal("art/simball.png")));
 		ballSimSprite.setScale(scalePercent);
+
+		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
+		LevelLoader.loadLevel(LevelLoader.levelPtr);
 	}
 
 	@Override
-	public void resize(int width, int height) {
-		//ScreenWidth = width;
-		//ScreenHeight = height;
-		//System.out.println(width + "x" + height);
-		//scalePercent = Utility.findScalePercent(ScreenWidth, ScreenHeight);
-		//viewport.update(width, height);
-		//camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0.0f);
+	public void resize(int width, int height) { // WARNING: Resizing does not work on the desktop.
+		ScreenWidth = width;
+		ScreenHeight = height;
 	}
 
 	/**
@@ -257,22 +246,20 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static void reset() {
 		ballShot = false;
 		ball.body.setType(BodyDef.BodyType.StaticBody);
-		moveBall = true;
+		moveBallToGun = true;
 		playNotes = true;
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
-		if(goalWasHit) {
-			if(goalNoisePlaying) goalNoise.stop();
-			goalNoisePlaying = false;
-			goalWasHit = false;
+		if(guns[currentGun] != null) {
+			guns[currentGun].body.getFixtureList().first().setSensor(false);
 		}
 	}
 
 	/**
 	 * Move the ball through linear interpolation back to the gun.
 	 */
-	static void moveBall() {
+	static void moveBallToGun() {
 		shoot = false;
 		Vector2 v;
 		if(guns[currentGun] != null) {
@@ -287,7 +274,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(Utility.isInsideCircle(ball.center, v, 10.0f)) {
 			ball.body.setTransform(v.x / PIXELS2METERS, v.y / PIXELS2METERS, 0.0f);
 			ball.setSpriteToBodyPosition();
-			moveBall = false;
+			moveBallToGun = false;
 		}
 	}
 
@@ -343,8 +330,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				steps = 2;
 				simDrawColor = Color.RED;
 			}
-			// todo perhaps keep a count of the amount of collisions and stop the loop after a certain
-			// todo number of them have happened ???
 			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 			// up the loop will not break causing it to run every iteration and will cause framerate issues.
 			for(int i = 0; i < 200; i++) { // DEBUG
@@ -390,6 +375,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			power *= scalePercent;
 
+			// TODO(frankie): Change the angle so instead of pulling back to get the power,
+			// todo make it so the player pulls forward. (Perhaps make this a user option later ???)
 			// Find the angle for the gun and ball's projection arc based on where the mouse is
 			// located on the screen. Works best if the gun's texture is defaulted to point towards
 			// the right.
@@ -420,17 +407,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Set the ball's sprite position the the same position as the ball's Box2D body position
 		if(ballShot) {
 			ball.setSpriteToBodyPosition();
-			for(int i = 0; i < guns.length; i++)
-			if(guns[i] != null) {
-				if((ball.body.getPosition().x * PIXELS2METERS) > guns[i].endX(angle) &&
-					(ball.body.getPosition().y * PIXELS2METERS) > guns[i].endY(angle)) {
+			for(Gun g : guns)
+			if(g != null) {
+				if((ball.body.getPosition().x * PIXELS2METERS) > g.endX(angle) &&
+					(ball.body.getPosition().y * PIXELS2METERS) > g.endY(angle)) {
 					drawBallOver = true;
 				}
 			}
 		}
 
-		if(moveBall) {
-			moveBall();
+		if(moveBallToGun) {
+			moveBallToGun();
 		}
 
 		if(playRipple) {
@@ -445,9 +432,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Go to next level if tmpgoal was hit
 		if(goalHit || Inputs.space) { // SPACE IS DEBUG
 			reset();
-			// todo LevelLoader
-			// todo loop levels
-			//levelLoader.loadNextLevel();
+			// todo go to next level
+			//LevelLoader.loadNextLevel();
 			goalHit = false;
 			showGoalHit = true;
 		}
@@ -471,13 +457,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 */
 	@Override
 	public void render() {
-
-		// OpenGL
-		Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
-		//Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
-		//Gdx.gl.glClearColor(1, 0, 0, 1); // DEBUG: Red
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		deltaTime = Gdx.graphics.getDeltaTime();
 
 		// ================ UPDATE ================//
 
@@ -506,34 +485,22 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
-			Edit.editLevel(); // TODO massively clean up editing
+			Edit.editLevel(); // TODO clean up editing ???
 		}
 
 		// ================ RENDER ================//
 
-		// Update the debug strings
-		inputDebug = "mouse X: " + Inputs.mouse.x + " | mouse Y: " + Inputs.mouse.y +
-			" | Angle: " + String.format("%.2f", angle);
-		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
-			mouseUnClick + " | Power: " + power;
-		if(ball != null) {
-			ballPositionDebug = "Ball X: " + String.format("%.4f", ball.center.x) +
-				" (" + String.format("%.4f", ball.body.getWorldCenter().x * PIXELS2METERS) + ") " +
-				" | Ball Y:" + String.format("%.4f", ball.center.y) +
-				" (" + String.format("%.4f", ball.body.getWorldCenter().y * PIXELS2METERS) + ")";
-			ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
-				"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
-		}
-
-		if(guns[currentGun] != null) {
-			gunPositionDebug = "Current Gun X: " + String.format("%.2f", guns[currentGun].center.x) +
-			" | Y: " + String.format("%.2f", guns[currentGun].center.y);
-		}
-
+		// OpenGL
+		//Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 0.7f); // DEBUG: Light Grey
+		//Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
+		//Gdx.gl.glClearColor(1, 0, 0, 1); // DEBUG: Red
+		Gdx.gl.glClearColor(0, 0, 0, 1); // DEBUG: Black
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		deltaTime = Gdx.graphics.getDeltaTime();
 		camera.update(); // Update the camera just before drawing
 
+		// Draw the background first
 		debugShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
 		debugShapeRenderer.setColor(Color.WHITE);
 		debugShapeRenderer.rect(bufferWidth, bufferHeight, scaleWidth, scaleHeight);
 		debugShapeRenderer.end();
@@ -549,8 +516,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(ballSimAlpha > 0.0f) ballSimAlpha -= 0.05f;
 			else ballSimAlpha = 0.0f;
 		}
-
-		// TODO clean up edit/game rendering
 
 		if(Edit.tmpbox != null) {
 			Edit.tmpbox.sprite.draw(batch);
@@ -648,7 +613,24 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
+		if (showGoalHit) {
+			debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
+			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
+			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
+				showGoalHit = false;
+				goalTextTimer = 0.0f;
+			}
+			goalTextTimer += deltaTime;
+		}
+
+		batch.end();
+
+		if(DEBUGBUILD) drawDebug();
+	}
+
+	void drawDebug() {
 		if(touch) {
+			batch.begin();
 			crosshair.draw(batch);
 			batch.end(); // Have to stop the sprite batch for the shape renderer lines to draw
 			debugShapeRenderer.begin();
@@ -661,20 +643,28 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugShapeRenderer.setColor(Color.ORANGE);
 			debugShapeRenderer.arc(mouseClick.x, mouseClick.y, 100, 0.0f, angle, 32);
 			debugShapeRenderer.end();
-			batch.begin(); // Restart the sprite batch
 		}
 
-		// Draw debug inputs last so they are always on top
-		if (showGoalHit) {
-			goalWasHit = true;
-			debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
-			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
-				showGoalHit = false;
-				goalTextTimer = 0.0f;
-			}
-			goalTextTimer += deltaTime;
+		// Update the debug strings
+		inputDebug = "mouse X: " + Inputs.mouse.x + " | mouse Y: " + Inputs.mouse.y +
+			" | Angle: " + String.format("%.2f", angle);
+		mouseClickDebug = "mouseClick: " + mouseClick + " | mouseUnClick: " +
+			mouseUnClick + " | Power: " + power;
+		if(ball != null) {
+			ballPositionDebug = "Ball X: " + String.format("%.4f", ball.center.x) +
+				" (" + String.format("%.4f", ball.body.getWorldCenter().x * PIXELS2METERS) + ") " +
+				" | Ball Y:" + String.format("%.4f", ball.center.y) +
+				" (" + String.format("%.4f", ball.body.getWorldCenter().y * PIXELS2METERS) + ")";
+			ballVelocityDebug = "Ball Velocity X: " + ball.body.getLinearVelocity().x + " | " +
+				"Ball Velocity Y: " + ball.body.getLinearVelocity().y;
 		}
+
+		if(guns[currentGun] != null) {
+			gunPositionDebug = "Current Gun X: " + String.format("%.2f", guns[currentGun].center.x) +
+				" | Y: " + String.format("%.2f", guns[currentGun].center.y);
+		}
+
+		batch.begin();
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.GREEN);
 		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
 		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
@@ -690,21 +680,24 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			else gravityDirection = "Left";
 		}
 		debugMessage.draw(batch, "Gravity : " + gravityDirection, 10, ScreenHeight - 130);
+		debugMessage.draw(batch, "Level :" + LevelLoader.levels.get(LevelLoader.levelPtr).name, 10, ScreenHeight - 160);
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
-			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 220);
+			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
+			debugMessage.draw(batch, "Saved: " + Edit.saved, 10, ScreenHeight - 220);
 			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - 250);
 			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 280);
 			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 310);
-			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10,
-				ScreenHeight - 340);
-			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 400);
+			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 340);
+			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 370);
+			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 400);
 			debugMessage.draw(batch, "Door: " + Edit.doorState + " | " + Edit.doorPlane, 10, ScreenHeight - 430);
-			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 610);
 			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 640);
 			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 670);
 			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 700);
-			//debugMessage.draw(batch, "Level :" + LevelLoader.currentLevel(), 10, ScreenHeight - 550);
+			debugMessage.draw(batch, "Guns: " + guns.length, 10, ScreenHeight - 730);
+			debugMessage.draw(batch, "Doors: " + doors.size, 10, ScreenHeight - 760);
+			debugMessage.draw(batch, "Mines: " + mines.size, 10, ScreenHeight - 790);
 		}
 		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
@@ -713,8 +706,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, ScreenWidth / 2, ScreenHeight - 10);
 		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, ScreenWidth / 2,
 			ScreenHeight - 40);
-		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+		debugMessage.draw(batch, "Buffer Width: " + bufferWidth + " | Buffer Height: " + bufferHeight, ScreenWidth / 2,
 			ScreenHeight - 70);
+		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+			ScreenHeight - 100);
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
@@ -725,6 +720,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// If we are in edit mode we are going to draw lines between the door and the switch it
 			// corresponds to.
 			debugShapeRenderer.begin();
+			debugShapeRenderer.setColor(Color.BLACK);
 			for(int i = 0; i < doors.size && i < switches.size; i++) {
 				Vector2 d = doors.get(i).center;
 				Vector2 s = switches.get(i).center;
@@ -756,7 +752,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	static void playGoalNoise() {
 		goalNoise.play();
-		goalNoisePlaying = true;
 		playNotes = false;
 	}
 
@@ -777,7 +772,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		down,
 		left,
 		right
-	} // FIXME resolution independence (possibly fixed)
+	}
 	static void addImpulseToBall(ImpulseType type) {
 		float additionalImpulseForce = 1.1f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
@@ -803,9 +798,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ball.body.applyLinearImpulse(direction, ball.body.getWorldCenter(), true);
 	}
 
-	public boolean keyDown (int keycode) {
-		return false;
-	}
+	public boolean keyDown (int keycode) { return false; }
 
 	public boolean keyUp (int keycode) {
 		return false;

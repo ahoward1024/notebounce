@@ -28,6 +28,79 @@ public class Triangle {
     UserData.Shade shade;
     UserData.Triangle triangle;
 
+    Triangle(Vector2 v, UserData.Triangle triangle, float scale,
+             UserData.Color color, UserData.Shade shade, String[] mods) {
+        this.triangle = triangle;
+        this.color = color;
+        this.shade = shade;
+        this.scale = scale;
+
+        loadSprite(v);
+
+        for(int i = 0; i < mods.length; i++) {
+            if(!mods[i].equals("none")) {
+                modifierSprites[i] = new Sprite(new Texture("art/modifiers/" + mods[i] + ".png"));
+                modifierSprites[i].setOrigin(0.0f, 0.0f);
+                modifierSprites[i].setScale(scale);
+                modifierSprites[i].setPosition(sprite.getX(), sprite.getY());
+            }
+        }
+
+        UserData.Modifier[] modifiers = UserData.createModifierArray();
+        for(int i = 0; i < mods.length; i++) {
+            if(!mods[i].equals("none")) {
+                char c = mods[i].charAt(mods[i].length() - 1);
+                if(c == 'X') modifiers[i] = UserData.Modifier.dampener;
+                else modifiers[i] = UserData.Modifier.accelerator;
+            }
+        }
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
+
+        body = NoteBounce.world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1.0f;
+        fixtureDef.restitution = 0.0f;
+
+        UserData userData = new UserData(UserData.Type.triangle);
+        userData.color = color;
+        userData.shade = shade;
+        FileHandle trianglesFile = Gdx.files.internal("fixtures/triangle" + triangle + ".json");
+
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+        float basescale = base * scale;
+
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(trianglesFile);
+        bodyEditorLoader.attachFixture(body, "hyp", fixtureDef, base * scale,
+            userData, UserData.Edge.hyp, UserData.Modifier.none);
+
+        if(triangle == UserData.Triangle.BotLeft) {
+            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, basescale,
+                userData, UserData.Edge.bot, modifiers[1]);
+            bodyEditorLoader.attachFixture(body, "left", fixtureDef, basescale,
+                userData, UserData.Edge.left, modifiers[2]);
+        } else if(triangle == UserData.Triangle.TopLeft) {
+            bodyEditorLoader.attachFixture(body, "top", fixtureDef, basescale,
+                userData, UserData.Edge.top, modifiers[0]);
+            bodyEditorLoader.attachFixture(body, "left", fixtureDef, basescale,
+                userData, UserData.Edge.left, modifiers[2]);
+        } else if(triangle == UserData.Triangle.BotRight) {
+            bodyEditorLoader.attachFixture(body, "bot", fixtureDef, basescale,
+                userData, UserData.Edge.bot, modifiers[1]);
+            bodyEditorLoader.attachFixture(body, "right", fixtureDef, basescale,
+                userData, UserData.Edge.right, modifiers[3]);
+        } else if(triangle == UserData.Triangle.TopRight) {
+            bodyEditorLoader.attachFixture(body, "top", fixtureDef, basescale,
+                userData, UserData.Edge.top, modifiers[0]);
+            bodyEditorLoader.attachFixture(body, "right", fixtureDef,basescale,
+                userData, UserData.Edge.right, modifiers[3]);
+        }
+    }
+
     Triangle(UserData.Triangle triangle, Vector2 v, float scale,
              UserData.Color color, UserData.Shade shade)
     {
@@ -131,19 +204,18 @@ public class Triangle {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":";
-        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\"y\":" + sprite.getY() + ",\n";
         s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
         s += "\t\t\t\"shade\":\"" + shade + "\",\n";
         s += "\t\t\t\"triangle\":\"" + triangle + "\",\n";
-        s += "\t\t\t\"modifiers\":[";
-        for(int i = 0; i < modifierSprites.length; i++) {
+        for(int i = 0; i < modifierStrings.length; i++) {
+            s += "\t\t\t\"m" + i + "\":";
             if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
             else s += "\"none\"";
-            if(i != modifierStrings.length - 1) s += ",";
+            if(i != modifierStrings.length - 1) s += ",\n";
         }
-        s += "]\n";
-        s += "\t\t}";
+        s += "\n\t\t}";
         return s;
     }
 }

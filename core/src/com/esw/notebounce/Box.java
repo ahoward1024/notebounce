@@ -12,6 +12,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.jws.soap.SOAPBinding;
+
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
@@ -31,6 +33,80 @@ public class Box {
     Sprite gravitySprite;
     Sprite[] modifierSprites = new Sprite[4];
     String[] modifierStrings = new String[4];
+
+    // TODO(alex): Rethink modifiers again.
+    // TODO(alex): Need a clear goal of what modifiers do.
+
+    Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, boolean gravity, String[] mods) {
+        UserData userData = new UserData(UserData.Type.box);
+        this.color = userData.color = color;
+        this.shade = userData.shade = shade;
+        this.scale = scale;
+        this.gravity = gravity;
+        this.modifierStrings = mods;
+
+        // Example blue0.png. Call ordinal on shade because we cannot have ints;
+        FileHandle image = Gdx.files.internal("art/tiles/boxes/" + userData.color +
+            userData.shade.ordinal() + ".png");
+        sprite = new Sprite(new Texture(image));
+        gravitySprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/g.png")));
+        sprite.setOrigin(0.0f, 0.0f);
+        sprite.setScale(scale);
+        sprite.setPosition(v.x, v.y);
+
+        center.x = (sprite.getX() + ((sprite.getWidth() / 2) * scale));
+        center.y = (sprite.getY() + ((sprite.getHeight() / 2) * scale));
+
+        if(gravity) {
+            gravitySprite.setOrigin(0.0f, 0.0f);
+            gravitySprite.setScale(scale);
+            gravitySprite.setPosition(sprite.getX(), sprite.getY());
+        }
+
+        for(int i = 0; i < mods.length; i++) {
+            if(!mods[i].equals("none")) {
+                modifierSprites[i] = new Sprite(new Texture("art/modifiers/" + mods[i] + ".png"));
+                modifierSprites[i].setOrigin(0.0f, 0.0f);
+                modifierSprites[i].setScale(scale);
+                modifierSprites[i].setPosition(sprite.getX(), sprite.getY());
+            }
+        }
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS);
+
+        body = NoteBounce.world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1.0f;
+        fixtureDef.restitution = 0.0f;
+
+        UserData.Modifier[] modifiers = UserData.createModifierArray();
+        for(int i = 0; i < mods.length; i++) {
+            if(!mods[i].equals("none")) {
+                char c = mods[i].charAt(mods[i].length() - 1);
+                if(gravity) modifiers[i] = UserData.Modifier.gravity;
+                else if(c == 'X') modifiers[i] = UserData.Modifier.dampener;
+                else modifiers[i] = UserData.Modifier.accelerator;
+            }
+        }
+
+        // Load the edges.json file to get all of the edge types (top, bot, left, right)
+        // This is so we can specify what is the top of the tmpbox if we needs
+        float base = 0.0f;
+        if(sprite.getWidth() == sprite.getHeight()) base = (sprite.getHeight() / 100);
+
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/boxes.json"));
+        bodyEditorLoader.attachFixture(body, "top", fixtureDef, base * scale,
+            userData, UserData.Edge.top, modifiers[0]);
+        bodyEditorLoader.attachFixture(body, "bot", fixtureDef, base * scale,
+            userData, UserData.Edge.bot, modifiers[1]);
+        bodyEditorLoader.attachFixture(body, "left", fixtureDef, base * scale,
+            userData, UserData.Edge.left, modifiers[2]);
+        bodyEditorLoader.attachFixture(body, "right", fixtureDef, base * scale,
+            userData, UserData.Edge.right, modifiers[3]);
+    }
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade) {
         UserData userData = new UserData(UserData.Type.box);
@@ -125,19 +201,18 @@ public class Box {
     @Override
     public String toString() {
         String s = "\t\t{\n";
-        s += "\t\t\t\"position\":";
-        s += "{\"x\":" + sprite.getX() + ",\"y\":" + sprite.getY() + "},\n";
+        s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\"y\":" + sprite.getY() + ",\n";
         s += "\t\t\t\"color\":" + "\"" + color + "\",\n";
         s += "\t\t\t\"shade\":\"" + shade + "\",\n";
         s += "\t\t\t\"gravity\":\"" + gravity + "\",\n";
-        s += "\t\t\t\"modifiers\":[";
-        for(int i = 0; i < modifierSprites.length; i++) {
+        for(int i = 0; i < modifierStrings.length; i++) {
+            s += "\t\t\t\"m" + i + "\":";
             if(modifierStrings[i] != null) s+= "\"" + modifierStrings[i] + "\"";
             else s += "\"none\"";
-            if(i != modifierStrings.length - 1) s += ",";
+            if(i != modifierStrings.length - 1) s += ",\n";
         }
-        s += "]\n";
-        s += "\t\t}";
+        s += "\n\t\t}";
         return s;
     }
 

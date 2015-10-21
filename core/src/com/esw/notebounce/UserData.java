@@ -15,11 +15,6 @@ public class UserData {
     public Modifier modifier = Modifier.none;
     public int id = -1; // ID number for guns
 
-
-    // FIXME URGENT UserData needs to be __PER FIXTURE__ NOT per object
-    // fixme Each object will have to track it's own color, shade, etc but
-    // fixme each _fixture_ will have an edge/modifier
-
     public enum Type {
         boundary,
         box,
@@ -110,12 +105,12 @@ public class UserData {
 
     @Override
     public String toString() {
-        String output = "Type:[" + type + "]";
-        if(triangle != Triangle.none) output += " Triangle:[" + triangle + "]";
-        if(color != Color.none) output += " Color:[" + color + "]";
-        if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "]";
+        String output = "Type:[" + type + "] |";
+        if(triangle != Triangle.none) output += " Triangle:[" + triangle + "] |";
+        if(color != Color.none) output += " Color:[" + color + "] |";
+        if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "] |";
         if(edge != Edge.none) output += " Edge:[" + edge + "]";
-        output += "Modifier:[" + modifier + "]";
+        if(type == Type.triangle || type == Type.box) output += " Modifier:[" + modifier + "]";
         return output;
     }
 }

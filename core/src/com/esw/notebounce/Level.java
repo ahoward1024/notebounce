@@ -13,44 +13,10 @@ public class Level {
 
     FileHandle file;
     String name;
-    int id;
 
-    Array<Box> boxes = new Array<Box>();
-    Vector2 gunPos;
-    Vector2 ballPos;
-
-    Level(FileHandle file, String name, int id) {
+    Level(FileHandle file, String name) {
         this.file = file;
         this.name = name;
-        this.id = id;
-    }
-
-    public FileHandle getFile() {
-        return file;
-    }
-
-    public String getPath() {
-        return file.path();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getID() {
-        return id;
-    }
-
-    public Array<Box> getBoxesArray() {
-        return boxes;
-    }
-
-    public Vector2 getGunPos() {
-        return gunPos;
-    }
-
-    public Vector2 getBallPos() {
-        return ballPos;
     }
 
 }
