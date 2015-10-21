@@ -129,7 +129,6 @@ public class CollisionDetection implements ContactListener {
                 NoteBounce.playGoalNoise();
             }
 
-            // FIXME notes play continuously when on top of a box
             if(NoteBounce.playNotes) {
                 // If the ball hits anything that plays will play a note, play a note.
 
@@ -216,7 +215,6 @@ public class CollisionDetection implements ContactListener {
         // collisions involved with a note block.
        /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
             // TODO reimplement collision detection for each object
-            // TODO different boundary collision detection for each different gravity setting
             // Boundary Edge collision
             if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
                 fa.getUserData().equals("left") || fa.getUserData().equals("right"))

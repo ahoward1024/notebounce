@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
  * Copyright echsoftworks 2015
  */
 @SuppressWarnings("unused")
-public class LevelLoader { // TODO Level loader/writer
+public class LevelLoader {
 
     static Array<Level> levels = new Array<Level>();
     static int levelPtr = 0;
@@ -65,7 +65,6 @@ public class LevelLoader { // TODO Level loader/writer
         NoteBounce.ball = null;
     }
 
-    // TODO: load a level
     public static void loadLevel(int lvl) {
         levelPtr = lvl;
         Level level = levels.get(levelPtr);
@@ -191,8 +190,6 @@ public class LevelLoader { // TODO Level loader/writer
 
         if(Edit.startgun == -1) { System.out.println("Error! No starting gun!"); return; }
 
-        // TODO MOVE
-        boolean save = false;
         FileHandle fileHandle = new FileHandle("levels/" + levelname + ".json");
         if(fileHandle.exists()) {
             int ov = JOptionPane.showConfirmDialog(null, "Level exists. Overwrite?", "Overwrite file",

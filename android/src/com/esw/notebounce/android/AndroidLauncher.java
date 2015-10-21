@@ -12,7 +12,6 @@ import com.esw.notebounce.NoteBounce;
 public class AndroidLauncher extends AndroidApplication {
 	public static int ScreenWidth  = 1920; // DEFAULT
 	public static int ScreenHeight = 1080; // DEFAULT
-	// TODO fix scaling for devices that are not 16:9
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {

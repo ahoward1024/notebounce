@@ -35,8 +35,8 @@ public class Box {
     Sprite[] modifierSprites = new Sprite[4];
     String[] modifierStrings = new String[4];
 
-    // TODO Rethink modifiers again.
-    // TODO Need a clear goal of what modifiers do.
+    // TODO(alex): Rethink modifiers again.
+    // TODO(alex): Need a clear goal of what modifiers do.
 
     Box(Vector2 v, float scale, UserData.Color color, UserData.Shade shade, boolean gravity, String[] mods) {
         UserData userData = new UserData(UserData.Type.box);

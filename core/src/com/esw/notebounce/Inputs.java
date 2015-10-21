@@ -232,7 +232,7 @@ class Inputs {
 
         lctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Snap to midlines
 
-    } // TODO edit inputs ??? more ???
+    }
 
     /**
      * Grab whether the edit key was pressed or not
@@ -243,12 +243,5 @@ class Inputs {
     }
 
     public static  boolean grid() { return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); }
-
-    /**
-     * Grab all of the mouse inputs, then grab all of the inputs from all of the keys.
-     */
-    public static void getAllInputs() {
-        getMouseInputs();
-    } // TODO all inputs... maybe...
 
 }

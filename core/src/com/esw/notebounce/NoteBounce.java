@@ -89,8 +89,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static boolean moveBallToGun = false; // Toggle to lerp the ball back to the gun
 	static boolean drawBallOver = false; // Toggle to draw the ball over the gun after it has been shot
 
-	// TODO create LevelLoader
-
 	Vector2 mouseClick = new Vector2(0,0);
 	Vector2 mouseUnClick = new Vector2(0,0);
 
@@ -119,9 +117,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static int lines = 0;
 	static int midlines = 0;
 
-	// FIXME: Resolutions scaling somehow messes up if the width or height of the window is greater than
-	// fixme the size of the screen. Also, resizing does not work on the desktop. This should not be
-	// fixme a big deal, however, because resize events never get called for android.
 	// 16:9 RESOLUTIONS:
 	// 2560x1440, Scale: 133% at 160px
 	// 1920x1080, Scale: 100% at 120px (base resolution)
@@ -335,8 +330,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				steps = 2;
 				simDrawColor = Color.RED;
 			}
-			// todo perhaps keep a count of the amount of collisions and stop the loop after a certain
-			// todo number of them have happened ???
 			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 			// up the loop will not break causing it to run every iteration and will cause framerate issues.
 			for(int i = 0; i < 200; i++) { // DEBUG
@@ -382,6 +375,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			power *= scalePercent;
 
+			// TODO(frankie): Change the angle so instead of pulling back to get the power,
+			// todo make it so the player pulls forward. (Perhaps make this a user option later ???)
 			// Find the angle for the gun and ball's projection arc based on where the mouse is
 			// located on the screen. Works best if the gun's texture is defaulted to point towards
 			// the right.
@@ -437,9 +432,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// Go to next level if tmpgoal was hit
 		if(goalHit || Inputs.space) { // SPACE IS DEBUG
 			reset();
-			// todo LevelLoader
-			// todo loop levels
-			//levelLoader.loadNextLevel();
+			// todo go to next level
+			//LevelLoader.loadNextLevel();
 			goalHit = false;
 			showGoalHit = true;
 		}
@@ -491,7 +485,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			// Simulate Box2D physics
 			if(ballShot) updatePhysics();
 		} else {
-			Edit.editLevel(); // TODO clean up editing
+			Edit.editLevel(); // TODO clean up editing ???
 		}
 
 		// ================ RENDER ================//
@@ -778,7 +772,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		down,
 		left,
 		right
-	} // FIXME resolution independence (possibly fixed)
+	}
 	static void addImpulseToBall(ImpulseType type) {
 		float additionalImpulseForce = 1.1f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);

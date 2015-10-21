@@ -95,8 +95,6 @@ public class Edit {
     static boolean saved = true;
     public static void editLevel() {
         startgun = NoteBounce.currentGun;
-        // todo create a destroyAllOthers() function
-        // todo create a destroyAll() function
         Inputs.getEditInputs();
 
         // Toggle grid
