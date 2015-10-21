@@ -48,8 +48,10 @@ public class Goal {
         fixtureDef.restitution = 0.0f;
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(((sprite.getWidth() / 2) * scale)/ NoteBounce.PIXELS2METERS,
-            ((sprite.getHeight() / 2) * scale) / NoteBounce.PIXELS2METERS);
+        // - 0.01f is a quick and dirty fix for the ball always hitting a goal even when a door
+        // is on the side of the goal.
+        shape.setAsBox((((sprite.getWidth() / 2) * scale)/ NoteBounce.PIXELS2METERS) - 0.01f,
+            (((sprite.getHeight() / 2) * scale) / NoteBounce.PIXELS2METERS) - 0.01f);
         fixtureDef.shape = shape;
         body.createFixture(fixtureDef).setUserData(userData);
         shape.dispose();

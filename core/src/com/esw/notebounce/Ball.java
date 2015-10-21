@@ -20,6 +20,10 @@ public class Ball {
     Sprite sprite;
     Body body;
 
+    Ball(Vector2 v) { create(v.x, v.y, 1); }
+
+    Ball(Vector2 v, float scale) { create(v.x, v.y, scale); }
+
     /**
      * Calls the create() method to create a new ball at point (x, y) with a scale of 1.
      * @param x The x position for the center of the ball.

@@ -160,20 +160,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		Vector2 dim = Utility.getScaleDimension(ScreenWidth, ScreenHeight);
 		scaleWidth = (int)dim.x;
 		scaleHeight = (int)dim.y;
-
 		System.out.println("Scale Width: " + scaleWidth + " Scale Height: " + scaleHeight);
 
 		scalePercent = (float)Utility.GCD(scaleWidth, scaleHeight) / (float)Utility.GCD(basew, baseh);
-
-		lines = scaleWidth / 16;
-		midlines = lines / 2;
+		System.out.println("Scale percent: " + scalePercent + "%");
 
 		bufferWidth = (ScreenWidth - scaleWidth) / 2;
 		bufferHeight = (ScreenHeight - scaleHeight) / 2;
-
 		System.out.println("Buffer Width: " + bufferWidth + " Buffer Height: " + bufferHeight);
 
-		System.out.println("Scale percent: " + scalePercent + "%");
+		lines = scaleWidth / 16;
+		midlines = lines / 2;
 
 		Box2D.init(); // MUST initialize Box2D before using it!
 		box2DDebugRenderer = new Box2DDebugRenderer();
@@ -231,7 +228,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ballSimSprite.setScale(scalePercent);
 
 		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
-		LevelLoader.loadLevel(LevelLoader.levelPtr);
+		LevelLoader.loadLevel("test");
 	}
 
 	@Override
@@ -251,6 +248,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
+		// TODO(frankie): reset doors
 		if(guns[currentGun] != null) {
 			guns[currentGun].body.getFixtureList().first().setSensor(false);
 		}
@@ -554,6 +552,21 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
+		if(Edit.tmpmine != null) {
+			Edit.tmpmine.sprite.draw(batch);
+		}
+		for(Mine m : mines) {
+			m.sprite.draw(batch);
+		}
+
+		if(Edit.tmpgoal != null) {
+			Edit.tmpgoal.sprite.draw(batch);
+		}
+		for(Goal g : goals) {
+			g.sprite.draw(batch);
+		}
+
+		// Draw doors after all other blocks so they are on top
 		if(Edit.tmpdoor != null) {
 			Edit.tmpdoor.sprite.draw(batch);
 		}
@@ -566,21 +579,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 		for(DoorSwitch ds : switches) {
 			ds.sprite.draw(batch);
-		}
-
-		if(Edit.tmpmine != null) {
-			Edit.tmpmine.sprite.draw(batch);
-		}
-		for(Mine m : mines) {
-			m.sprite.draw(batch);
-		}
-
-
-		if(Edit.tmpgoal != null) {
-			Edit.tmpgoal.sprite.draw(batch);
-		}
-		for(Goal g : goals) {
-			g.sprite.draw(batch);
 		}
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
@@ -680,7 +678,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			else gravityDirection = "Left";
 		}
 		debugMessage.draw(batch, "Gravity : " + gravityDirection, 10, ScreenHeight - 130);
-		debugMessage.draw(batch, "Level :" + LevelLoader.levels.get(LevelLoader.levelPtr).name, 10, ScreenHeight - 160);
+		debugMessage.draw(batch, "Level: " + LevelLoader.levels.get(LevelLoader.levelPtr).name, 10, ScreenHeight - 160);
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
@@ -719,14 +717,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			// If we are in edit mode we are going to draw lines between the door and the switch it
 			// corresponds to.
-			debugShapeRenderer.begin();
-			debugShapeRenderer.setColor(Color.BLACK);
-			for(int i = 0; i < doors.size && i < switches.size; i++) {
-				Vector2 d = doors.get(i).center;
-				Vector2 s = switches.get(i).center;
-				debugShapeRenderer.line(d,s);
-			}
-			debugShapeRenderer.end();
 		}
 
 		if(Edit.drawGrid) {
@@ -745,6 +735,17 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 			for(int i = bufferHeight; i <= (scaleHeight + bufferHeight); i += lines) {
 				debugShapeRenderer.line(bufferWidth, i, (scaleWidth + bufferWidth), i);
+			}
+			debugShapeRenderer.end();
+		}
+
+		if(edit) {
+			debugShapeRenderer.begin();
+			debugShapeRenderer.setColor(Color.PURPLE);
+			for(int i = 0; i < doors.size && i < switches.size; i++) {
+				Vector2 d = doors.get(i).center;
+				Vector2 s = switches.get(i).center;
+				debugShapeRenderer.line(d,s);
 			}
 			debugShapeRenderer.end();
 		}

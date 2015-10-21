@@ -161,16 +161,22 @@ public class LevelLoader {
 
         int startgun = json.getInt("startgun");
 
-        NoteBounce.ball.setPos(NoteBounce.guns[startgun].center);
+        if(NoteBounce.guns[startgun] != null) {
+            NoteBounce.ball = new Ball(NoteBounce.guns[startgun].center, NoteBounce.scalePercent);
+        }
+        else {
+            NoteBounce.ball = new Ball((float)(NoteBounce.ScreenWidth / 2) + NoteBounce.bufferWidth,
+                (float)(NoteBounce.ScreenHeight / 2) + NoteBounce.bufferHeight, NoteBounce.scalePercent);
+        }
         NoteBounce.currentGun = startgun;
     }
 
     public static void loadLevel(String name) {
-
-    }
-
-    public static void loadLevel() {
-
+        unloadLevel();
+        for(int i = 0; i < levels.size; i++) {
+            Level l = levels.get(i);
+            if(l.name.equals(name)) loadLevel(i);
+        }
     }
 
     public static void createLevelsArray(FileHandle fileHandle) {
@@ -199,7 +205,7 @@ public class LevelLoader {
                 String string = "{\n";
 
                 // BOXES
-                string += "\t\"boxes\":[\n";
+                string += "\t\"boxes\":\n\t[\n";
                 for(int i = 0; i < NoteBounce.boxes.size; i++) {
                     Box o = NoteBounce.boxes.get(i);
                     if(o != null) {

@@ -1,16 +1,33 @@
 Level spec:
 
 {
-	"level": [
-	{
-		"name": "blah",
-		"path": "levels/blah.json",
-		"objects":[
+	"levels":
+	[
 		{
-			"box":[{"style": "blue","x":100,"y":100}],
-			"gun":[{"x":30,"y":30}],
-		},
-		]
-	},
+			"levelname":"name",
+			"id":0,
+			"boxes":
+			[
+			],
+			"triangles":
+			[	
+			],
+			"goals":
+			[	
+			],
+			"doors":
+			[	
+			],
+			"switches":
+			[	
+			],
+			"mines":
+			[	
+			],
+			"guns":
+			[				
+			],
+			"startgun":4
+		}
 	]
 }

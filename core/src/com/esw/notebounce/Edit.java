@@ -637,11 +637,15 @@ public class Edit {
                         saved = false;
                     }
                 }
-                for(int i = 0; i < NoteBounce.doors.size; i++) {
+                for(int i = 0; i < NoteBounce.doors.size && i < NoteBounce.switches.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.doors.get(i).center,
-                            NoteBounce.doors.get(i).sprite.getWidth())) {
+                            NoteBounce.doors.get(i).sprite.getWidth()) ||
+                        Utility.isInsideCircle(click, NoteBounce.switches.get(i).center,
+                            NoteBounce.switches.get(i).sprite.getWidth())) {
                         NoteBounce.world.destroyBody(NoteBounce.doors.get(i).body);
+                        NoteBounce.world.destroyBody(NoteBounce.switches.get(i).body);
                         NoteBounce.doors.removeIndex(i);
+                        NoteBounce.switches.removeIndex(i);
                         saved = false;
                     }
                 }
