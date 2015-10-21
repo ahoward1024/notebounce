@@ -40,7 +40,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static World world;
 	static boolean playNotes = true;
 	static boolean goalHit = false;
-	static boolean goalNoisePlaying = false;
+	//static boolean goalNoisePlaying = false;
 	static boolean playRipple = false;
 	static Sound[] notes = new Sound[8];
 	static int notePtr = 0;
@@ -83,7 +83,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	String gunPositionDebug = "";  // DEBUG
 	String fpsDebug = "FPS: ";     // DEBUG
 
-	static boolean goalWasHit = false;
 	boolean showGoalHit = false; // Show "GOAL!" text
 
 	static boolean ballShot = false; // Is the ball shot?
@@ -259,11 +258,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		simcoords.clear();
 		if(guns[currentGun] != null) {
 			guns[currentGun].body.getFixtureList().first().setSensor(false);
-		}
-		if(goalWasHit) {
-			if(goalNoisePlaying) goalNoise.stop();
-			goalNoisePlaying = false;
-			goalWasHit = false;
 		}
 	}
 
@@ -626,7 +620,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		if (showGoalHit) {
-			goalWasHit = true;
 			debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
 			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
 			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
@@ -765,7 +758,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	static void playGoalNoise() {
 		goalNoise.play();
-		goalNoisePlaying = true;
 		playNotes = false;
 	}
 
