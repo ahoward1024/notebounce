@@ -13,14 +13,10 @@ public class Level {
 
     FileHandle file;
     String name;
-    int id;
 
-    Ball ball;
-
-    Level(FileHandle file, String name, int id) {
+    Level(FileHandle file, String name) {
         this.file = file;
         this.name = name;
-        this.id = id;
     }
 
 }

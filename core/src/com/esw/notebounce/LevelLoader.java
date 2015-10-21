@@ -2,15 +2,11 @@ package com.esw.notebounce;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
-import org.omg.CORBA.NO_IMPLEMENT;
-
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -56,8 +52,10 @@ public class LevelLoader { // TODO Level loader/writer
         }
         NoteBounce.mines.clear();
         for(Gun o : NoteBounce.guns) {
-            NoteBounce.world.destroyBody(o.body);
-            o.sprite.getTexture().dispose();
+            if(o != null) {
+                NoteBounce.world.destroyBody(o.body);
+                o.sprite.getTexture().dispose();
+            }
         }
         for(int i = 0; i < NoteBounce.guns.length; i++) {
             NoteBounce.guns[i] = null;
@@ -176,14 +174,13 @@ public class LevelLoader { // TODO Level loader/writer
 
     }
 
-    public static void createLevelsArray(FileHandle fh) {
-        FileHandle[] fileList = fh.list();
+    public static void createLevelsArray(FileHandle fileHandle) {
+        FileHandle[] fileList = fileHandle.list();
         if(fileList.length > 1) {
-            for (int i = 0; i < fileList.length; i++) {
-                if (!fileList[i].isDirectory()) {
-                    System.out.println("Loading file to array: " + fileList[i].path());
-                    levels.add(new Level((new FileHandle(fileList[i].path())),
-                            fileList[i].name(), i));
+            for (FileHandle fh : fileList) {
+                if (!fh.isDirectory()) {
+                    System.out.println("Loading file to array: " + fh.path());
+                    levels.add(new Level(new FileHandle(fh.path()), fh.nameWithoutExtension()));
                 }
             }
         }
@@ -198,8 +195,7 @@ public class LevelLoader { // TODO Level loader/writer
         boolean save = false;
         FileHandle fileHandle = new FileHandle("levels/" + levelname + ".json");
         if(fileHandle.exists()) {
-            JFrame jFrame = new JFrame("Overwrite");
-            int ov = JOptionPane.showConfirmDialog(jFrame, "Level exists. Overwrite?", "Overwrite file",
+            int ov = JOptionPane.showConfirmDialog(null, "Level exists. Overwrite?", "Overwrite file",
                 JOptionPane.OK_CANCEL_OPTION);
             if(ov == 0) {
                 System.out.println("Saving: levels/" + levelname + ".json");
@@ -294,6 +290,9 @@ public class LevelLoader { // TODO Level loader/writer
 
                 string += "}\n";
                 fileHandle.writeString(string, false);
+
+                Level l = new Level(fileHandle, fileHandle.nameWithoutExtension());
+                levels.add(l);
             }
         }
     }

@@ -81,8 +81,18 @@ public class Edit {
         modifiers = UserData.createModifierArray();
     }
 
-    static boolean saved = false;
-    UserData.Triangle lastTriangleState = UserData.Triangle.BotLeft;
+    public static boolean save() {
+        String levelname = JOptionPane.showInputDialog(null, "Level name:");
+        if(levelname != null && !levelname.equals("")) {
+            LevelLoader.saveLevel(levelname);
+            return true;
+        } else {
+            System.out.println("Save canceled.");
+        }
+        return false;
+    }
+
+    static boolean saved = true;
     public static void editLevel() {
         startgun = NoteBounce.currentGun;
         // todo create a destroyAllOthers() function
@@ -97,21 +107,19 @@ public class Edit {
 
         // Save level
         if(Inputs.lctrl && Inputs.s) {
-            // TODO save
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            JFrame jFrame = new JFrame("Save");
-            String levelname = JOptionPane.showInputDialog(jFrame, "Level name:");
-            if(levelname != null && !levelname.equals("")) {
-                LevelLoader.saveLevel(levelname);
-            } else {
-                System.out.println("Level name null. Not saving.");
-            }
+            if(save()) saved = true;
         } else if(Inputs.lctrl && Inputs.n) {
-            destroyAll();
+            if(!saved) {
+                int ov = JOptionPane.showConfirmDialog(null, "Level not saved. Would you like to save it now?");
+                if(ov == 0) save();
+                else if(ov == 1) {
+                    destroyAll();
+                    LevelLoader.unloadLevel();
+                }
+            } else {
+                destroyAll();
+                LevelLoader.unloadLevel();
+            }
         }
 
         // Edit states (also we must reset all tmp objects to null so they don't continue to appear)
@@ -254,6 +262,7 @@ public class Edit {
                     if(Gdx.input.justTouched()) {
                         NoteBounce.boxes.add(tmpbox);
                         tmpbox = null;
+                        saved = false;
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -429,6 +438,7 @@ public class Edit {
                         tmptriangle.sprite.setAlpha(1.0f);
                         NoteBounce.triangles.add(tmptriangle);
                         tmptriangle = null;
+                        saved = false;
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -466,6 +476,7 @@ public class Edit {
                         tmpgoal.sprite.setAlpha(1.0f);
                         NoteBounce.goals.add(tmpgoal);
                         tmpgoal = null;
+                        saved = false;
                     }
                 }
                 case gun: {
@@ -515,6 +526,7 @@ public class Edit {
                             NoteBounce.world.destroyBody(NoteBounce.guns[id].body);
                             NoteBounce.guns[id] = null;
                         }
+                        saved = false;
                     }
                 } break;
                 case door: {
@@ -554,6 +566,7 @@ public class Edit {
                         NoteBounce.doors.add(tmpdoor);
                         tmpdoor = null;
                         typeState = UserData.Type.doorswitch;
+                        saved = false;
                     }
                 } break;
                 case doorswitch: {
@@ -594,6 +607,7 @@ public class Edit {
                         tmpmine.sprite.setAlpha(1.0f);
                         NoteBounce.mines.add(tmpmine);
                         tmpmine = null;
+                        saved = false;
                     }
                 } break;
             }
@@ -606,6 +620,7 @@ public class Edit {
                             NoteBounce.boxes.get(i).sprite.getWidth() / 2)) {
                         NoteBounce.world.destroyBody(NoteBounce.boxes.get(i).body);
                         NoteBounce.boxes.removeIndex(i);
+                        saved = false;
                     }
                 }
                 for(int i = 0; i < NoteBounce.triangles.size; i++) {
@@ -613,6 +628,7 @@ public class Edit {
                             NoteBounce.triangles.get(i).sprite.getWidth() / 2)) {
                         NoteBounce.world.destroyBody(NoteBounce.triangles.get(i).body);
                         NoteBounce.triangles.removeIndex(i);
+                        saved = false;
                     }
                 }
                 for(int i = 0; i < NoteBounce.goals.size; i++) {
@@ -620,6 +636,7 @@ public class Edit {
                             NoteBounce.goals.get(i).sprite.getWidth() / 2)) {
                         NoteBounce.world.destroyBody(NoteBounce.goals.get(i).body);
                         NoteBounce.goals.removeIndex(i);
+                        saved = false;
                     }
                 }
                 for(int i = 0; i < NoteBounce.doors.size; i++) {
@@ -627,6 +644,7 @@ public class Edit {
                             NoteBounce.doors.get(i).sprite.getWidth())) {
                         NoteBounce.world.destroyBody(NoteBounce.doors.get(i).body);
                         NoteBounce.doors.removeIndex(i);
+                        saved = false;
                     }
                 }
                 for(int i = 0; i < NoteBounce.guns.length; i++) {
@@ -635,6 +653,7 @@ public class Edit {
                             NoteBounce.guns[i].sprite.getWidth())) {
                             NoteBounce.world.destroyBody(NoteBounce.guns[i].body);
                             NoteBounce.guns[i] = null;
+                            saved = false;
                         }
                     }
                 }
