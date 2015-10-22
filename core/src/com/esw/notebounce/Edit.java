@@ -151,7 +151,6 @@ public class Edit {
 
         // Painting
         if(toolState == Tool.paint) {
-            Gdx.input.setCursorImage(pencil, 0, 0);
             switch(typeState) {
                 case box: {
 
@@ -610,7 +609,6 @@ public class Edit {
                 } break;
             }
         } else if(toolState == Tool.erase) { // Erasing
-            Gdx.input.setCursorImage(eraser, 0, 0);
             if(Inputs.mouseleft) {
                 Vector2 click = new Vector2(Inputs.mouse);
                 for(int i = 0; i < NoteBounce.boxes.size; i++) {
@@ -646,6 +644,14 @@ public class Edit {
                         NoteBounce.world.destroyBody(NoteBounce.switches.get(i).body);
                         NoteBounce.doors.removeIndex(i);
                         NoteBounce.switches.removeIndex(i);
+                        saved = false;
+                    }
+                }
+                for(int i = 0; i < NoteBounce.mines.size; i++) {
+                    if(Utility.isInsideCircle(click, NoteBounce.mines.get(i).center,
+                        NoteBounce.mines.get(i).sprite.getWidth())) {
+                        NoteBounce.world.destroyBody(NoteBounce.mines.get(i).body);
+                        NoteBounce.mines.removeIndex(i);
                         saved = false;
                     }
                 }

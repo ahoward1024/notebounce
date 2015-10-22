@@ -160,9 +160,10 @@ class Inputs {
         f = Gdx.input.isKeyJustPressed(Input.Keys.F); // Reset
         space = Gdx.input.isKeyJustPressed(Input.Keys.SPACE); // Next level
 
-        tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
+        leftsquare = Gdx.input.isKeyJustPressed(Input.Keys.LEFT_BRACKET); // Load previous level
+        rightsquare = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET); // Load next level
 
-        l = Gdx.input.isKeyJustPressed(Input.Keys.L);
+        tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
     }
 
     /**
@@ -232,16 +233,17 @@ class Inputs {
 
         lctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT); // Snap to midlines
 
+        space = Gdx.input.isKeyJustPressed(Input.Keys.SPACE); // Load next level
+
+        leftsquare = Gdx.input.isKeyJustPressed(Input.Keys.LEFT_BRACKET); // Load previous level
+        rightsquare = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET); // Load next level
+
     }
 
-    /**
-     * Grab whether the edit key was pressed or not
-     * @return The state of the edit key (grave)
-     */
-    public static boolean edit() {
-        return Gdx.input.isKeyJustPressed(Input.Keys.TAB);
-    }
+    public static boolean edit() { return Gdx.input.isKeyJustPressed(Input.Keys.TAB); }
 
-    public static  boolean grid() { return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); }
+    public static boolean grid() { return Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); }
+
+    public static boolean testing() { return Gdx.input.isKeyJustPressed(Input.Keys.SLASH); }
 
 }

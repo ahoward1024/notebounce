@@ -227,7 +227,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
 		LevelLoader.loadFirstLevel();
-		//LevelLoader.loadLevel("test");
+		//LevelLoader.loadLevel("test"); // DEBUG
 	}
 
 	@Override
@@ -248,9 +248,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
 		// TODO(frankie): reset doors
-		if(guns[currentGun] != null) {
-			guns[currentGun].body.getFixtureList().first().setSensor(false);
-		}
 	}
 
 	/**
@@ -426,9 +423,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
-		// Go to next level if tmpgoal was hit
-		if(goalHit || Inputs.space) { // SPACE IS DEBUG
-			LevelLoader.loadNextLevel();
+		// Go to next level if a goal is hit
+		if(goalHit) {
+			if(!testing) LevelLoader.loadNextLevel();
 			reset();
 			goalHit = false;
 			showGoalHit = true;
@@ -448,6 +445,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	boolean testing = true;
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -463,6 +461,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			edit = ! edit; // Grab the edit key (tab) first
 		}
 		if(Inputs.grid()) Edit.drawGrid = !Edit.drawGrid;
+		if(Inputs.testing()) testing = !testing;
+
+		if(Inputs.space || Inputs.rightsquare) LevelLoader.loadNextLevel();
+		else if(Inputs.leftsquare) LevelLoader.loadPreviousLevel();
 
 		if(!edit) {
 			Gdx.input.setCursorImage(null, 0, 0);
@@ -706,6 +708,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ScreenHeight - 70);
 		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
 			ScreenHeight - 100);
+
+		if(testing) debugMessage.draw(batch, "TESTING", (ScreenWidth / 2) - 30, 30);
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world
@@ -773,7 +777,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		right
 	}
 	static void addImpulseToBall(ImpulseType type) {
-		float additionalImpulseForce = 1.1f;
+		float additionalImpulseForce = 2.2f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);
 		switch(type) {

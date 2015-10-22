@@ -1,12 +1,82 @@
 {
 	"boxes":
 	[
+		{
+			"x":1080.0,
+			"y":360.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"up",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":720.0,
+			"y":360.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"up",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":0.0,
+			"y":0.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"up",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":1800.0,
+			"y":0.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"up",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":1020.0,
+			"y":960.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":780.0,
+			"y":960.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		}
 	],
 	"triangles":
 	[
 	],
 	"goals":
 	[
+		{
+			"x":900.0,
+			"y":960.0
+		}
 	],
 	"doors":
 	[
@@ -16,9 +86,34 @@
 	],
 	"mines":
 	[
+		{
+			"x":780.0,
+			"y":120.0
+		},
+		{
+			"x":900.0,
+			"y":120.0
+		},
+		{
+			"x":1020.0,
+			"y":120.0
+		},
+		{
+			"x":960.0,
+			"y":600.0
+		},
+		{
+			"x":840.0,
+			"y":600.0
+		}
 	],
 	"guns":
 	[
+		{
+			"x":960.0,
+			"y":50.0,
+			"id":1
+		},
 	],
-	"startgun":4
+	"startgun":1
 }

@@ -1,12 +1,71 @@
 {
 	"boxes":
 	[
+		{
+			"x":600.0,
+			"y":780.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":600.0,
+			"y":660.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":480.0,
+			"y":840.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":480.0,
+			"y":600.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":120.0,
+			"y":0.0,
+			"color":"yellow",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"up",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		}
 	],
 	"triangles":
 	[
 	],
 	"goals":
 	[
+		{
+			"x":480.0,
+			"y":720.0
+		}
 	],
 	"doors":
 	[
@@ -19,6 +78,11 @@
 	],
 	"guns":
 	[
+		{
+			"x":960.0,
+			"y":540.0,
+			"id":4
+		},
 	],
 	"startgun":4
 }

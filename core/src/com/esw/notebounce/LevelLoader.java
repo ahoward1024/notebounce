@@ -60,14 +60,16 @@ public class LevelLoader {
         for(int i = 0; i < NoteBounce.guns.length; i++) {
             NoteBounce.guns[i] = null;
         }
-        NoteBounce.world.destroyBody(NoteBounce.ball.body);
-        NoteBounce.ball.sprite.getTexture().dispose();
-        NoteBounce.ball = null;
+        if(NoteBounce.ball != null) {
+            NoteBounce.world.destroyBody(NoteBounce.ball.body);
+            NoteBounce.ball.sprite.getTexture().dispose();
+            NoteBounce.ball = null;
+        }
     }
 
     public static void loadLevel(int lvl) {
-        levelPtr = lvl;
-        Level level = levels.get(levelPtr);
+        unloadLevel();
+        Level level = levels.get(lvl);
 
         JsonValue json = new JsonReader().parse(Gdx.files.internal(level.file.path()));
 
@@ -305,9 +307,17 @@ public class LevelLoader {
         loadLevel(levelPtr);
     }
 
+    public static void loadPreviousLevel() {
+        unloadLevel();
+        if(levelPtr == 0) levelPtr = levels.size - 1;
+        else levelPtr--;
+        loadLevel(levelPtr);
+    }
+
     public static void loadNextLevel() {
         unloadLevel();
-        levelPtr++;
+        if(levelPtr < levels.size - 1) levelPtr++;
+        else levelPtr = 0;
         loadLevel(levelPtr);
     }
 }
