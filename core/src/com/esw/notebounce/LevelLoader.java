@@ -300,6 +300,11 @@ public class LevelLoader {
         }
     }
 
+    public static void loadFirstLevel() {
+        levelPtr = 0;
+        loadLevel(levelPtr);
+    }
+
     public static void loadNextLevel() {
         unloadLevel();
         levelPtr++;

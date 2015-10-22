@@ -197,8 +197,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		world = new World(new Vector2(0, gravity * scalePercent), true);
 		world.setContactListener(collisionDetector);
 
-		ball = new Ball((scaleWidth / 2) + bufferWidth, (scaleHeight / 2) + bufferHeight, scalePercent);
-
 		// Build the lines for the bounding tmpbox that makes it so the ball
 		// does not go off the screen
 		new Boundary(bufferWidth, bufferHeight, ScreenWidth - bufferWidth, bufferHeight, UserData.Edge.bot);
@@ -228,7 +226,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ballSimSprite.setScale(scalePercent);
 
 		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
-		LevelLoader.loadLevel("test");
+		LevelLoader.loadFirstLevel();
+		//LevelLoader.loadLevel("test");
 	}
 
 	@Override
@@ -429,9 +428,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		// Go to next level if tmpgoal was hit
 		if(goalHit || Inputs.space) { // SPACE IS DEBUG
+			LevelLoader.loadNextLevel();
 			reset();
-			// todo go to next level
-			//LevelLoader.loadNextLevel();
 			goalHit = false;
 			showGoalHit = true;
 		}
