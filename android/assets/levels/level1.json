@@ -35,17 +35,6 @@
 			"m3":"none"
 		},
 		{
-			"x":360.0,
-			"y":180.0,
-			"color":"blue",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
 			"x":1800.0,
 			"y":0.0,
 			"color":"yellow",

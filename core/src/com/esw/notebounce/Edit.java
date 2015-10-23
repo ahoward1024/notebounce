@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 
-import javax.swing.JOptionPane;
-
 /**
  * Created by Alex on 9/28/2015.
  * Copyright echosoftworks 2015
@@ -50,6 +48,8 @@ public class Edit {
 
     static boolean drawGrid = false;
 
+    static boolean saved = true;
+
     public static void destroyAll() {
         if(tmpbox != null) {
             NoteBounce.world.destroyBody(tmpbox.body);
@@ -78,18 +78,6 @@ public class Edit {
         modifiers = UserData.createModifierArray();
     }
 
-    public static boolean save() {
-        String levelname = JOptionPane.showInputDialog(null, "Level name:");
-        if(levelname != null && !levelname.equals("")) {
-            LevelLoader.saveLevel(levelname);
-            return true;
-        } else {
-            System.out.println("Save canceled.");
-        }
-        return false;
-    }
-
-    static boolean saved = true;
     public static void editLevel() {
         startgun = NoteBounce.currentGun;
         Inputs.getEditInputs();
@@ -102,19 +90,12 @@ public class Edit {
 
         // Save level
         if(Inputs.lctrl && Inputs.s) {
-            if(save()) saved = true;
+            LevelLoader.saveLevel(LevelLoader.levels.get(LevelLoader.levelPtr).name);
+            saved = true;
         } else if(Inputs.lctrl && Inputs.n) {
-            if(!saved) {
-                int ov = JOptionPane.showConfirmDialog(null, "Level not saved. Would you like to save it now?");
-                if(ov == 0) save();
-                else if(ov == 1) {
-                    destroyAll();
-                    LevelLoader.unloadLevel();
-                }
-            } else {
-                destroyAll();
-                LevelLoader.unloadLevel();
-            }
+            LevelLoader.saveLevel(LevelLoader.levels.get(LevelLoader.levelPtr).name);
+            LevelLoader.newLevel();
+            saved = true;
         }
 
         // Edit states (also we must reset all tmp objects to null so they don't continue to appear)

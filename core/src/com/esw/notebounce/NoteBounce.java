@@ -457,6 +457,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		// WARNING!!!!! ALWAYS GRAB INPUTS FIRST!! If you do not this could have dire consequences
 		// as the input states will not be updated since the last frame which could cause keys
 		// to always be pressed or never be pressed etc...
+
+		if(Inputs.esc) Gdx.app.exit(); // Kill the app when escape is pressed
+
 		if(Inputs.edit()) {
 			edit = ! edit; // Grab the edit key (tab) first
 		}
@@ -683,7 +686,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
 			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
-			debugMessage.draw(batch, "Saved: " + Edit.saved, 10, ScreenHeight - 220);
 			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - 250);
 			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 280);
 			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 310);
@@ -711,6 +713,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ScreenHeight - 100);
 
 		if(testing) debugMessage.draw(batch, "TESTING", (ScreenWidth / 2) - 30, 30);
+		debugMessage.draw(batch, "Saved: " + Edit.saved, (ScreenWidth / 2) - 30, 60);
 		batch.end(); // Stop the batch drawing
 
 		// Copy the camera's projection and scale it to the size of the Box2D world

@@ -164,6 +164,8 @@ class Inputs {
         rightsquare = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET); // Load next level
 
         tick = Gdx.input.isKeyJustPressed(Input.Keys.GRAVE); // Toggle grid
+
+        esc = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE); // Kill the app
     }
 
     /**
@@ -237,6 +239,8 @@ class Inputs {
 
         leftsquare = Gdx.input.isKeyJustPressed(Input.Keys.LEFT_BRACKET); // Load previous level
         rightsquare = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET); // Load next level
+
+        esc = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE); // Kill app
 
     }
 
