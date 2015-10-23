@@ -1,5 +1,6 @@
 package com.esw.notebounce;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -91,15 +92,15 @@ public class CollisionDetection implements ContactListener {
         //if(udb.type.equals(UserData.Type.sim)) simhit = true;
 
         // SIMULATION BALL: =============================================================================
-        if(udb.type.equals(UserData.Type.sim) && !uda.type.equals(UserData.Type.doorswitch)) {
-            if(uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun)) {
+        if(udb.type.equals(UserData.Type.sim)) {
+            if(!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.Modifier.gravity) ||
+              (uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun))) {
                 simhit = true;
             }
         }
 
         // SEMI DEBUG:
         // We need to calculate this for the simulation and the ball itself
-        // todo clean this up later
         if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))) {
 
             // Accelerator
@@ -177,6 +178,20 @@ public class CollisionDetection implements ContactListener {
                             }
                         } else {
                             NoteBounce.playNote(notenum);
+                        }
+                    }
+                }
+
+                if(uda.type.equals(UserData.Type.box)) {
+                    if(uda.modifier.equals(UserData.Modifier.gravity)) {
+                        if(uda.edge.equals(UserData.Edge.bot)) {
+                            NoteBounce.world.setGravity(new Vector2(0, NoteBounce.gravity));
+                        } else if(uda.edge.equals(UserData.Edge.top)) {
+                            NoteBounce.world.setGravity(new Vector2(0, -NoteBounce.gravity));
+                        } else if(uda.edge.equals(UserData.Edge.left)) {
+                            NoteBounce.world.setGravity(new Vector2(NoteBounce.gravity, 0));
+                        } else if(uda.edge.equals(UserData.Edge.right)) {
+                            NoteBounce.world.setGravity(new Vector2(-NoteBounce.gravity,0));
                         }
                     }
                 }

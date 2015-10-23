@@ -1,0 +1,35 @@
+{
+	"boxes":
+	[
+		{
+			"x":900.0,
+			"y":480.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"true",
+			"m0":"up",
+			"m1":"down",
+			"m2":"left",
+			"m3":"right"
+		}
+	],
+	"triangles":
+	[
+	],
+	"goals":
+	[
+	],
+	"doors":
+	[
+	],
+	"switches":
+	[
+	],
+	"mines":
+	[
+	],
+	"guns":
+	[
+	],
+	"startgun":4
+}
