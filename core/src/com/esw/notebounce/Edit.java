@@ -4,12 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 /**
  * Created by Alex on 9/28/2015.
@@ -260,6 +257,7 @@ public class Edit {
                         NoteBounce.boxes.add(tmpbox);
                         tmpbox = null;
                         saved = false;
+                        modifiers = UserData.createModifierArray();
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -436,6 +434,7 @@ public class Edit {
                         NoteBounce.triangles.add(tmptriangle);
                         tmptriangle = null;
                         saved = false;
+                        modifiers = UserData.createModifierArray();
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -613,7 +612,7 @@ public class Edit {
                 Vector2 click = new Vector2(Inputs.mouse);
                 for(int i = 0; i < NoteBounce.boxes.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.boxes.get(i).center,
-                            NoteBounce.boxes.get(i).sprite.getWidth() / 2)) {
+                            NoteBounce.boxes.get(i).sprite.getWidth() / 3)) {
                         NoteBounce.world.destroyBody(NoteBounce.boxes.get(i).body);
                         NoteBounce.boxes.removeIndex(i);
                         saved = false;
@@ -621,7 +620,7 @@ public class Edit {
                 }
                 for(int i = 0; i < NoteBounce.triangles.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.triangles.get(i).center,
-                            NoteBounce.triangles.get(i).sprite.getWidth() / 2)) {
+                            NoteBounce.triangles.get(i).sprite.getWidth() / 3)) {
                         NoteBounce.world.destroyBody(NoteBounce.triangles.get(i).body);
                         NoteBounce.triangles.removeIndex(i);
                         saved = false;
@@ -629,7 +628,7 @@ public class Edit {
                 }
                 for(int i = 0; i < NoteBounce.goals.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.goals.get(i).center,
-                            NoteBounce.goals.get(i).sprite.getWidth() / 2)) {
+                            NoteBounce.goals.get(i).sprite.getWidth() / 3)) {
                         NoteBounce.world.destroyBody(NoteBounce.goals.get(i).body);
                         NoteBounce.goals.removeIndex(i);
                         saved = false;
@@ -637,9 +636,9 @@ public class Edit {
                 }
                 for(int i = 0; i < NoteBounce.doors.size && i < NoteBounce.switches.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.doors.get(i).center,
-                            NoteBounce.doors.get(i).sprite.getWidth()) ||
+                            NoteBounce.doors.get(i).sprite.getWidth() / 8) ||
                         Utility.isInsideCircle(click, NoteBounce.switches.get(i).center,
-                            NoteBounce.switches.get(i).sprite.getWidth())) {
+                            NoteBounce.switches.get(i).sprite.getWidth() / 8)) {
                         NoteBounce.world.destroyBody(NoteBounce.doors.get(i).body);
                         NoteBounce.world.destroyBody(NoteBounce.switches.get(i).body);
                         NoteBounce.doors.removeIndex(i);
@@ -649,7 +648,7 @@ public class Edit {
                 }
                 for(int i = 0; i < NoteBounce.mines.size; i++) {
                     if(Utility.isInsideCircle(click, NoteBounce.mines.get(i).center,
-                        NoteBounce.mines.get(i).sprite.getWidth())) {
+                        NoteBounce.mines.get(i).sprite.getWidth() / 8)) {
                         NoteBounce.world.destroyBody(NoteBounce.mines.get(i).body);
                         NoteBounce.mines.removeIndex(i);
                         saved = false;
@@ -658,7 +657,7 @@ public class Edit {
                 for(int i = 0; i < NoteBounce.guns.length; i++) {
                     if(NoteBounce.guns[i] != null) {
                         if(Utility.isInsideCircle(click, NoteBounce.guns[i].center,
-                            NoteBounce.guns[i].sprite.getWidth())) {
+                            NoteBounce.guns[i].sprite.getWidth() / 8)) {
                             NoteBounce.world.destroyBody(NoteBounce.guns[i].body);
                             NoteBounce.guns[i] = null;
                             saved = false;

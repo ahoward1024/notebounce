@@ -493,6 +493,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		//Gdx.gl.glClearColor(1, 1, 1, 1); // DEBUG: White
 		//Gdx.gl.glClearColor(1, 0, 0, 1); // DEBUG: Red
 		Gdx.gl.glClearColor(0, 0, 0, 1); // DEBUG: Black
+		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 		camera.update(); // Update the camera just before drawing
@@ -701,12 +702,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, ScreenWidth / 2, ScreenHeight - 10);
-		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, ScreenWidth / 2,
+		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, (ScreenWidth / 2) - 30, ScreenHeight - 10);
+		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, (ScreenWidth / 2) -30,
 			ScreenHeight - 40);
-		debugMessage.draw(batch, "Buffer Width: " + bufferWidth + " | Buffer Height: " + bufferHeight, ScreenWidth / 2,
+		debugMessage.draw(batch, "Buffer Width: " + bufferWidth + " | Buffer Height: " + bufferHeight, (ScreenWidth / 2) - 30,
 			ScreenHeight - 70);
-		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, ScreenWidth/ 2,
+		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, (ScreenWidth/ 2) - 30,
 			ScreenHeight - 100);
 
 		if(testing) debugMessage.draw(batch, "TESTING", (ScreenWidth / 2) - 30, 30);
@@ -742,6 +743,50 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		if(edit) {
+			if(Edit.toolState == Edit.Tool.erase) {
+				Gdx.gl.glEnable(GL20.GL_BLEND);
+				Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+				debugShapeRenderer.begin();
+				debugShapeRenderer.set(ShapeRenderer.ShapeType.Filled);
+				debugShapeRenderer.setColor(1, 0, 0, 0.5f);
+				for(Box o : boxes) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+					}
+				}
+				for(Triangle o : triangles) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+					}
+				}
+				for(Goal o : goals) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+					}
+				}
+				for(Door o : doors) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+					}
+				}
+				for(DoorSwitch o : switches) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+					}
+				}
+				for(Mine o : mines) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+					}
+				}
+				for(Gun o : guns) {
+					if(o != null) {
+						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+					}
+				}
+				debugShapeRenderer.end();
+				Gdx.gl.glDisable(GL20.GL_BLEND);
+			}
 			debugShapeRenderer.begin();
 			debugShapeRenderer.setColor(Color.PURPLE);
 			for(int i = 0; i < doors.size && i < switches.size; i++) {
