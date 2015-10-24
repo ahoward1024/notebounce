@@ -81,16 +81,24 @@ public class Gun {
         return new Vector2(endX(angle), endY(angle));
     }
 
-    public float clampAngle(float angle, float min, float max){
-        if (angle < 90 || angle > 270){
-            if(angle > 180) angle -= 360;
-            if(max>180) max -= 360;
-            if(min >180) min -=360;
-        }
-        angle = MathUtils.clamp(angle,min,max);
+    public float clampAngle(float angle){
+        //if (angle < 90 || angle > 270){
+           // if(angle > 180) angle -= 360;
+            //if(max>180) max -= 360;
+            //if(min >180) min -=360;
+        //}
+        //angle = MathUtils.clamp(angle,min,max);
         //if (angle < min) angle = min;
         //if (angle > max) angle = max;
-        if (angle < 0) angle +=360;
+        //if (angle < 0) angle +=360;
+        if (angle < 180)
+        {
+            angle = MathUtils.clamp(angle,0,90);
+        }
+        else
+        {
+            angle = MathUtils.clamp(angle,270,360);
+        }
         return angle;
     }
     /**
@@ -98,7 +106,7 @@ public class Gun {
      * @param angle The angle the gun needs to be rotated to.
      */
     public void rotate(float angle) { // TODO(frankie): clamp gun's rotation values
-        sprite.setRotation(clampAngle(angle,-90,90));
+        sprite.setRotation(clampAngle(angle));
         body.setTransform(body.getPosition(), (angle / NoteBounce.PIXELS2METERS) * 1.75f);
         // WARNING: 1.75f is a magical number!!! DO NOT CHANGE IT. I can't explain this one...
     }
