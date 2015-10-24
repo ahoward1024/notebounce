@@ -2,67 +2,45 @@
 	"boxes":
 	[
 		{
-			"x":1800.0,
-			"y":600.0,
-			"color":"magenta",
-			"shade":"four",
+			"x":0.0,
+			"y":180.0,
+			"color":"blue",
+			"shade":"zero",
 			"gravity":"false",
 			"m0":"none",
-			"m1":"down",
+			"m1":"none",
 			"m2":"none",
 			"m3":"none"
 		},
 		{
-			"x":1560.0,
+			"x":120.0,
+			"y":180.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":240.0,
+			"y":180.0,
+			"color":"blue",
+			"shade":"zero",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":1800.0,
 			"y":0.0,
 			"color":"yellow",
-			"shade":"six",
+			"shade":"eight",
 			"gravity":"false",
 			"m0":"up",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":1560.0,
-			"y":420.0,
-			"color":"yellow",
-			"shade":"six",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":1680.0,
-			"y":480.0,
-			"color":"yellow",
-			"shade":"six",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":1680.0,
-			"y":60.0,
-			"color":"green",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":1740.0,
-			"y":180.0,
-			"color":"green",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
 			"m1":"none",
 			"m2":"none",
 			"m3":"none"
@@ -74,8 +52,8 @@
 	"goals":
 	[
 		{
-			"x":1800.0,
-			"y":0.0
+			"x":0.0,
+			"y":300.0
 		}
 	],
 	"doors":
@@ -91,9 +69,9 @@
 	[
 		{
 			"x":50.0,
-			"y":1030.0,
-			"id":6
+			"y":50.0,
+			"id":0
 		},
 	],
-	"startgun":6
+	"startgun":0
 }

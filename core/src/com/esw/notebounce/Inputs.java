@@ -241,7 +241,6 @@ class Inputs {
         rightsquare = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET); // Load next level
 
         esc = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE); // Kill app
-
     }
 
     public static boolean edit() { return Gdx.input.isKeyJustPressed(Input.Keys.TAB); }

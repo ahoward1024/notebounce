@@ -1,50 +1,6 @@
 {
 	"boxes":
 	[
-		{
-			"x":0.0,
-			"y":180.0,
-			"color":"blue",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":120.0,
-			"y":180.0,
-			"color":"blue",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":240.0,
-			"y":180.0,
-			"color":"blue",
-			"shade":"zero",
-			"gravity":"false",
-			"m0":"none",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		},
-		{
-			"x":1800.0,
-			"y":0.0,
-			"color":"yellow",
-			"shade":"eight",
-			"gravity":"false",
-			"m0":"up",
-			"m1":"none",
-			"m2":"none",
-			"m3":"none"
-		}
 	],
 	"triangles":
 	[
@@ -53,7 +9,19 @@
 	[
 		{
 			"x":0.0,
-			"y":300.0
+			"y":0.0
+		},
+		{
+			"x":0.0,
+			"y":960.0
+		},
+		{
+			"x":1800.0,
+			"y":960.0
+		},
+		{
+			"x":1800.0,
+			"y":0.0
 		}
 	],
 	"doors":
@@ -68,10 +36,10 @@
 	"guns":
 	[
 		{
-			"x":50.0,
-			"y":50.0,
-			"id":0
+			"x":960.0,
+			"y":540.0,
+			"id":4
 		},
 	],
-	"startgun":0
+	"startgun":4
 }

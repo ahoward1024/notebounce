@@ -173,13 +173,13 @@ public class LevelLoader {
         NoteBounce.currentGun = startgun;
     }
 
-    public static void loadLevel(String name) {
+    /*public static void loadLevel(String name) {
         unloadLevel();
         for(int i = 0; i < levels.size; i++) {
             Level l = levels.get(i);
             if(l.name.equals(name)) loadLevel(i);
         }
-    }
+    }*/
 
     public static void createLevelsArray(FileHandle fileHandle) {
         FileHandle[] fileList = fileHandle.list();
@@ -195,9 +195,12 @@ public class LevelLoader {
     }
 
     public static void newLevel() {
-        levelPtr++;
-        String name = "level" + levelPtr + ".json";
-        levels.add(new Level(Gdx.files.internal("levels/" + name)));
+        unloadLevel();
+        saveLevel("level" + levelPtr);
+        String name = "level" + (++levelPtr);
+        levels.add(new Level(Gdx.files.internal("levels/" + name + ".json")));
+        saveLevel("level" + levelPtr);
+        loadLevel(levelPtr);
     }
 
     public static void saveLevel(String levelname) {
@@ -297,14 +300,12 @@ public class LevelLoader {
 
         string += "}\n";
         fileHandle.writeString(string, false);
-
-        Level l = new Level(fileHandle);
-        levels.add(l);
     }
 
     public static void loadFirstLevel() {
         levelPtr = 0;
         loadLevel(levelPtr);
+        System.out.println(levelPtr);
     }
 
     public static void loadPreviousLevel() {
@@ -312,6 +313,7 @@ public class LevelLoader {
         if(levelPtr == 0) levelPtr = levels.size - 1;
         else levelPtr--;
         loadLevel(levelPtr);
+        System.out.println(levelPtr);
     }
 
     public static void loadNextLevel() {
@@ -319,5 +321,6 @@ public class LevelLoader {
         if(levelPtr < levels.size - 1) levelPtr++;
         else levelPtr = 0;
         loadLevel(levelPtr);
+        System.out.println(levelPtr);
     }
 }

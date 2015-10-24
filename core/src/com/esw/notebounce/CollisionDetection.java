@@ -92,9 +92,8 @@ public class CollisionDetection implements ContactListener {
         //if(udb.type.equals(UserData.Type.sim)) simhit = true;
 
         // SIMULATION BALL: =============================================================================
-        if(udb.type.equals(UserData.Type.sim)) {
-            if(!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.Modifier.gravity) ||
-              (uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun))) {
+        if(udb.type.equals(UserData.Type.sim) && (!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.Modifier.gravity))) {
+            if((uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun))) {
                 simhit = true;
             }
         }
