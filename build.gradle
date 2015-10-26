@@ -23,6 +23,7 @@ allprojects {
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.6.0'
         aiVersion = '1.5.0'
+        gdxpayVersion = '0.5.0'
     }
 
     repositories {
@@ -70,6 +71,10 @@ project(":android") {
         compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
         compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        compile "com.badlogicgames.gdxpay:gdx-pay:$gdxpayVersion:library"
+        compile files("libs/gdx-pay-android-0.5.0-library.jar")
+        compile files("libs/gdx-pay-android-openiab-0.5.0-library.jar")
+        compile files("libs/gdx-pay-android-ouya-0.5.0-library.jar")
     }
 }
 
@@ -124,7 +129,7 @@ project(":core") {
         compile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.0"
         compile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.0"
         compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.0"
-        compile 'org.json:json:20141113'
+        compile "com.badlogicgames.gdxpay:gdx-pay:$gdxpayVersion:library"
     }
 }
 

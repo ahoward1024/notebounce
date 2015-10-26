@@ -15,6 +15,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.pay.PurchaseManagerConfig;
+import com.badlogic.gdx.pay.PurchaseObserver;
+import com.badlogic.gdx.pay.PurchaseSystem;
+import com.badlogic.gdx.pay.Transaction;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -882,6 +886,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			touch = false;
 			mouseUnClick.x = x; mouseUnClick.y = y;
 		}
+
 		return false;
 	}
 

@@ -6,6 +6,19 @@
 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="23" />
 
+    <!--all-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--Google Play-->
+    <uses-permission android:name="com.android.vending.BILLING"/>
+    <!--Open Store-->
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+    <!--Samsung Apps-->
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
+    <!--Nokia-->
+    <uses-permission android:name="com.nokia.payment.BILLING"/>
+    <!--SlideME-->
+    <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING"/>
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
