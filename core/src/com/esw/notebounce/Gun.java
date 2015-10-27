@@ -81,24 +81,64 @@ public class Gun {
         return new Vector2(endX(angle), endY(angle));
     }
 
+    /**
+     * clamp the angle of the gun based on the position of the gun
+     * @param angle the current angle the gun is pointing
+     * @return float - the newly clamped angle the gun will rotate by
+     */
     public float clampAngle(float angle){
-        //if (angle < 90 || angle > 270){
-           // if(angle > 180) angle -= 360;
-            //if(max>180) max -= 360;
-            //if(min >180) min -=360;
-        //}
-        //angle = MathUtils.clamp(angle,min,max);
-        //if (angle < min) angle = min;
-        //if (angle > max) angle = max;
-        //if (angle < 0) angle +=360;
-        if (angle < 180)
-        {
-            angle = MathUtils.clamp(angle,0,90);
+        //currently not a switch because Vector2 is not a valid type, however I'm sure there is
+        //a way around this -can be changed in future
+
+        //clamp for position one
+        if (position.equals(GunPosition.one)) {
+                angle = MathUtils.clamp(angle,0,90);
+            }
+
+        //clamp for position two
+        else if(position.equals(GunPosition.two)){
+            angle = MathUtils.clamp(angle,0,180);
         }
-        else
-        {
-            angle = MathUtils.clamp(angle,270,360);
+
+        //clamp for position three
+        else if(position.equals(GunPosition.three)) {
+            angle = MathUtils.clamp(angle,90,180);
         }
+
+        //clamp for position four
+       else if (position.equals(GunPosition.four)) {
+            if (angle < 180) {
+                angle = MathUtils.clamp(angle, 0, 90);
+            } else {
+                angle = MathUtils.clamp(angle, 270, 360);
+            }
+        }
+
+        //clamp for position 6
+        else if (position.equals(GunPosition.six)) {
+            angle = MathUtils.clamp(angle, 90,270);
+        }
+
+        //clamp for position 7
+        else if (position.equals(GunPosition.seven)) {
+            //0 is directly to the right, so the gun should be able to hit 0
+            if (angle > 0) {
+                angle = MathUtils.clamp(angle, 270, 360);
+            }
+        }
+
+        //clamp for position eight
+        else if (position.equals(GunPosition.eight)) {
+            if(angle > 0) {
+                angle = MathUtils.clamp(angle, 180, 360);
+            }
+        }
+
+        //clamp for position nine
+        else if (position.equals(GunPosition.nine)){
+            angle = MathUtils.clamp(angle,180,270);
+        }
+
         return angle;
     }
     /**
