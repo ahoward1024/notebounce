@@ -306,7 +306,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Run a physics simulation that calculates where the ball would go if it were to be shot
 	 * with the current power and angle.
 	 */
-	Color simDrawColor = Color.BLUE; // !!! MOVE
+	// TODO simluation gravity changing
 	void simulate() {
 		if(ball != null) {
 			ball.body.getFixtureList().first().setUserData(new UserData(UserData.Type.sim));
@@ -317,13 +317,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			int steps = 4;
 			if(timestep == timestepNormal) {
 				steps = 8;
-				simDrawColor = Color.BLUE;
 			} else if(timestep == timestepSlow) {
 				steps = 20;
-				simDrawColor = Color.PURPLE;
 			} else if(timestep == timestepFast) {
 				steps = 2;
-				simDrawColor = Color.RED;
 			}
 			// NOTE: DO NOT SET THE LOOP THIS HIGH (> 500) FOR A RELEASE BUILD. If the gun is aimed straight
 			// up the loop will not break causing it to run every iteration and will cause framerate issues.
@@ -702,7 +699,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - yval); yval += 30;
 			debugMessage.draw(batch, "Guns: " + guns.length, 10, ScreenHeight - yval); yval += 30;
 			debugMessage.draw(batch, "Doors: " + doors.size, 10, ScreenHeight - yval); yval += 30;
-			debugMessage.draw(batch, "Mines: " + mines.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Mines: " + mines.size, 10, ScreenHeight - yval);
 		}
 		else {
 			debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - yval);
@@ -719,20 +716,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		debugMessage.draw(batch, "Buffer Width: " + bufferWidth + " | Buffer Height: " + bufferHeight, (ScreenWidth / 2) - 30,
 			ScreenHeight - yval); yval += 30;
 		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, (ScreenWidth/ 2) - 30,
-			ScreenHeight - yval); yval += 30;
+			ScreenHeight - yval);
 
 		if(testing) debugMessage.draw(batch, "TESTING", (ScreenWidth / 2) - 30, 30);
 		debugMessage.draw(batch, "Saved: " + Edit.saved, (ScreenWidth / 2) - 30, 60);
 		batch.end(); // Stop the batch drawing
-
-		// Copy the camera's projection and scale it to the size of the Box2D world
-		if(edit) {
-			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
-
-			// If we are in edit mode we are going to draw lines between the door and the switch it
-			// corresponds to.
-		}
 
 		if(Edit.drawGrid) {
 			int linewidth = 5;
@@ -786,13 +774,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					if(m != null) {
 						Vector2 v = new Vector2(0,0);
 						float pad = (m.sprite.getWidth() / 2) * m.scale;
-						if(m.userData.edge == UserData.Edge.top) {
+						if(m.edge == UserData.Edge.top) {
 							v = new Vector2(m.center.x, m.center.y + pad);
-						} else if(m.userData.edge == UserData.Edge.bot) {
+						} else if(m.edge == UserData.Edge.bot) {
 							v = new Vector2(m.center.x, m.center.y - pad);
-						} else if(m.userData.edge == UserData.Edge.left) {
+						} else if(m.edge == UserData.Edge.left) {
 							v = new Vector2(m.center.x - pad, m.center.y);
-						} else if(m.userData.edge == UserData.Edge.right) {
+						} else if(m.edge == UserData.Edge.right) {
 							v = new Vector2(m.center.x + pad, m.center.y);
 						}
 						debugShapeRenderer.circle(v.x, v.y, (m.sprite.getWidth() * scalePercent) / 8);
@@ -834,6 +822,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				debugShapeRenderer.line(d,s);
 			}
 			debugShapeRenderer.end();
+
+			// DEBUG draw Box2D fixtures
+			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 		}
 	}
 

@@ -30,6 +30,40 @@ public class CollisionDetection implements ContactListener {
 
 //=====================================================================================================//
 
+    // ALL TYPES FOR EASY REFERENCE =====================================================================
+    private UserData.Type boundary   = UserData.Type.boundary;
+    private UserData.Type box        = UserData.Type.box;
+    private UserData.Type goal       = UserData.Type.goal;
+    private UserData.Type triangle   = UserData.Type.triangle;
+    private UserData.Type ball       = UserData.Type.ball;
+    private UserData.Type sim        = UserData.Type.sim;
+    private UserData.Type gun        = UserData.Type.gun;
+    private UserData.Type door       = UserData.Type.door;
+    private UserData.Type doorswitch = UserData.Type.doorswitch;
+    private UserData.Type mine       = UserData.Type.mine;
+    private UserData.Type modifier   = UserData.Type.modifier;
+
+    private UserData.TriangleType botleft  = UserData.TriangleType.botleft;
+    private UserData.TriangleType topleft  = UserData.TriangleType.topleft;
+    private UserData.TriangleType botright = UserData.TriangleType.botright;
+    private UserData.TriangleType topright = UserData.TriangleType.topright;
+
+    private UserData.ModifierType accelerator = UserData.ModifierType.accelerator;
+    private UserData.ModifierType dampener    = UserData.ModifierType.dampener;
+    private UserData.ModifierType gravity     = UserData.ModifierType.gravity;
+
+    private UserData.Color blue  = UserData.Color.blue;
+    private UserData.Color green = UserData.Color.green;
+    private UserData.Color red   = UserData.Color.red;
+    private UserData.Color grey  = UserData.Color.grey;
+
+    private UserData.Edge top   = UserData.Edge.top;
+    private UserData.Edge bot   = UserData.Edge.bot;
+    private UserData.Edge left  = UserData.Edge.left;
+    private UserData.Edge right = UserData.Edge.right;
+    //===================================================================================================
+
+
     /**
      * Update all the times since a note was played.
      * @param deltaTime The delta time of each frame
@@ -77,11 +111,11 @@ public class CollisionDetection implements ContactListener {
         Fixture fa = c.getFixtureA(); // Static or kinematic fixture
         Fixture fb = c.getFixtureB(); // Dynamic fixture
 
-        UserData uda = (UserData)fa.getUserData(); // Static or kinematic user data
-        UserData udb = (UserData)fb.getUserData(); // Dynamic user data
+        UserData uda = (UserData)fa.getUserData();
+        UserData udb = (UserData)fb.getUserData();
 
-        //if(udb.type.equals(UserData.Type.sim)) {
-        if(udb.type.equals(UserData.Type.ball)) {
+        //if(udb.type.equals(sim) || uda.type.equals(sim)) {
+        if(udb.type.equals(ball) || uda.type.equals(ball)) {
             System.out.println("UD a: " + uda.toString()); // DEBUG
             System.out.println("UD b: " + udb.toString()); // DEBUG
         }  // DEBUG
@@ -89,46 +123,41 @@ public class CollisionDetection implements ContactListener {
         int notePtr = NoteBounce.notePtr;
 
         //DEBUG
-        //if(udb.type.equals(UserData.Type.sim)) simhit = true;
+        //if(udb.type.equals(sim) || uda.type.equals(sim)) simhit = true;
 
+        // TODO debug this more
         // SIMULATION BALL: =============================================================================
-        if(udb.type.equals(UserData.Type.sim) && (!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.ModifierType.gravity))) {
-            if((uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun))) {
-                simhit = true;
-            }
+        if(udb.type.equals(sim) || uda.type.equals(sim)) {
+            if(uda.type.equals(goal) || udb.type.equals(goal)) simhit = true;
+            else if(uda.type.equals(gun) && uda.id != NoteBounce.currentGun) simhit = true;
+            else if(!uda.type.equals(doorswitch)) simhit = true;
         }
 
         // SEMI DEBUG:
-        // We need to calculate this for the simulation and the ball itself
-        if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))) {
+        // We need to calculate both accelerators and dampeners for the
+        if((udb.type.equals(ball) || udb.type.equals(sim))) {
 
-            // Accelerator
-            if(uda.modifier.equals(UserData.ModifierType.accelerator)) {
-                if(uda.edge.equals(UserData.Edge.top)) {
-                    NoteBounce.accelerate(NoteBounce.ImpulseType.up);
-                } else if(uda.edge.equals(UserData.Edge.bot)) {
-                    NoteBounce.accelerate(NoteBounce.ImpulseType.down);
-
-                } else if(uda.edge.equals(UserData.Edge.left)) {
-                    NoteBounce.accelerate(NoteBounce.ImpulseType.left);
-
-                } else if(uda.edge.equals(UserData.Edge.right)) {
-                    NoteBounce.accelerate(NoteBounce.ImpulseType.right);
-                }
-            }
-
-            // Dampener
-            if(uda.modifier.equals(UserData.ModifierType.dampener)) {
-                if(uda.edge.equals(UserData.Edge.top)) {
-                    NoteBounce.dampen(NoteBounce.ImpulseType.up);
-                } else if(uda.edge.equals(UserData.Edge.bot)) {
-                    NoteBounce.dampen(NoteBounce.ImpulseType.down);
-
-                } else if(uda.edge.equals(UserData.Edge.left)) {
-                    NoteBounce.dampen(NoteBounce.ImpulseType.left);
-
-                } else if(uda.edge.equals(UserData.Edge.right)) {
-                    NoteBounce.dampen(NoteBounce.ImpulseType.right);
+            if(uda.type.equals(modifier)) {
+                if(uda.modifier.equals(accelerator)) {
+                    if(uda.edge.equals(top)) {
+                        NoteBounce.accelerate(NoteBounce.ImpulseType.down);
+                    } else if(uda.edge.equals(bot)) {
+                        NoteBounce.accelerate(NoteBounce.ImpulseType.up);
+                    } else if(uda.edge.equals(left)) {
+                        NoteBounce.accelerate(NoteBounce.ImpulseType.right);
+                    } else if(uda.edge.equals(right)) {
+                        NoteBounce.accelerate(NoteBounce.ImpulseType.left);
+                    }
+                } else if(uda.modifier.equals(dampener)) {
+                    if(uda.edge.equals(top)) {
+                        NoteBounce.dampen(NoteBounce.ImpulseType.up);
+                    } else if(uda.edge.equals(bot)) {
+                        NoteBounce.dampen(NoteBounce.ImpulseType.down);
+                    } else if(uda.edge.equals(left)) {
+                        NoteBounce.dampen(NoteBounce.ImpulseType.left);
+                    } else if(uda.edge.equals(right)) {
+                        NoteBounce.dampen(NoteBounce.ImpulseType.right);
+                    }
                 }
             }
         }
@@ -136,9 +165,9 @@ public class CollisionDetection implements ContactListener {
 
         // BALL: ========================================================================================
 
-        if(udb.type.equals(UserData.Type.ball)) {
+        if(udb.type.equals(ball) || uda.type.equals(ball)) {
             // If the ball hits a goal.
-            if(uda.type.equals(UserData.Type.goal)) {
+            if(uda.type.equals(goal) || udb.type.equals(goal)) {
                 NoteBounce.goalHit = true;
                 NoteBounce.playGoalNoise();
             }
@@ -148,7 +177,7 @@ public class CollisionDetection implements ContactListener {
 
                 int notenum = 0;
 
-                if(uda.type.equals(UserData.Type.box)) {
+                if(uda.type.equals(box)) {
                     switch(uda.color) {
                         case blue: {
                             notenum = 1;
@@ -165,10 +194,10 @@ public class CollisionDetection implements ContactListener {
                     }
                 }
 
-                if(uda.type.equals(UserData.Type.box) || uda.type.equals(UserData.Type.triangle) ||
-                    uda.type.equals(UserData.Type.boundary)) {
+                if(uda.type.equals(box) || uda.type.equals(triangle) ||
+                    uda.type.equals(boundary)) {
                     if(NoteBounce.gravityDirection.equals("Down") || NoteBounce.gravityDirection.equals("Up")) {
-                        if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
+                        if(uda.edge.equals(bot) || uda.edge.equals(top)) {
                             if(thresholdVelocityY(fb, 3.2f)) {
                                 NoteBounce.playNote(notenum);
                             }
@@ -177,7 +206,7 @@ public class CollisionDetection implements ContactListener {
                         }
                     } else if(NoteBounce.gravityDirection.equals("Left") ||
                         NoteBounce.gravityDirection.equals("Right")) {
-                        if(uda.edge.equals(UserData.Edge.bot) || uda.edge.equals(UserData.Edge.top)) {
+                        if(uda.edge.equals(bot) || uda.edge.equals(top)) {
                             if(thresholdVelocityX(fb, 3.2f)) {
                                 NoteBounce.playNote(notenum);
                             }
@@ -187,23 +216,23 @@ public class CollisionDetection implements ContactListener {
                     }
                 }
 
-                if(uda.type.equals(UserData.Type.box)) {
-                    if(uda.modifier.equals(UserData.ModifierType.gravity)) {
-                        if(uda.edge.equals(UserData.Edge.bot)) {
-                            NoteBounce.world.setGravity(new Vector2(0, NoteBounce.gravity));
-                        } else if(uda.edge.equals(UserData.Edge.top)) {
-                            NoteBounce.world.setGravity(new Vector2(0, -NoteBounce.gravity));
-                        } else if(uda.edge.equals(UserData.Edge.left)) {
-                            NoteBounce.world.setGravity(new Vector2(NoteBounce.gravity, 0));
-                        } else if(uda.edge.equals(UserData.Edge.right)) {
-                            NoteBounce.world.setGravity(new Vector2(-NoteBounce.gravity,0));
+                if(uda.type.equals(modifier)) {
+                    if(uda.modifier.equals(gravity)) {
+                        if(uda.edge.equals(top)) {
+                            NoteBounce.world.setGravity(new Vector2(0.0f, NoteBounce.gravity));
+                        } else if(uda.edge.equals(bot)) {
+                            NoteBounce.world.setGravity(new Vector2(0.0f, - NoteBounce.gravity));
+                        } else if(uda.edge.equals(left)) {
+                            NoteBounce.world.setGravity(new Vector2(NoteBounce.gravity, 0.0f));
+                        } else if(uda.edge.equals(right)) {
+                            NoteBounce.world.setGravity(new Vector2(- NoteBounce.gravity, 0.0f));
                         }
                     }
                 }
             }
 
             // If the ball hits a gun
-            if(uda.type.equals(UserData.Type.gun)) {
+            if(uda.type.equals(gun)) {
                 // If the hit gun is not the current gun
                 if(uda.id != NoteBounce.currentGun) {
                     NoteBounce.currentGun = uda.id; // Then set the current gun to the hit gun
@@ -216,7 +245,7 @@ public class CollisionDetection implements ContactListener {
 
             // If the ball hits a doorswitch
             // TODO fix playing notes on door collision (??? perhaps do not play notes ???)
-            if(uda.type.equals(UserData.Type.doorswitch)) {
+            if(uda.type.equals(doorswitch)) {
                 DoorSwitch s = NoteBounce.switches.get(uda.id);
                 // Only switch if the door switch is active (has not been hit before)
                 if(s.active) {
@@ -228,136 +257,16 @@ public class CollisionDetection implements ContactListener {
                 }
             }
         }
-
         //===============================================================================================
-
-        // If notes are allowed to be played at this time then we handle all of the
-        // collisions involved with a note block.
-       /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
-            // TODO reimplement collision detection for each object
-            // Boundary ModifierType collision
-            if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
-                fa.getUserData().equals("left") || fa.getUserData().equals("right"))
-            {
-                if(velocityThresholdX(fb, 1.0f) && velocityThresholdY(fb, 2.0f)) {
-                    if(boundaryFlip) NoteBounce.playNote(1);
-                    else NoteBounce.playNote(6);
-                    boundaryFlip = ! boundaryFlip;
-                    timeSinceLastBoundNote = 0.0f;
-                    NoteBounce.playRipple(fb);
-                }
-            }
-
-            // Blue note block collision
-            if(fa.getUserData().equals("blue") && timeSinceLastBlueNote > lastNoteTime) {
-                if (notePtr == NoteBounce.notesLength() - 1) notePtr = 0;
-                else notePtr++;
-                NoteBounce.playNote(notePtr);
-                timeSinceLastBlueNote = 0.0f;
-            }
-
-            // Green note block collision
-            if(fa.getUserData().equals("green") && timeSinceLastGreenNote > lastNoteTime) {
-                if (notePtr == 0) notePtr = NoteBounce.notesLength() - 1;
-                else notePtr--;
-                NoteBounce.playNote(notePtr);
-                timeSinceLastGreenNote = 0.0f;
-            }
-
-            // Yellow note block collision
-            if(fa.getUserData().equals("red") && timeSinceLastYellowNote > lastNoteTime) {
-                if (yellowFlip) {
-                    yellowFlip = false;
-                    notePtr += 4;
-                    if (notePtr > NoteBounce.notesLength() - 1) {
-                        int i = notePtr - (NoteBounce.notesLength() - 1);
-                        notePtr = 0;
-                        notePtr += i;
-                    }
-                    NoteBounce.playNote(notePtr);
-                } else {
-                    yellowFlip = true;
-                    notePtr -= 4;
-                    if (notePtr < 0) {
-                        notePtr = Math.abs(notePtr);
-                    }
-                    NoteBounce.playNote(notePtr);
-                }
-                timeSinceLastYellowNote = 0.0f;
-            }
-
-            if(fa.getUserData().equals("topyellow") && timeSinceLastBoundNote > lastNoteTime) {
-                if (yellowFlip) {
-                    yellowFlip = false;
-                    notePtr += 4;
-                    if (notePtr > NoteBounce.notesLength() - 1) {
-                        int i = notePtr - (NoteBounce.notesLength() - 1);
-                        notePtr = 0;
-                        notePtr += i;
-                    }
-                    NoteBounce.playNote(notePtr);
-                } else {
-                    yellowFlip = true;
-                    notePtr -= 4;
-                    if (notePtr < 0) {
-                        notePtr = Math.abs(notePtr);
-                    }
-                    NoteBounce.playNote(notePtr);
-                }
-                timeSinceLastYellowNote = 0.0f;
-                NoteBounce.accelerate();
-            }
-
-            // Cyan note block collision
-            if(fa.getUserData().equals("cyan") && timeSinceLastCyanNote > lastNoteTime) {
-                if(cyanFlip) {
-                    // C Major
-                    NoteBounce.playNote(0);
-                    NoteBounce.playNote(2);
-                    NoteBounce.playNote(6);
-                    cyanFlip = !cyanFlip;
-                } else {
-                    // A minor 2nd inv.
-                    NoteBounce.playNote(2);
-                    NoteBounce.playNote(5);
-                    NoteBounce.playNote(7);
-                    cyanFlip = !cyanFlip;
-                }
-                timeSinceLastCyanNote = 0.0f;
-            }
-
-            // Magenta note block collision
-            if(fa.getUserData().equals("magenta") && timeSinceLastMagentaNote > lastNoteTime) {
-                if(cyanFlip) {
-                    // D minor
-                    NoteBounce.playNote(2);
-                    NoteBounce.playNote(4);
-                    NoteBounce.playNote(6);
-                    magentaFlip = !magentaFlip;
-                } else {
-                    // G Major 2nd. inv
-                    NoteBounce.playNote(1);
-                    NoteBounce.playNote(4);
-                    NoteBounce.playNote(6);
-                    magentaFlip = !magentaFlip;
-                }
-                timeSinceLastMagentaNote = 0.0f;
-            }
-
-            if(fa.getUserData().equals("gravityUp")) {
-                NoteBounce.getWorld().setGravity(new Vector2(0, -NoteBounce.gravity));
-            }
-            if(fa.getUserData().equals("gravityDown")) {
-                NoteBounce.getWorld().setGravity(new Vector2(0, NoteBounce.gravity));
-            }
-            if(fa.getUserData().equals("gravityLeft")) {
-                NoteBounce.getWorld().setGravity(new Vector2(-NoteBounce.gravity, 0));
-            }
-            if(fa.getUserData().equals("gravityRight")) {
-                NoteBounce.getWorld().setGravity(new Vector2(NoteBounce.gravity, 0));
-            }
-        }*/
     }
+
+    /* CHORDS:
+       CM = 0,2,6
+       Am 2nd inv. = 2,5,7
+       Dm =  2,4,6
+       GM 2nd inv. = 1,4,6
+
+     */
 
     public void endContact(Contact c) {
 

@@ -11,6 +11,8 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 
+import org.omg.CORBA.NO_IMPLEMENT;
+
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
 /**
@@ -23,7 +25,6 @@ public class Goal {
     Sprite sprite;
     Body body;
     Vector2 center = new Vector2(0,0);
-    UserData userData = new UserData(UserData.Type.goal);
     float scale;
 
     Goal(Vector2 v, float scale) {
@@ -42,14 +43,17 @@ public class Goal {
 
         body = NoteBounce.world.createBody(bodyDef);
 
+        //PolygonShape shape = new PolygonShape();
+        //shape.setAsBox((sprite.getWidth() / 2) / NoteBounce.PIXELS2METERS, (sprite.getHeight() / 2) / NoteBounce.PIXELS2METERS);
+        CircleShape shape = new CircleShape();
+        shape.setRadius(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS);
         FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
 
-        CircleShape shape = new CircleShape();
-        shape.setRadius(((sprite.getWidth() * scale) / 4) / NoteBounce.PIXELS2METERS);
-        fixtureDef.shape = shape;
-        body.createFixture(fixtureDef).setUserData(userData);
+        body.createFixture(fixtureDef).setUserData(new UserData(UserData.Type.goal));
+
         shape.dispose();
     }
 

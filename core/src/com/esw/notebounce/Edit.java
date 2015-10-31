@@ -450,13 +450,13 @@ public class Edit {
                     Modifier m = NoteBounce.modifiers.get(i);
                     Vector2 v = new Vector2(0,0);
                     float pad = (m.sprite.getWidth() / 2) * m.scale;
-                    if(m.userData.edge == UserData.Edge.top) {
+                    if(m.edge == UserData.Edge.top) {
                         v = new Vector2(m.center.x, m.center.y + pad);
-                    } else if(m.userData.edge == UserData.Edge.bot) {
+                    } else if(m.edge == UserData.Edge.bot) {
                         v = new Vector2(m.center.x, m.center.y - pad);
-                    } else if(m.userData.edge == UserData.Edge.left) {
+                    } else if(m.edge == UserData.Edge.left) {
                         v = new Vector2(m.center.x - pad, m.center.y);
-                    } else if(m.userData.edge == UserData.Edge.right) {
+                    } else if(m.edge == UserData.Edge.right) {
                         v = new Vector2(m.center.x + pad, m.center.y);
                     }
                     if(Utility.isInsideCircle(click, v, (m.sprite.getWidth() * m.scale) / 8)) {

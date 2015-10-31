@@ -20,14 +20,14 @@ public class Modifier {
     Vector2 center = new Vector2(0,0);
     Sprite sprite;
     Body body;
-    UserData userData = new UserData(UserData.Type.modifier);
     float scale;
+    UserData.ModifierType modifier;
+    UserData.Edge edge;
 
     public Modifier(Vector2 v, float scale, UserData.ModifierType modifier, UserData.Edge edge) {
         this.scale = scale;
-
-        userData.edge = edge;
-        userData.modifier = modifier;
+        this.modifier = modifier;
+        this.edge = edge;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
         sprite.setPosition(v.x, v.y);
@@ -35,10 +35,10 @@ public class Modifier {
         center.x = sprite.getX() + ((sprite.getWidth() / 2) * scale);
         center.y = sprite.getY() + ((sprite.getHeight() / 2) * scale);
 
-        setFixture(edge);
+        setFixture(edge, modifier);
     }
 
-    private void setFixture(UserData.Edge edge) {
+    private void setFixture(UserData.Edge edge, UserData.ModifierType modifier) {
 
         if(body != null) {
             NoteBounce.world.destroyBody(body);
@@ -58,7 +58,12 @@ public class Modifier {
         float base = (sprite.getHeight() / 100);
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/edges.json"));
-        bodyEditorLoader.attachFixture(body, edge.name(), fixtureDef, base * scale, userData, edge);
+        UserData edgedata = new UserData(UserData.Type.modifier);
+        edgedata.modifier = UserData.ModifierType.none;
+        bodyEditorLoader.attachFixture(body, edge.name(), fixtureDef, base * scale, edgedata, edge);
+        UserData modifierData = new UserData(UserData.Type.modifier);
+        modifierData.modifier = modifier;
+        bodyEditorLoader.attachFixture(body, edge.name() + "active", fixtureDef, base * scale, modifierData, edge);
     }
 
     public void setPos(Vector2 v) {
@@ -69,28 +74,28 @@ public class Modifier {
     }
 
     public void setModifier(UserData.ModifierType modifier) {
-        userData.modifier = modifier;
+        this.modifier = modifier;
         Vector2 v = new Vector2(0,0);
         if(sprite != null) {
             v = new Vector2(sprite.getX(), sprite.getY());
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + userData.edge + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }
 
     public void setEdge(UserData.Edge edge) {
-        userData.edge = edge;
-        setFixture(edge);
+        this.edge = edge;
+        setFixture(edge, modifier);
         Vector2 v = new Vector2(0,0);
         if(sprite != null) {
             v = new Vector2(sprite.getX(), sprite.getY());
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + userData.modifier + edge + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }
