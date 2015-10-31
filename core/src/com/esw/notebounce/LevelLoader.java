@@ -7,8 +7,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
-import javax.swing.JOptionPane;
-
 /**
  * Created by Alex on 9/21/2015.
  * Copyright echsoftworks 2015
@@ -80,13 +78,12 @@ public class LevelLoader {
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
-            UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
             boolean g = jv.getBoolean("gravity");
             String[] strings = new String[4];
             for(int i = 0; i < strings.length; i++) {
                 strings[i] = jv.getString("m" + i);
             }
-            Box b = new Box(v, NoteBounce.scalePercent, color, shade, g, strings);
+            Box b = new Box(v, NoteBounce.scalePercent, color);
             NoteBounce.boxes.add(b);
         }
         //===============================================================================================
@@ -96,14 +93,13 @@ public class LevelLoader {
             Vector2 v = new Vector2(0, 0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
-            UserData.Triangle triangle = UserData.Triangle.valueOf(jv.getString("triangle"));
+            UserData.TriangleType triangle = UserData.TriangleType.valueOf(jv.getString("triangle"));
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
-            UserData.Shade shade = UserData.Shade.valueOf(jv.getString("shade"));
             String[] strings = new String[4];
             for(int i = 0; i < strings.length; i++) {
                 strings[i] = jv.getString("m" + i);
             }
-            Triangle o = new Triangle(v, triangle, NoteBounce.scalePercent, color, shade, strings);
+            Triangle o = new Triangle(v, NoteBounce.scalePercent, triangle, color);
             NoteBounce.triangles.add(o);
         }
         //===============================================================================================
@@ -194,12 +190,14 @@ public class LevelLoader {
         levelPtr = 0;
     }
 
+    // TODO not quite working yet.
     public static void newLevel() {
         unloadLevel();
         saveLevel("level" + levelPtr);
-        String name = "level" + (++levelPtr);
+        levelPtr = levels.size - 1;
+        String name = "level" + (levelPtr);
         levels.add(new Level(Gdx.files.internal("levels/" + name + ".json")));
-        saveLevel("level" + levelPtr);
+        saveLevel(name);
         loadLevel(levelPtr);
     }
 
@@ -216,7 +214,7 @@ public class LevelLoader {
         for(int i = 0; i < NoteBounce.boxes.size; i++) {
             Box o = NoteBounce.boxes.get(i);
             if(o != null) {
-                string += o.toString();
+                string += o.toJson();
                 if(i != NoteBounce.boxes.size - 1) string += ",\n";
                 else string += "\n";
             }
@@ -228,7 +226,7 @@ public class LevelLoader {
         for(int i = 0; i < NoteBounce.triangles.size; i++) {
             Triangle o = NoteBounce.triangles.get(i);
             if(o != null) {
-                string += o.toString();
+                string += o.toJson();
                 if(i != NoteBounce.triangles.size - 1) string += ",\n";
                 else string += "\n";
             }

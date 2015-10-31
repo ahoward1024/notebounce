@@ -172,10 +172,10 @@ class Inputs {
      * Grab all of the mouse inputs, then grab all of the inputs from the keys that are needed
      * to edit levels.
      */
-    public static void getEditInputs() {
+    public static void getEditInputs() { // TODO BETTER EDIT CONTROLS
         getMouseInputs();
 
-        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // Triangle
+        t = Gdx.input.isKeyJustPressed(Input.Keys.T); // TriangleType
         b = Gdx.input.isKeyJustPressed(Input.Keys.B); // Box1
         g = Gdx.input.isKeyJustPressed(Input.Keys.G); // Gun/Ball
         v = Gdx.input.isKeyJustPressed(Input.Keys.V); // Goal
@@ -187,10 +187,10 @@ class Inputs {
         o = Gdx.input.isKeyJustPressed(Input.Keys.O); // Cyan
         p = Gdx.input.isKeyJustPressed(Input.Keys.P); // Magenta
 
-        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // Triangle BotLeft
-        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // Triangle TopLeft
-        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // Triangle BotRight
-        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // Triangle BotRight
+        q = Gdx.input.isKeyJustPressed(Input.Keys.Q); // TriangleType botleft
+        w = Gdx.input.isKeyJustPressed(Input.Keys.W); // TriangleType topleft
+        e = Gdx.input.isKeyJustPressed(Input.Keys.E); // TriangleType botright
+        r = Gdx.input.isKeyJustPressed(Input.Keys.R); // TriangleType botright
 
         a = Gdx.input.isKeyJustPressed(Input.Keys.A); // Acceleration modifier
         s = Gdx.input.isKeyJustPressed(Input.Keys.S); // Gravity modifier
@@ -206,10 +206,10 @@ class Inputs {
 
         n = Gdx.input.isKeyJustPressed(Input.Keys.N); // With lctrl for new level
 
-        up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // Modifier up
-        down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // Modifier down
-        left  = Gdx.input.isKeyJustPressed(Input.Keys.LEFT); // Modifier left
-        right = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT); // Modifier right
+        up    = Gdx.input.isKeyJustPressed(Input.Keys.UP); // ModifierType up
+        down  = Gdx.input.isKeyJustPressed(Input.Keys.DOWN); // ModifierType down
+        left  = Gdx.input.isKeyJustPressed(Input.Keys.LEFT); // ModifierType left
+        right = Gdx.input.isKeyJustPressed(Input.Keys.RIGHT); // ModifierType right
 
         one   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Shade 0
         two   = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2); // Shade 1

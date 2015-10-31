@@ -1,9 +1,6 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -15,9 +12,9 @@ public class Edit {
     public static Tool toolState = Tool.paint;
     public static UserData.Type typeState = UserData.Type.box;
     public static UserData.Color colorState = UserData.Color.blue;
-    public static UserData.Shade shadeState = UserData.Shade.zero;
-    public static UserData.Triangle triangleState = UserData.Triangle.BotLeft;
-    public static UserData.Modifier modifierState = UserData.Modifier.accelerator;
+    public static UserData.TriangleType triangleState = UserData.TriangleType.botleft;
+    public static UserData.ModifierType modifierState = UserData.ModifierType.accelerator;
+    public static UserData.Edge edgeState = UserData.Edge.top;
     public static Door.State doorState = Door.State.shut;
     public static Door.Plane doorPlane = Door.Plane.vertical;
     public static Grid grid = Grid.off;
@@ -32,19 +29,15 @@ public class Edit {
         on
     }
 
-    static Pixmap pencil;
-    static Pixmap eraser;
-
     static Box tmpbox = null;
-    static Goal tmpgoal = null;
     static Triangle tmptriangle = null;
+    static Modifier tmpmodifier = null;
+    static Goal tmpgoal = null;
     static Door tmpdoor = null;
     static DoorSwitch tmpswitch = null;
     static Mine tmpmine = null;
 
     static int startgun = -1;
-
-    static UserData.Modifier[] modifiers = UserData.createModifierArray();
 
     static boolean drawGrid = false;
 
@@ -58,6 +51,10 @@ public class Edit {
         if(tmptriangle != null) {
             NoteBounce.world.destroyBody(tmptriangle.body);
             tmptriangle = null;
+        }
+        if(tmpmodifier != null) {
+            NoteBounce.world.destroyBody(tmpmodifier.body);
+            tmpmodifier = null;
         }
         if(tmpgoal != null) {
             NoteBounce.world.destroyBody(tmpgoal.body);
@@ -75,7 +72,6 @@ public class Edit {
             NoteBounce.world.destroyBody(tmpmine.body);
             tmpmine = null;
         }
-        modifiers = UserData.createModifierArray();
     }
 
     public static void editLevel() {
@@ -102,7 +98,7 @@ public class Edit {
         else if(Inputs.b && !Inputs.lctrl) { // Box
             typeState = UserData.Type.box;
             destroyAll();
-        } else if(Inputs.t && !Inputs.lctrl) { // Triangle
+        } else if(Inputs.t && !Inputs.lctrl) { // TriangleType
             typeState = UserData.Type.triangle;
             destroyAll();
         } else if(Inputs.g && !Inputs.lctrl) { // Gun
@@ -116,6 +112,9 @@ public class Edit {
             destroyAll();
         } else if(Inputs.m && !Inputs.lctrl) { // Mine
             typeState = UserData.Type.mine;
+            destroyAll();
+        } else if(Inputs.n && !Inputs.ctrl) {
+            typeState = UserData.Type.modifier;
             destroyAll();
         } else if (Inputs.c && !Inputs.lctrl) { // Paint/Erase
             if(toolState == Tool.paint) {
@@ -132,113 +131,29 @@ public class Edit {
             switch(typeState) {
                 case box: {
 
-                    // Get all inputs to set the box's color
-                    if(Inputs.y) {
-                        colorState = UserData.Color.blue;
-                    } else if(Inputs.u) {
-                        colorState = UserData.Color.green;
-                    } else if(Inputs.i) {
-                        colorState = UserData.Color.cyan;
-                    } else if(Inputs.o) {
-                        colorState = UserData.Color.magenta;
-                    } else if(Inputs.p) {
-                        colorState = UserData.Color.yellow;
-                    }
-
-                    // Get all inputs to set the box's shade
-                    if(Inputs.one) {
-                        shadeState = UserData.Shade.zero;
-                    } else if(Inputs.two) {
-                        shadeState = UserData.Shade.one;
-                    } else if(Inputs.three) {
-                        shadeState = UserData.Shade.two;
-                    } else if(Inputs.four) {
-                        shadeState = UserData.Shade.three;
-                    } else if(Inputs.five) {
-                        shadeState = UserData.Shade.four;
-                    } else if(Inputs.six) {
-                        shadeState = UserData.Shade.five;
-                    } else if(Inputs.seven) {
-                        shadeState = UserData.Shade.six;
-                    } else if(Inputs.eight) {
-                        shadeState = UserData.Shade.seven;
-                    } else if(Inputs.nine) {
-                        shadeState = UserData.Shade.eight;
-                    }
-
                     // CREATE THE BOX
                     if(tmpbox == null) {
-                        tmpbox = new Box(Inputs.mouse, NoteBounce.scalePercent, colorState, shadeState);
+                        tmpbox = new Box(Inputs.mouse, NoteBounce.scalePercent, colorState);
                     }
 
-                    // Now we set the modifier attributes because the box (and userdata) is not null.
-                    // Get inputs to set box's modifierSprites
-                    if(Inputs.a) {
-                        modifierState = UserData.Modifier.accelerator;
-                    } else if(Inputs.s && !Inputs.lctrl) {
-                        modifierState = UserData.Modifier.gravity;
-                    } else if(Inputs.d) {
-                        modifierState = UserData.Modifier.dampener;
-                    }
-
-                    if(modifierState == UserData.Modifier.gravity) {
-                        tmpbox.gravity = true;
-                    } else {
-                        tmpbox.gravity = false;
-                    }
-
-                    int id = -1;
-                    String file = "";
-                    if(modifierState == UserData.Modifier.accelerator || modifierState == UserData.Modifier.gravity) {
-                        if(Inputs.up) {
-                            id = 0;
-                            file = "up";
-                        } else if(Inputs.down) {
-                            id = 1;
-                            file = "down";
-                        } else if(Inputs.left) {
-                            id = 2;
-                            file = "left";
-                        } else if(Inputs.right) {
-                            id = 3;
-                            file = "right";
-                        }
-                    } else if(modifierState == UserData.Modifier.dampener) {
-                        if(Inputs.up) {
-                            id = 0;
-                            file = "upX";
-                        } else if(Inputs.down) {
-                            id = 1;
-                            file = "downX";
-                        } else if(Inputs.left) {
-                            id = 2;
-                            file = "leftX";
-                        } else if(Inputs.right) {
-                            id = 3;
-                            file = "rightX";
-                        }
-                    }
-
-                    if(id != -1) {
-                        if(tmpbox.modifierSprites[id] == null) {
-                            tmpbox.modifierSprites[id] =
-                                    new Sprite(
-                                        new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-                            tmpbox.modifierStrings[id] = file;
-                        } else {
-                            tmpbox.modifierSprites[id] = null;
-                            tmpbox.modifierStrings[id] = "none";
-                        }
-
-                        if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
-                        else modifiers[id] = modifierState;
+                    if(Inputs.one) {
+                        colorState = UserData.Color.blue;
+                        tmpbox.setColor(colorState);
+                    } else if(Inputs.two) {
+                        colorState = UserData.Color.green;
+                        tmpbox.setColor(colorState);
+                    } else if(Inputs.three) {
+                        colorState = UserData.Color.red;
+                        tmpbox.setColor(colorState);
+                    } else if(Inputs.four) {
+                        colorState = UserData.Color.grey;
+                        tmpbox.setColor(colorState);
                     }
 
                     if(Gdx.input.justTouched()) {
                         NoteBounce.boxes.add(tmpbox);
                         tmpbox = null;
                         saved = false;
-                        modifiers = UserData.createModifierArray();
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -248,174 +163,49 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmpbox.update(v, colorState, shadeState, modifiers);
+                        tmpbox.setPos(v);
                     }
 
-                }
-                break;
+                } break;
                 case triangle: {
 
-                    if(Inputs.q) {
-                        triangleState = UserData.Triangle.TopLeft;
-                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
-                            tmptriangle.modifierSprites[i] = null;
-                        modifiers = UserData.createModifierArray();
-                    } else if(Inputs.w) {
-                        triangleState = UserData.Triangle.BotLeft;
-                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
-                            tmptriangle.modifierSprites[i] = null;
-                        modifiers = UserData.createModifierArray();
-                    } else if(Inputs.e) {
-                        triangleState = UserData.Triangle.BotRight;
-                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
-                            tmptriangle.modifierSprites[i] = null;
-                        modifiers = UserData.createModifierArray();
-                    } else if(Inputs.r) {
-                        triangleState = UserData.Triangle.TopRight;
-                        for(int i = 0; i < tmptriangle.modifierSprites.length; i++)
-                            tmptriangle.modifierSprites[i] = null;
-                        modifiers = UserData.createModifierArray();
-                    }
-
-                    if(Inputs.y) {
-                        colorState = UserData.Color.blue;
-                    } else if(Inputs.u) {
-                        colorState = UserData.Color.green;
-                    } else if(Inputs.i) {
-                        colorState = UserData.Color.cyan;
-                    } else if(Inputs.o) {
-                        colorState = UserData.Color.magenta;
-                    } else if(Inputs.p) {
-                        colorState = UserData.Color.yellow;
+                    // CREATE TRIANGLE
+                    if(tmptriangle == null) {
+                        tmptriangle = new Triangle(Inputs.mouse, NoteBounce.scalePercent, triangleState, colorState);
                     }
 
                     if(Inputs.one) {
-                        shadeState = UserData.Shade.zero;
+                        colorState = UserData.Color.blue;
+                        tmptriangle.setColor(colorState);
                     } else if(Inputs.two) {
-                        shadeState = UserData.Shade.one;
+                        colorState = UserData.Color.green;
+                        tmptriangle.setColor(colorState);
                     } else if(Inputs.three) {
-                        shadeState = UserData.Shade.two;
+                        colorState = UserData.Color.red;
+                        tmptriangle.setColor(colorState);
                     } else if(Inputs.four) {
-                        shadeState = UserData.Shade.three;
-                    } else if(Inputs.five) {
-                        shadeState = UserData.Shade.four;
-                    } else if(Inputs.six) {
-                        shadeState = UserData.Shade.five;
-                    } else if(Inputs.seven) {
-                        shadeState = UserData.Shade.six;
-                    } else if(Inputs.eight) {
-                        shadeState = UserData.Shade.seven;
-                    } else if(Inputs.nine) {
-                        shadeState = UserData.Shade.eight;
+                        colorState = UserData.Color.grey;
+                        tmptriangle.setColor(colorState);
                     }
 
-                    if(tmptriangle == null) {
-                        tmptriangle = new Triangle(triangleState, Inputs.mouse, NoteBounce.scalePercent,
-                                colorState, shadeState);
-                    }
-
-                    // Now we set the modifier attributes because the box (and userdata) is not null.
-                    // Get inputs to set box's modifierSprites
-                    if(Inputs.a) {
-                        modifierState = UserData.Modifier.accelerator;
-                    } else if(Inputs.d) {
-                        modifierState = UserData.Modifier.dampener;
-                    }
-
-                    int id = - 1;
-                    String file = "";
-                    if(modifierState == UserData.Modifier.accelerator) {
-                        if(triangleState == UserData.Triangle.BotLeft) {
-                            if(Inputs.down) {
-                                id = 1;
-                                file = "down";
-                            } else if(Inputs.left) {
-                                id = 2;
-                                file = "left";
-                            }
-                        } else if(triangleState == UserData.Triangle.TopLeft) {
-                            if(Inputs.up) {
-                                id = 0;
-                                file = "up";
-                            } else if(Inputs.left) {
-                                id = 2;
-                                file = "left";
-                            }
-                        } else if(triangleState == UserData.Triangle.BotRight) {
-                            if(Inputs.down) {
-                                id = 1;
-                                file = "down";
-                            } else if(Inputs.right) {
-                                id = 3;
-                                file = "right";
-                            }
-                        } else if(triangleState == UserData.Triangle.TopRight) {
-                            if(Inputs.up) {
-                                id = 0;
-                                file = "up";
-                            } else if(Inputs.right) {
-                                id = 3;
-                                file = "right";
-                            }
-                        }
-
-                    } else if(modifierState == UserData.Modifier.dampener) {
-                        if(triangleState == UserData.Triangle.BotLeft) {
-                            if(Inputs.down) {
-                                id = 1;
-                                file = "downX";
-                            } else if(Inputs.left) {
-                                id = 2;
-                                file = "leftX";
-                            }
-                        } else if(triangleState == UserData.Triangle.TopLeft) {
-                            if(Inputs.up) {
-                                id = 0;
-                                file = "upX";
-                            } else if(Inputs.left) {
-                                id = 2;
-                                file = "leftX";
-                            }
-                        } else if(triangleState == UserData.Triangle.BotRight) {
-                            if(Inputs.down) {
-                                id = 1;
-                                file = "downX";
-                            } else if(Inputs.right) {
-                                id = 3;
-                                file = "rightX";
-                            }
-                        } else if(triangleState == UserData.Triangle.TopRight) {
-                            if(Inputs.up) {
-                                id = 0;
-                                file = "upX";
-                            } else if(Inputs.right) {
-                                id = 3;
-                                file = "rightX";
-                            }
-                        }
-
-                    }
-
-                    if(id != -1) {
-                        if(tmptriangle.modifierSprites[id] == null) {
-                            tmptriangle.modifierSprites[id] =
-                                    new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + file + ".png")));
-                            tmptriangle.modifierStrings[id] = file;
-                        } else {
-                            tmptriangle.modifierSprites[id] = null;
-                            tmptriangle.modifierStrings[id] = "none";
-                        }
-
-                        if(modifiers[id] == modifierState) modifiers[id] = UserData.Modifier.none;
-                        else modifiers[id] = modifierState;
+                    if(Inputs.q) {
+                        triangleState = UserData.TriangleType.topleft;
+                        tmptriangle.setTriangle(triangleState);
+                    } else if(Inputs.w) {
+                        triangleState = UserData.TriangleType.botleft;
+                        tmptriangle.setTriangle(triangleState);
+                    } else if(Inputs.e) {
+                        triangleState = UserData.TriangleType.botright;
+                        tmptriangle.setTriangle(triangleState);
+                    } else if(Inputs.r) {
+                        triangleState = UserData.TriangleType.topright;
+                        tmptriangle.setTriangle(triangleState);
                     }
 
                     if(Gdx.input.justTouched()) {
-                        tmptriangle.sprite.setAlpha(1.0f);
                         NoteBounce.triangles.add(tmptriangle);
                         tmptriangle = null;
                         saved = false;
-                        modifiers = UserData.createModifierArray();
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -425,16 +215,69 @@ public class Edit {
                             v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
                             v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
                         }
-                        tmptriangle.update(v, NoteBounce.scalePercent, triangleState, colorState, shadeState, modifiers);
+                        tmptriangle.setPos(v);
                     }
-                }
-                break;
+                } break;
+                case modifier: {
+                    if(tmpmodifier == null) {
+                        tmpmodifier = new Modifier(Inputs.mouse, NoteBounce.scalePercent, modifierState, edgeState);
+                    }
+
+                    if(Inputs.one) {
+                        modifierState = UserData.ModifierType.accelerator;
+                        tmpmodifier.setModifier(modifierState);
+                    } else if(Inputs.two) {
+                        modifierState = UserData.ModifierType.dampener;
+                        tmpmodifier.setModifier(modifierState);
+                    } else if(Inputs.three) {
+                        modifierState = UserData.ModifierType.gravity;
+                        tmpmodifier.setModifier(modifierState);
+                    }
+
+                    if(Inputs.w) {
+                        edgeState = UserData.Edge.top;
+                        tmpmodifier.setEdge(edgeState);
+                    } else if(Inputs.a) {
+                        edgeState = UserData.Edge.left;
+                        tmpmodifier.setEdge(edgeState);
+                    } else if(Inputs.s) {
+                        edgeState = UserData.Edge.bot;
+                        tmpmodifier.setEdge(edgeState);
+                    } else if(Inputs.d) {
+                        edgeState = UserData.Edge.right;
+                        tmpmodifier.setEdge(edgeState);
+                    }
+
+                    if(Gdx.input.justTouched()) {
+                        NoteBounce.modifiers.add(tmpmodifier);
+                        tmpmodifier = null;
+                        saved = false;
+                    } else {
+                        Vector2 v = new Vector2(0, 0);
+                        if(Inputs.lshift) {
+                            v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.midlines) * NoteBounce.midlines;
+                            v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.midlines) * NoteBounce.midlines;
+                        } else {
+                            v.x = (float) Math.floor(Inputs.mouse.x / NoteBounce.lines) * NoteBounce.lines;
+                            v.y = (float) Math.floor(Inputs.mouse.y / NoteBounce.lines) * NoteBounce.lines;
+                        }
+                        tmpmodifier.setPos(v);
+                    }
+                } break;
                 case goal: {
 
                     // Create a temporary goal if there is not already one
                     // Otherwise we update the temporary
                     if(tmpgoal == null) {
                         tmpgoal = new Goal(Inputs.mouse, NoteBounce.scalePercent);
+                    }
+
+                    // Set the temporary goal's alpha to 1 and put it into the goals array
+                    // to become permanent. Set the temp back to null.
+                    if(Gdx.input.justTouched()) {
+                        NoteBounce.goals.add(tmpgoal);
+                        tmpgoal = null;
+                        saved = false;
                     } else {
                         Vector2 v = new Vector2(0, 0);
                         if(Inputs.lshift) {
@@ -446,16 +289,7 @@ public class Edit {
                         }
                         tmpgoal.setPos(v);
                     }
-
-                    // Set the temporary goal's alpha to 1 and put it into the goals array
-                    // to become permanent. Set the temp back to null.
-                    if(Gdx.input.justTouched()) {
-                        tmpgoal.sprite.setAlpha(1.0f);
-                        NoteBounce.goals.add(tmpgoal);
-                        tmpgoal = null;
-                        saved = false;
-                    }
-                }
+                } break;
                 case gun: {
 
                     // Use the numberkey pad to select where a gun should be placed/destroyed
@@ -510,16 +344,11 @@ public class Edit {
 
                     // Set the door to an open or shut state
                     if(Inputs.comma) {
-                        doorState = Door.State.shut;
+                        if(doorState == Door.State.shut) doorState = Door.State.open;
+                        else doorState = Door.State.shut;
                     } else if(Inputs.period) {
-                        doorState = Door.State.open;
-                    }
-
-                    // Set the door to horizontal or vertical
-                    if(Inputs.semicolon) {
-                        doorPlane = Door.Plane.vertical;
-                    } else if(Inputs.singlequote) {
-                        doorPlane = Door.Plane.horizontal;
+                        if(doorPlane == Door.Plane.horizontal) doorPlane = Door.Plane.vertical;
+                        else doorPlane = Door.Plane.horizontal;
                     }
 
                     // Create a temporary door if there is not already one. Otherwise update the
@@ -539,7 +368,6 @@ public class Edit {
                     // and add it to the permanent door array. Then set the temp door back to null.
                     // Then we must set a switch for the door.
                     if(Gdx.input.justTouched()) {
-                        tmpdoor.sprite.setAlpha(1.0f);
                         NoteBounce.doors.add(tmpdoor);
                         tmpdoor = null;
                         typeState = UserData.Type.doorswitch;
@@ -564,7 +392,6 @@ public class Edit {
                     // switch's alpha and make it permanent. Then set the temp switch to null.
                     // Finally we go back to placing doors.
                     if(Gdx.input.justTouched()) {
-                        tmpswitch.sprite.setAlpha(1.0f);
                         NoteBounce.switches.add(tmpswitch);
                         tmpswitch = null;
                         typeState = UserData.Type.door;
@@ -581,7 +408,6 @@ public class Edit {
                     }
 
                     if(Gdx.input.justTouched()) {
-                        tmpmine.sprite.setAlpha(1.0f);
                         NoteBounce.mines.add(tmpmine);
                         tmpmine = null;
                         saved = false;
@@ -591,19 +417,51 @@ public class Edit {
         } else if(toolState == Tool.erase) { // Erasing
             if(Inputs.mouseleft) {
                 Vector2 click = new Vector2(Inputs.mouse);
+
                 for(int i = 0; i < NoteBounce.boxes.size; i++) {
-                    if(Utility.isInsideCircle(click, NoteBounce.boxes.get(i).center,
-                            NoteBounce.boxes.get(i).sprite.getWidth() / 3)) {
-                        NoteBounce.world.destroyBody(NoteBounce.boxes.get(i).body);
+                    Box b = NoteBounce.boxes.get(i);
+
+                    if(Utility.isInsideCircle(click, b.center, (b.sprite.getWidth() * b.scale) / 3)) {
+                        NoteBounce.world.destroyBody(b.body);
                         NoteBounce.boxes.removeIndex(i);
                         saved = false;
                     }
                 }
                 for(int i = 0; i < NoteBounce.triangles.size; i++) {
-                    if(Utility.isInsideCircle(click, NoteBounce.triangles.get(i).center,
-                            NoteBounce.triangles.get(i).sprite.getWidth() / 3)) {
-                        NoteBounce.world.destroyBody(NoteBounce.triangles.get(i).body);
+                    Vector2 v = new Vector2(0,0);
+                    Triangle t = NoteBounce.triangles.get(i);
+                    float pad = (t.sprite.getWidth() / 4) * t.scale;
+                    if(t.triangle == UserData.TriangleType.botleft) {
+                        v = new Vector2(t.center.x - pad, t.center.y - pad);
+                    } else if(t.triangle == UserData.TriangleType.botright) {
+                        v = new Vector2(t.center.x + pad, t.center.y - pad);
+                    } else if(t.triangle == UserData.TriangleType.topleft) {
+                        v = new Vector2(t.center.x - pad, t.center.y + pad);
+                    } else if(t.triangle == UserData.TriangleType.topright) {
+                        v = new Vector2(t.center.x + pad, t.center.y + pad);
+                    }
+                    if(Utility.isInsideCircle(click, v, (t.sprite.getWidth() * t.scale) / 4)) {
+                        NoteBounce.world.destroyBody(t.body);
                         NoteBounce.triangles.removeIndex(i);
+                        saved = false;
+                    }
+                }
+                for(int i = 0; i < NoteBounce.modifiers.size; i++) {
+                    Modifier m = NoteBounce.modifiers.get(i);
+                    Vector2 v = new Vector2(0,0);
+                    float pad = (m.sprite.getWidth() / 2) * m.scale;
+                    if(m.userData.edge == UserData.Edge.top) {
+                        v = new Vector2(m.center.x, m.center.y + pad);
+                    } else if(m.userData.edge == UserData.Edge.bot) {
+                        v = new Vector2(m.center.x, m.center.y - pad);
+                    } else if(m.userData.edge == UserData.Edge.left) {
+                        v = new Vector2(m.center.x - pad, m.center.y);
+                    } else if(m.userData.edge == UserData.Edge.right) {
+                        v = new Vector2(m.center.x + pad, m.center.y);
+                    }
+                    if(Utility.isInsideCircle(click, v, (m.sprite.getWidth() * m.scale) / 8)) {
+                        NoteBounce.world.destroyBody(m.body);
+                        NoteBounce.modifiers.removeIndex(i);
                         saved = false;
                     }
                 }

@@ -7,13 +7,12 @@ package com.esw.notebounce;
 @SuppressWarnings("unused")
 public class UserData {
 
-    Type type;
-    Triangle triangle = Triangle.none;
-    Color color = Color.none;
-    Shade shade = Shade.none;
-    public Edge edge = Edge.none; // Public so BodyEditorLoader can set it
-    public Modifier modifier = Modifier.none;
-    public int id = -1; // ID number for guns
+    public Type type;
+    public TriangleType triangle = TriangleType.none;
+    public ModifierType modifier = ModifierType.none;
+    public Color color = Color.none;
+    public Edge edge = Edge.none;
+    public int id = -1;
 
     public enum Type {
         boundary,
@@ -25,15 +24,24 @@ public class UserData {
         gun,
         door,
         doorswitch,
-        mine
+        mine,
+        modifier,
     }
 
     // These are capitalized to follow the file naming convention for each of the .pngs
-    public enum Triangle {
-        BotLeft,
-        TopLeft,
-        BotRight,
-        TopRight,
+    public enum TriangleType {
+        botleft,
+        topleft,
+        botright,
+        topright,
+
+        none
+    }
+
+    public enum ModifierType {
+        accelerator,
+        dampener,
+        gravity,
 
         none
     }
@@ -41,24 +49,8 @@ public class UserData {
     public enum Color {
         blue,
         green,
-        cyan,
-        magenta,
-        yellow,
-        goal,
-
-        none
-    }
-
-    public enum Shade {
-        zero,
-        one,
-        two,
-        three,
-        four,
-        five,
-        six,
-        seven,
-        eight,
+        red,
+        grey,
 
         none
     }
@@ -73,14 +65,6 @@ public class UserData {
         none
     }
 
-    public enum Modifier {
-        accelerator,
-        dampener,
-        gravity,
-
-        none
-    }
-
     UserData(Type type) {
         this.type = type;
     }
@@ -88,29 +72,20 @@ public class UserData {
     public UserData(UserData userData) {
         this.type = userData.type;
         this.triangle = userData.triangle;
-        this.color = userData.color;
-        this.shade = userData.shade;
         this.modifier = userData.modifier;
+        this.color = userData.color;
+        this.edge = userData.edge;
         this.id = userData.id;
-    }
-
-    public static Modifier[] createModifierArray() {
-        Modifier[] modifiers = new Modifier[4];
-        modifiers[0] = Modifier.none;
-        modifiers[1] = Modifier.none;
-        modifiers[2] = Modifier.none;
-        modifiers[3] = Modifier.none;
-        return modifiers;
     }
 
     @Override
     public String toString() {
-        String output = "Type:[" + type + "] |";
-        if(triangle != Triangle.none) output += " Triangle:[" + triangle + "] |";
-        if(color != Color.none) output += " Color:[" + color + "] |";
-        if(shade != Shade.none) output += " Shade:[" + shade.ordinal() + "] |";
-        if(edge != Edge.none) output += " Edge:[" + edge + "]";
-        if(type == Type.triangle || type == Type.box) output += " Modifier:[" + modifier + "]";
-        return output;
+        String s = "Type:[" + type + "]";
+        if(triangle != TriangleType.none) s += " | TriangleType:[" + triangle + "]";
+        if(modifier != ModifierType.none) s += " | ModifierType:[" + modifier + "]";
+        if(color != Color.none)           s += " | Color:[" + color + "]";
+        if(edge != Edge.none)             s += " | Edge:[" + edge + "]";
+        if(id != -1)                      s += " | id:[" + id + "]";
+        return s;
     }
 }

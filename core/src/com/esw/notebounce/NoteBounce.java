@@ -7,7 +7,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -109,6 +108,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	static Array<Box> boxes = new Array<Box>();
 	static Array<Triangle> triangles = new Array<Triangle>();
+	static Array<Modifier> modifiers = new Array<Modifier>();
 	static Array<Goal> goals = new Array<Goal>();
 	static Array<Door> doors = new Array<Door>();
 	static Array<DoorSwitch> switches = new Array<DoorSwitch>();
@@ -222,9 +222,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		notePtr = 0;
 
 		crosshair = new Sprite(new Texture(Gdx.files.internal("art/crosshair.png")));
-
-		Edit.pencil = new Pixmap(Gdx.files.internal("art/pencil.png"));
-		Edit.eraser = new Pixmap(Gdx.files.internal("art/eraser.png"));
 
 		ballSimSprite = new Sprite(new Texture(Gdx.files.internal("art/simball.png")));
 		ballSimSprite.setScale(scalePercent);
@@ -381,12 +378,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			angle = (float) Math.atan2(mouseClick.y - Inputs.mouse.y,
 				mouseClick.x - Inputs.mouse.x);
 			angle *= (180 / Math.PI);
-			// Clamp the rotation around 360 degrees
-			//if(angle < 0) angle = 360 - (-angle); // OLD (but useful??)
-			// Only allow the gun to rotate between 0 and 90 degrees
-			//if(angle > 90) angle = 90;
-			//else if(angle < 0) angle = 0;
-			if(angle < 0) angle = 360 - (-angle);
+			// Translate the rotation around 360 degrees
+			if(angle < 0) angle = 360 + angle;
 
 			if(guns[currentGun] != null) guns[currentGun].rotate(angle); // Only set the rotation if the ball is not shot
 			else ball.body.setTransform(mouseClick.x / PIXELS2METERS, mouseClick.y / PIXELS2METERS, 0.0f); // DEBUG
@@ -438,6 +431,19 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		if(touch) simulate();
 
 		if(reset) reset();
+
+		if(didDampen) {
+			switch(dampenType) {
+				case left: {
+					ball.body.setTransform(ball.body.getPosition().x - (1 / NoteBounce.PIXELS2METERS), ball.body.getPosition().y, ball.body.getAngle());
+				} break;
+				case right: {
+					ball.body.setTransform(ball.body.getPosition().x + (1 / NoteBounce.PIXELS2METERS), ball.body.getPosition().y, ball.body.getAngle());
+				} break;
+			}
+			ball.setSpriteToBodyPosition();
+			didDampen = false;
+		}
 	}
 
 	void drawDottedLine(int dotDist, float x1, float y1, float x2, float y2) {
@@ -523,43 +529,31 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			else ballSimAlpha = 0.0f;
 		}
 
+		// Draw Boxes
 		if(Edit.tmpbox != null) {
 			Edit.tmpbox.sprite.draw(batch);
-			for(int i = 0; i < Edit.tmpbox.modifierSprites.length; i++) {
-				if(Edit.tmpbox.modifierSprites[i] != null) {
-					Edit.tmpbox.modifierSprites[i].draw(batch);
-				}
-			}
-			if(Edit.tmpbox.gravity) Edit.tmpbox.gravitySprite.draw(batch);
 		}
-		// Draw the boxes array
 		for(Box b : boxes) {
 			b.sprite.draw(batch);
-			for(int i = 0; i < b.modifierSprites.length; i++) {
-				if(b.modifierSprites[i] != null) {
-					b.modifierSprites[i].draw(batch);
-				}
-			}
-			if(b.gravity) b.gravitySprite.draw(batch);
 		}
 
+		// Draw Triangles
 		if(Edit.tmptriangle != null) {
 			Edit.tmptriangle.sprite.draw(batch);
-			for(int i = 0; i < Edit.tmptriangle.modifierSprites.length; i++) {
-				if(Edit.tmptriangle.modifierSprites[i] != null) {
-					Edit.tmptriangle.modifierSprites[i].draw(batch);
-				}
-			}
 		}
 		for(Triangle t : triangles) {
 			t.sprite.draw(batch);
-			for(int i = 0; i < t.modifierSprites.length; i++) {
-				if(t.modifierSprites[i] != null) {
-					t.modifierSprites[i].draw(batch);
-				}
-			}
 		}
 
+		// Draw Modifiers
+		if(Edit.tmpmodifier != null) {
+			Edit.tmpmodifier.sprite.draw(batch);
+		}
+		for(Modifier m : modifiers) {
+			m.sprite.draw(batch);
+		}
+
+		// Draw Mines
 		if(Edit.tmpmine != null) {
 			Edit.tmpmine.sprite.draw(batch);
 		}
@@ -567,6 +561,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			m.sprite.draw(batch);
 		}
 
+		// Draw Goals
 		if(Edit.tmpgoal != null) {
 			Edit.tmpgoal.sprite.draw(batch);
 		}
@@ -574,7 +569,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			g.sprite.draw(batch);
 		}
 
-		// Draw doors after all other blocks so they are on top
+		// Draw Doors (last so they are over all tiles)
 		if(Edit.tmpdoor != null) {
 			Edit.tmpdoor.sprite.draw(batch);
 		}
@@ -582,12 +577,14 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			d.sprite.draw(batch);
 		}
 
+		// Draw Switches
 		if(Edit.tmpswitch != null) {
 			Edit.tmpswitch.sprite.draw(batch);
 		}
 		for(DoorSwitch ds : switches) {
 			ds.sprite.draw(batch);
 		}
+
 		// Draw the ripple before the ball so it does not cover the ball
 		if(playRipple) {
 			batch.draw(ripple, ripple.getX(), ripple.getY(), ripple.getOriginX(), ripple.getOriginY(),
@@ -667,15 +664,18 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		if(guns[currentGun] != null) {
 			gunPositionDebug = "Current Gun X: " + String.format("%.2f", guns[currentGun].center.x) +
-				" | Y: " + String.format("%.2f", guns[currentGun].center.y);
+				" | Y: " + String.format("%.2f", guns[currentGun].center.y) + " | R: " + guns[currentGun].sprite.getRotation();
 		}
+
+		int yval = 10;
 
 		batch.begin();
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.GREEN);
-		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - 10);
-		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - 40);
-		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - 70);
-		debugMessage.draw(batch, ballVelocityDebug, 10, ScreenHeight - 100);
+		debugMessage.draw(batch, inputDebug, 10, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, mouseClickDebug, 10, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, ballPositionDebug, 10, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, ballVelocityDebug, 10, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, gunPositionDebug, 10, ScreenHeight - yval); yval += 30;
 
 		if(world.getGravity().x == 0) {
 			if(world.getGravity().y > 0) gravityDirection = "Up";
@@ -685,36 +685,41 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			if(world.getGravity().x > 0) gravityDirection = "Right";
 			else gravityDirection = "Left";
 		}
-		debugMessage.draw(batch, "Gravity : " + gravityDirection, 10, ScreenHeight - 130);
-		debugMessage.draw(batch, "Level: " + LevelLoader.levels.get(LevelLoader.levelPtr).name, 10, ScreenHeight - 160);
+		debugMessage.draw(batch, "Gravity : " + gravityDirection, 10, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, "Level: " + LevelLoader.levels.get(LevelLoader.levelPtr).name, 10, ScreenHeight - yval); yval += 30;
 		if(edit) {
 			debugMessage.setColor(Color.VIOLET);
-			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - 190);
-			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - 250);
-			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - 280);
-			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - 310);
-			debugMessage.draw(batch, "Edit shade: " + Edit.shadeState.ordinal() + "/8", 10, ScreenHeight - 340);
-			debugMessage.draw(batch, "Modifier: " + Edit.modifierState, 10, ScreenHeight - 370);
-			debugMessage.draw(batch, "Triangle: " + Edit.triangleState, 10, ScreenHeight - 400);
-			debugMessage.draw(batch, "Door: " + Edit.doorState + " | " + Edit.doorPlane, 10, ScreenHeight - 430);
-			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - 640);
-			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - 670);
-			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - 700);
-			debugMessage.draw(batch, "Guns: " + guns.length, 10, ScreenHeight - 730);
-			debugMessage.draw(batch, "Doors: " + doors.size, 10, ScreenHeight - 760);
-			debugMessage.draw(batch, "Mines: " + mines.size, 10, ScreenHeight - 790);
+			debugMessage.draw(batch, "Mode: edit", 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Tool: " + Edit.toolState, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Edit type: " + Edit.typeState, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Edit color: " + Edit.colorState, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "ModifierType: " + Edit.modifierState, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "TriangleType: " + Edit.triangleState, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Door: " + Edit.doorState + " | " + Edit.doorPlane, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Boxes: " + boxes.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Triangles: " + triangles.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Modifiers: " + modifiers.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Goals: " + goals.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Guns: " + guns.length, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Doors: " + doors.size, 10, ScreenHeight - yval); yval += 30;
+			debugMessage.draw(batch, "Mines: " + mines.size, 10, ScreenHeight - yval); yval += 30;
 		}
-		else debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - 190);
+		else {
+			debugMessage.draw(batch, "Mode: play", 10, ScreenHeight - yval);
+		}
+
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), ScreenWidth - 60, ScreenHeight - 10);
+
+		yval = 10;
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, (ScreenWidth / 2) - 30, ScreenHeight - 10);
-		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, (ScreenWidth / 2) -30,
-			ScreenHeight - 40);
+		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, (ScreenWidth / 2) - 30, ScreenHeight - yval); yval += 30;
+		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, (ScreenWidth / 2) - 30,
+			ScreenHeight - yval); yval += 30;
 		debugMessage.draw(batch, "Buffer Width: " + bufferWidth + " | Buffer Height: " + bufferHeight, (ScreenWidth / 2) - 30,
-			ScreenHeight - 70);
+			ScreenHeight - yval); yval += 30;
 		debugMessage.draw(batch, "Lines: " + lines + " | Midlines: " + midlines, (ScreenWidth/ 2) - 30,
-			ScreenHeight - 100);
+			ScreenHeight - yval); yval += 30;
 
 		if(testing) debugMessage.draw(batch, "TESTING", (ScreenWidth / 2) - 30, 30);
 		debugMessage.draw(batch, "Saved: " + Edit.saved, (ScreenWidth / 2) - 30, 60);
@@ -758,37 +763,64 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				debugShapeRenderer.setColor(1, 0, 0, 0.5f);
 				for(Box o : boxes) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 3);
 					}
 				}
-				for(Triangle o : triangles) {
-					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+				for(Triangle t : triangles) {
+					if(t != null) {
+						Vector2 v = new Vector2(0,0);
+						float pad = (t.sprite.getWidth() / 4) * t.scale;
+						if(t.triangle == UserData.TriangleType.botleft) {
+							v = new Vector2(t.center.x - pad, t.center.y - pad);
+						} else if(t.triangle == UserData.TriangleType.botright) {
+							v = new Vector2(t.center.x + pad, t.center.y - pad);
+						} else if(t.triangle == UserData.TriangleType.topleft) {
+							v = new Vector2(t.center.x - pad, t.center.y + pad);
+						} else if(t.triangle == UserData.TriangleType.topright) {
+							v = new Vector2(t.center.x + pad, t.center.y + pad);
+						}
+						debugShapeRenderer.circle(v.x, v.y, (t.sprite.getWidth() * scalePercent) / 4);
+					}
+				}
+				for(Modifier m : modifiers) {
+					if(m != null) {
+						Vector2 v = new Vector2(0,0);
+						float pad = (m.sprite.getWidth() / 2) * m.scale;
+						if(m.userData.edge == UserData.Edge.top) {
+							v = new Vector2(m.center.x, m.center.y + pad);
+						} else if(m.userData.edge == UserData.Edge.bot) {
+							v = new Vector2(m.center.x, m.center.y - pad);
+						} else if(m.userData.edge == UserData.Edge.left) {
+							v = new Vector2(m.center.x - pad, m.center.y);
+						} else if(m.userData.edge == UserData.Edge.right) {
+							v = new Vector2(m.center.x + pad, m.center.y);
+						}
+						debugShapeRenderer.circle(v.x, v.y, (m.sprite.getWidth() * scalePercent) / 8);
 					}
 				}
 				for(Goal o : goals) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 3);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 3);
 					}
 				}
 				for(Door o : doors) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 8);
 					}
 				}
 				for(DoorSwitch o : switches) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 8);
 					}
 				}
 				for(Mine o : mines) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 8);
 					}
 				}
 				for(Gun o : guns) {
 					if(o != null) {
-						debugShapeRenderer.circle(o.center.x, o.center.y, o.sprite.getWidth() / 8);
+						debugShapeRenderer.circle(o.center.x, o.center.y, (o.sprite.getWidth() * scalePercent) / 8);
 					}
 				}
 				debugShapeRenderer.end();
@@ -828,7 +860,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		left,
 		right
 	}
-	static void addImpulseToBall(ImpulseType type) {
+	static void accelerate(ImpulseType type) {
 		float additionalImpulseForce = 2.2f;
 		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
 		Vector2 direction = new Vector2(0,0);
@@ -851,6 +883,28 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			} break;
 		}
 		ball.body.applyLinearImpulse(direction, ball.body.getWorldCenter(), true);
+	}
+
+	static boolean didDampen = false;
+	static ImpulseType dampenType;
+	static void dampen(ImpulseType type) {
+//		switch(type) {
+//			case up: {
+//				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
+//			} break;
+//			case down: {
+//				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
+//			} break;
+//			case left: {
+//				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
+//			} break;
+//			case right: {
+//				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
+//			} break;
+//		}
+		ball.body.setLinearVelocity(0.0f, 0.0f);
+		dampenType = type;
+		didDampen = true;
 	}
 
 	public boolean keyDown (int keycode) { return false; }

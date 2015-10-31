@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 
@@ -26,11 +27,9 @@ public class Goal {
     float scale;
 
     Goal(Vector2 v, float scale) {
-        userData.color = UserData.Color.goal;
         this.scale = scale;
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/goal.png")));
-        sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
 
@@ -47,11 +46,8 @@ public class Goal {
         fixtureDef.density = 1.0f;
         fixtureDef.restitution = 0.0f;
 
-        PolygonShape shape = new PolygonShape();
-        // - 0.01f is a quick and dirty fix for the ball always hitting a goal even when a door
-        // is on the side of the goal.
-        shape.setAsBox((((sprite.getWidth() / 2) * scale)/ NoteBounce.PIXELS2METERS) - 0.01f,
-            (((sprite.getHeight() / 2) * scale) / NoteBounce.PIXELS2METERS) - 0.01f);
+        CircleShape shape = new CircleShape();
+        shape.setRadius(((sprite.getWidth() * scale) / 4) / NoteBounce.PIXELS2METERS);
         fixtureDef.shape = shape;
         body.createFixture(fixtureDef).setUserData(userData);
         shape.dispose();

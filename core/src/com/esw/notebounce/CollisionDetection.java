@@ -22,7 +22,7 @@ public class CollisionDetection implements ContactListener {
     private float timeSinceLastMagentaNote = 0.0f;
 
     private boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
-    private boolean yellowFlip = true;   // Flips the notes when the ball hits a yellow block
+    private boolean yellowFlip = true;   // Flips the notes when the ball hits a red block
     private boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
     private boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
 
@@ -92,7 +92,7 @@ public class CollisionDetection implements ContactListener {
         //if(udb.type.equals(UserData.Type.sim)) simhit = true;
 
         // SIMULATION BALL: =============================================================================
-        if(udb.type.equals(UserData.Type.sim) && (!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.Modifier.gravity))) {
+        if(udb.type.equals(UserData.Type.sim) && (!uda.type.equals(UserData.Type.doorswitch) || uda.modifier.equals(UserData.ModifierType.gravity))) {
             if((uda.type.equals(UserData.Type.gun) && !(uda.id == NoteBounce.currentGun))) {
                 simhit = true;
             }
@@ -103,17 +103,32 @@ public class CollisionDetection implements ContactListener {
         if((udb.type.equals(UserData.Type.ball) || udb.type.equals(UserData.Type.sim))) {
 
             // Accelerator
-            if(uda.modifier.equals(UserData.Modifier.accelerator)) {
+            if(uda.modifier.equals(UserData.ModifierType.accelerator)) {
                 if(uda.edge.equals(UserData.Edge.top)) {
-                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.up);
+                    NoteBounce.accelerate(NoteBounce.ImpulseType.up);
                 } else if(uda.edge.equals(UserData.Edge.bot)) {
-                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.down);
+                    NoteBounce.accelerate(NoteBounce.ImpulseType.down);
 
                 } else if(uda.edge.equals(UserData.Edge.left)) {
-                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.left);
+                    NoteBounce.accelerate(NoteBounce.ImpulseType.left);
 
                 } else if(uda.edge.equals(UserData.Edge.right)) {
-                    NoteBounce.addImpulseToBall(NoteBounce.ImpulseType.right);
+                    NoteBounce.accelerate(NoteBounce.ImpulseType.right);
+                }
+            }
+
+            // Dampener
+            if(uda.modifier.equals(UserData.ModifierType.dampener)) {
+                if(uda.edge.equals(UserData.Edge.top)) {
+                    NoteBounce.dampen(NoteBounce.ImpulseType.up);
+                } else if(uda.edge.equals(UserData.Edge.bot)) {
+                    NoteBounce.dampen(NoteBounce.ImpulseType.down);
+
+                } else if(uda.edge.equals(UserData.Edge.left)) {
+                    NoteBounce.dampen(NoteBounce.ImpulseType.left);
+
+                } else if(uda.edge.equals(UserData.Edge.right)) {
+                    NoteBounce.dampen(NoteBounce.ImpulseType.right);
                 }
             }
         }
@@ -125,7 +140,6 @@ public class CollisionDetection implements ContactListener {
             // If the ball hits a goal.
             if(uda.type.equals(UserData.Type.goal)) {
                 NoteBounce.goalHit = true;
-                // Play the goal noise if it was not already playing
                 NoteBounce.playGoalNoise();
             }
 
@@ -141,18 +155,10 @@ public class CollisionDetection implements ContactListener {
                         }
                         break;
                         case green: {
-                            notenum = 2;
-                        }
-                        break;
-                        case cyan: {
                             notenum = 3;
                         }
                         break;
-                        case magenta: {
-                            notenum = 4;
-                        }
-                        break;
-                        case yellow: {
+                        case red: {
                             notenum = 5;
                         }
                         break;
@@ -182,7 +188,7 @@ public class CollisionDetection implements ContactListener {
                 }
 
                 if(uda.type.equals(UserData.Type.box)) {
-                    if(uda.modifier.equals(UserData.Modifier.gravity)) {
+                    if(uda.modifier.equals(UserData.ModifierType.gravity)) {
                         if(uda.edge.equals(UserData.Edge.bot)) {
                             NoteBounce.world.setGravity(new Vector2(0, NoteBounce.gravity));
                         } else if(uda.edge.equals(UserData.Edge.top)) {
@@ -229,7 +235,7 @@ public class CollisionDetection implements ContactListener {
         // collisions involved with a note block.
        /* if(NoteBounce.playNotes() && fb.getUserData().equals("ball) {
             // TODO reimplement collision detection for each object
-            // Boundary Edge collision
+            // Boundary ModifierType collision
             if(fa.getUserData().equals("bot") || fa.getUserData().equals("top") ||
                 fa.getUserData().equals("left") || fa.getUserData().equals("right"))
             {
@@ -259,7 +265,7 @@ public class CollisionDetection implements ContactListener {
             }
 
             // Yellow note block collision
-            if(fa.getUserData().equals("yellow") && timeSinceLastYellowNote > lastNoteTime) {
+            if(fa.getUserData().equals("red") && timeSinceLastYellowNote > lastNoteTime) {
                 if (yellowFlip) {
                     yellowFlip = false;
                     notePtr += 4;
@@ -299,7 +305,7 @@ public class CollisionDetection implements ContactListener {
                     NoteBounce.playNote(notePtr);
                 }
                 timeSinceLastYellowNote = 0.0f;
-                NoteBounce.addImpulseToBall();
+                NoteBounce.accelerate();
             }
 
             // Cyan note block collision

@@ -74,7 +74,7 @@ public class BodyEditorLoader {
      * @param scale The desired scale of the body. The default width is 1.
      */
     public void attachFixture(Body body, String name, FixtureDef fd, float scale,
-                              UserData userData, UserData.Edge edge, UserData.Modifier modifier) {
+                              UserData userData, UserData.Edge edge) {
 
         RigidBodyModel rbModel = model.rigidBodies.get(name);
         if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
@@ -95,7 +95,6 @@ public class BodyEditorLoader {
 
             UserData ud = new UserData(userData);
             ud.edge = edge;
-            ud.modifier = modifier;
 
             body.createFixture(fd).setUserData(ud);
 
@@ -119,7 +118,7 @@ public class BodyEditorLoader {
     }
 
     public void attachFixture(Body body, String name, FixtureDef fd, UserData userData, float scale) {
-        attachFixture(body, name, fd, scale, userData, UserData.Edge.none, UserData.Modifier.none);
+        attachFixture(body, name, fd, scale, userData, UserData.Edge.none);
     }
 
     /**

@@ -1,6 +1,116 @@
 {
 	"boxes":
 	[
+		{
+			"x":960.0,
+			"y":600.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":480.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":360.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":240.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":120.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":960.0,
+			"y":0.0,
+			"color":"green",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"none",
+			"m3":"none"
+		},
+		{
+			"x":1320.0,
+			"y":600.0,
+			"color":"blue",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"leftX",
+			"m3":"none"
+		},
+		{
+			"x":1320.0,
+			"y":720.0,
+			"color":"blue",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"leftX",
+			"m3":"none"
+		},
+		{
+			"x":1320.0,
+			"y":840.0,
+			"color":"blue",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"leftX",
+			"m3":"none"
+		},
+		{
+			"x":1320.0,
+			"y":960.0,
+			"color":"blue",
+			"shade":"eight",
+			"gravity":"false",
+			"m0":"none",
+			"m1":"none",
+			"m2":"leftX",
+			"m3":"none"
+		}
 	],
 	"triangles":
 	[
@@ -8,20 +118,8 @@
 	"goals":
 	[
 		{
-			"x":0.0,
-			"y":0.0
-		},
-		{
-			"x":0.0,
-			"y":960.0
-		},
-		{
-			"x":1800.0,
-			"y":960.0
-		},
-		{
-			"x":1800.0,
-			"y":0.0
+			"x":1200.0,
+			"y":480.0
 		}
 	],
 	"doors":
@@ -36,10 +134,10 @@
 	"guns":
 	[
 		{
-			"x":960.0,
-			"y":540.0,
-			"id":4
+			"x":50.0,
+			"y":50.0,
+			"id":0
 		},
 	],
-	"startgun":4
+	"startgun":0
 }

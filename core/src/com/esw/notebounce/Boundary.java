@@ -15,7 +15,7 @@ public class Boundary {
     UserData userData = new UserData(UserData.Type.boundary);
 
     /**
-     *  This is called to create the Edge Lines for the boundaries of the screen
+     *  This is called to create the ModifierType Lines for the boundaries of the screen
      *  so the ball will stay within the screen's bounds. If the edge is supposed to be
      *  for the bottom of the screen the bottom value should be set to true. This simplifies
      *  some of the collision detection code for later.

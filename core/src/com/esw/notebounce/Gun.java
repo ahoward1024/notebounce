@@ -81,6 +81,7 @@ public class Gun {
         return new Vector2(endX(angle), endY(angle));
     }
 
+
     /**
      * clamp the angle of the gun based on the position of the gun
      * @param angle the current angle the gun is pointing
