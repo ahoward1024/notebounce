@@ -65,7 +65,6 @@ public class DoorSwitch {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
         sprite = new Sprite(new Texture(Gdx.files.internal("art/switchtripped.png")));
-        sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
 

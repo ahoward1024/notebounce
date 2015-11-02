@@ -360,7 +360,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 			power *= scalePercent;
 
-			// TODO(frankie): Change the angle so instead of pulling back to get the power,
+			// TODO: Change the angle so instead of pulling back to get the power,
 			// todo make it so the player pulls forward. (Perhaps make this a user option later ???)
 			// Find the angle for the gun and ball's projection arc based on where the mouse is
 			// located on the screen. Works best if the gun's texture is defaulted to point towards

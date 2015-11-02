@@ -81,6 +81,9 @@ public class Door {
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
+
+        state = State.open;
+        body.getFixtureList().first().setSensor(true);
     }
 
     public void shut() {
@@ -90,6 +93,9 @@ public class Door {
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
+
+        state = State.shut;
+        body.getFixtureList().first().setSensor(false);
     }
 
     public void loadfixtures() {
