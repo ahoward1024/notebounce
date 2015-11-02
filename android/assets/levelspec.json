@@ -27,7 +27,8 @@ Level spec:
 			"guns":
 			[				
 			],
-			"startgun":4
+			"startgun":4,
+			"gravity":"Down"
 		}
 	]
 }

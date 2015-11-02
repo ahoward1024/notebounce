@@ -29,7 +29,7 @@ public class Modifier {
         this.modifier = modifier;
         this.edge = edge;
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + modifier + edge + ".png")));
         sprite.setPosition(v.x, v.y);
 
         center.x = sprite.getX() + ((sprite.getWidth() / 2) * scale);
@@ -81,7 +81,7 @@ public class Modifier {
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + modifier + edge + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }
@@ -95,7 +95,7 @@ public class Modifier {
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/modifiers/" + modifier + edge + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + modifier + edge + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }

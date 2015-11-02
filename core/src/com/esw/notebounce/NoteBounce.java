@@ -14,10 +14,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.pay.PurchaseManagerConfig;
-import com.badlogic.gdx.pay.PurchaseObserver;
-import com.badlogic.gdx.pay.PurchaseSystem;
-import com.badlogic.gdx.pay.Transaction;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -43,7 +39,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	static World world;
 	static boolean playNotes = true;
 	static boolean goalHit = false;
-	//static boolean goalNoisePlaying = false;
 	static boolean playRipple = false;
 	static Sound[] notes = new Sound[8];
 	static int notePtr = 0;
@@ -227,8 +222,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		ballSimSprite.setScale(scalePercent);
 
 		LevelLoader.createLevelsArray(Gdx.files.internal("levels/"));
-		LevelLoader.loadFirstLevel();
-		//LevelLoader.loadLevel("test"); // DEBUG
 	}
 
 	@Override
@@ -264,7 +257,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		}
 
 		ball.body.setTransform(Utility.lerp(ball.center.x / PIXELS2METERS, v.x / PIXELS2METERS, deltaTime * 10),
-			Utility.lerp(ball.center.y / PIXELS2METERS, v.y / PIXELS2METERS, deltaTime * 10), 0.0f);
+				Utility.lerp(ball.center.y / PIXELS2METERS, v.y / PIXELS2METERS, deltaTime * 10), 0.0f);
 		ball.setSpriteToBodyPosition();
 		if(Utility.isInsideCircle(ball.center, v, 10.0f)) {
 			ball.body.setTransform(v.x / PIXELS2METERS, v.y / PIXELS2METERS, 0.0f);
@@ -441,6 +434,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			ball.setSpriteToBodyPosition();
 			didDampen = false;
 		}
+
+		// Set the ball's sprites rotation so it shows it's spinning
+		ball.sprite.setRotation(ball.body.getAngle() * NoteBounce.PIXELS2METERS);
 	}
 
 	void drawDottedLine(int dotDist, float x1, float y1, float x2, float y2) {
@@ -661,7 +657,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		if(guns[currentGun] != null) {
 			gunPositionDebug = "Current Gun X: " + String.format("%.2f", guns[currentGun].center.x) +
-				" | Y: " + String.format("%.2f", guns[currentGun].center.y) + " | R: " + guns[currentGun].sprite.getRotation();
+				" | Y: " + String.format("%.2f", guns[currentGun].center.y) + " | R: " + guns[currentGun].sprite.getRotation() +
+			" | ID: " + guns[currentGun].id;
+		} else {
+			gunPositionDebug = "No current gun";
 		}
 
 		int yval = 10;

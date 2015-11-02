@@ -95,7 +95,7 @@ public class Triangle {
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/triangles/" + color + triangle + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + color + triangle + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }

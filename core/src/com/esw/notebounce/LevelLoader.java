@@ -169,32 +169,36 @@ public class LevelLoader {
         NoteBounce.currentGun = startgun;
     }
 
-    /*public static void loadLevel(String name) {
+    public static void loadLevel(String name) {
         unloadLevel();
         for(int i = 0; i < levels.size; i++) {
             Level l = levels.get(i);
             if(l.name.equals(name)) loadLevel(i);
         }
-    }*/
+    }
 
     public static void createLevelsArray(FileHandle fileHandle) {
         FileHandle[] fileList = fileHandle.list();
-        if(fileList.length > 1) {
+        if(fileList.length > 0) {
             for (FileHandle fh : fileList) {
                 if (!fh.isDirectory()) {
                     System.out.println("Loading file to array: " + fh.path());
                     levels.add(new Level(new FileHandle(fh.path())));
                 }
             }
+        } else {
+            System.out.println("No levels. Creating a new blank level.");
+            saveLevel("level0");
+            levels.add(new Level(new FileHandle("levels/level0.json")));
         }
         levelPtr = 0;
+        loadFirstLevel();
     }
 
-    // TODO not quite working yet.
     public static void newLevel() {
-        unloadLevel();
         saveLevel("level" + levelPtr);
-        levelPtr = levels.size - 1;
+        unloadLevel();
+        levelPtr = levels.size;
         String name = "level" + (levelPtr);
         levels.add(new Level(Gdx.files.internal("levels/" + name + ".json")));
         saveLevel(name);
@@ -274,7 +278,7 @@ public class LevelLoader {
         for(int i = 0; i < NoteBounce.mines.size; i++) {
             Mine o = NoteBounce.mines.get(i);
             if(o != null) {
-                string += o.toString();
+                string += o.toJson();
                 if(i != NoteBounce.mines.size - 1) string += ",\n";
                 else string += "\n";
             }
@@ -303,7 +307,6 @@ public class LevelLoader {
     public static void loadFirstLevel() {
         levelPtr = 0;
         loadLevel(levelPtr);
-        System.out.println(levelPtr);
     }
 
     public static void loadPreviousLevel() {
@@ -311,7 +314,6 @@ public class LevelLoader {
         if(levelPtr == 0) levelPtr = levels.size - 1;
         else levelPtr--;
         loadLevel(levelPtr);
-        System.out.println(levelPtr);
     }
 
     public static void loadNextLevel() {
@@ -319,6 +321,5 @@ public class LevelLoader {
         if(levelPtr < levels.size - 1) levelPtr++;
         else levelPtr = 0;
         loadLevel(levelPtr);
-        System.out.println(levelPtr);
     }
 }

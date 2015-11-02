@@ -106,7 +106,8 @@ public class CollisionDetection implements ContactListener {
      * @param c The Contact object from the collision. Holds both fixtures involved in the collision.
      */
     public void beginContact(Contact c) {
-        final float lastNoteTime = 0.8f; // The minimum time between two notes
+
+        int notePtr = NoteBounce.notePtr;
 
         Fixture fa = c.getFixtureA(); // Static or kinematic fixture
         Fixture fb = c.getFixtureB(); // Dynamic fixture
@@ -116,21 +117,17 @@ public class CollisionDetection implements ContactListener {
 
         //if(udb.type.equals(sim) || uda.type.equals(sim)) {
         if(udb.type.equals(ball) || uda.type.equals(ball)) {
-            System.out.println("UD a: " + uda.toString()); // DEBUG
-            System.out.println("UD b: " + udb.toString()); // DEBUG
+           System.out.println("UD a: " + uda.toString()); // DEBUG
+           System.out.println("UD b: " + udb.toString()); // DEBUG
         }  // DEBUG
 
-        int notePtr = NoteBounce.notePtr;
-
-        //DEBUG
-        //if(udb.type.equals(sim) || uda.type.equals(sim)) simhit = true;
 
         // TODO debug this more
         // SIMULATION BALL: =============================================================================
         if(udb.type.equals(sim) || uda.type.equals(sim)) {
+            if(uda.type.equals(gun) && uda.id != NoteBounce.currentGun) simhit = true;
             if(uda.type.equals(goal) || udb.type.equals(goal)) simhit = true;
-            else if(uda.type.equals(gun) && uda.id != NoteBounce.currentGun) simhit = true;
-            else if(!uda.type.equals(doorswitch)) simhit = true;
+            if(uda.type.equals(doorswitch)) simhit = false;
         }
 
         // SEMI DEBUG:

@@ -60,8 +60,7 @@ public class Mine {
         body.setTransform(center.x / NoteBounce.PIXELS2METERS, center.y / NoteBounce.PIXELS2METERS, 0.0f);
     }
 
-    @Override
-    public String toString() {
+    public String toJson() {
         String s = "\t\t{\n";
         s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
         s += "\t\t\t\"y\":" + sprite.getY() + "\n";

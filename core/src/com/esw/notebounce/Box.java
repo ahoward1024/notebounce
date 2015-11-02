@@ -1,15 +1,12 @@
 package com.esw.notebounce;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-
-import javax.jws.soap.SOAPBinding;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
 
@@ -25,9 +22,6 @@ public class Box {
     Vector2 center = new Vector2(0,0);
     float scale;
     UserData.Color color;
-
-    // TODO(alex): Rethink modifiers again.
-    // TODO(alex): Need a clear goal of what modifiers do.
 
     Box(Vector2 v, float scale, UserData.Color color) {
         this.scale = scale;
@@ -52,7 +46,7 @@ public class Box {
         float base = (sprite.getHeight() / 100);
         float basescale = base * scale;
 
-        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/edges.json"));
+        BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/boxedges.json"));
         bodyEditorLoader.attachFixture(body, "top", fixtureDef, basescale,
             userData, UserData.Edge.top);
         bodyEditorLoader.attachFixture(body, "bot", fixtureDef, basescale,
@@ -69,7 +63,7 @@ public class Box {
             sprite.getTexture().dispose();
             sprite = null;
         }
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/boxes/" + color + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + color + ".png")));
         sprite.setScale(scale);
         setPos(v);
     }

@@ -37,7 +37,7 @@ public class Edit {
     static DoorSwitch tmpswitch = null;
     static Mine tmpmine = null;
 
-    static int startgun = -1;
+    static int startgun = 0;
 
     static boolean drawGrid = false;
 
@@ -75,7 +75,6 @@ public class Edit {
     }
 
     public static void editLevel() {
-        startgun = NoteBounce.currentGun;
         Inputs.getEditInputs();
 
         // Toggle grid

@@ -41,7 +41,7 @@ public class Door {
         this.plane = plane;
         userData.id = id;
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/" + state + plane + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/" + state + plane + ".png")));
 
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
@@ -77,7 +77,7 @@ public class Door {
     public void open() {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/open" + plane + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/open" + plane + ".png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
@@ -86,7 +86,7 @@ public class Door {
     public void shut() {
         Vector2 v = new Vector2(sprite.getX(), sprite.getY());
 
-        sprite = new Sprite(new Texture(Gdx.files.internal("art/doors/shut" + plane + ".png")));
+        sprite = new Sprite(new Texture(Gdx.files.internal("art/shut" + plane + ".png")));
         sprite.setOrigin(0.0f, 0.0f);
         sprite.setScale(scale);
         sprite.setPosition(v.x, v.y);
