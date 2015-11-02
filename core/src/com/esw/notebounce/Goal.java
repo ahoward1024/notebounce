@@ -46,7 +46,7 @@ public class Goal {
         //PolygonShape shape = new PolygonShape();
         //shape.setAsBox((sprite.getWidth() / 2) / NoteBounce.PIXELS2METERS, (sprite.getHeight() / 2) / NoteBounce.PIXELS2METERS);
         CircleShape shape = new CircleShape();
-        shape.setRadius(((sprite.getWidth() * scale) / 2) / NoteBounce.PIXELS2METERS);
+        shape.setRadius(((sprite.getWidth() * scale) / 4) / NoteBounce.PIXELS2METERS);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1.0f;

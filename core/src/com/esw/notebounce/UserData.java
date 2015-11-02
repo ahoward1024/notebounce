@@ -48,7 +48,7 @@ public class UserData {
     public enum Color {
         blue,
         green,
-        red,
+        yellow,
         grey,
 
         none

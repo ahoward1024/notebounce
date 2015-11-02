@@ -142,7 +142,7 @@ public class Edit {
                         colorState = UserData.Color.green;
                         tmpbox.setColor(colorState);
                     } else if(Inputs.three) {
-                        colorState = UserData.Color.red;
+                        colorState = UserData.Color.yellow;
                         tmpbox.setColor(colorState);
                     } else if(Inputs.four) {
                         colorState = UserData.Color.grey;
@@ -180,7 +180,7 @@ public class Edit {
                         colorState = UserData.Color.green;
                         tmptriangle.setColor(colorState);
                     } else if(Inputs.three) {
-                        colorState = UserData.Color.red;
+                        colorState = UserData.Color.yellow;
                         tmptriangle.setColor(colorState);
                     } else if(Inputs.four) {
                         colorState = UserData.Color.grey;
@@ -249,6 +249,7 @@ public class Edit {
 
                     if(Gdx.input.justTouched()) {
                         NoteBounce.modifiers.add(tmpmodifier);
+                        System.out.println("Placed " + tmpmodifier + " " + tmpmodifier.modifier + " " + tmpmodifier.edge);
                         tmpmodifier = null;
                         saved = false;
                     } else {

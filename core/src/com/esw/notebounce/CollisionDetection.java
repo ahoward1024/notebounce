@@ -14,18 +14,6 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 @SuppressWarnings("unused")
 public class CollisionDetection implements ContactListener {
 
-    private float timeSinceLastBlueNote    = 0.0f;
-    private float timeSinceLastGreenNote   = 0.0f;
-    private float timeSinceLastYellowNote  = 0.0f;
-    private float timeSinceLastBoundNote   = 0.0f;
-    private float timeSinceLastCyanNote    = 0.0f;
-    private float timeSinceLastMagentaNote = 0.0f;
-
-    private boolean boundaryFlip = true; // Flips the notes when the ball hits the boundary
-    private boolean yellowFlip = true;   // Flips the notes when the ball hits a red block
-    private boolean cyanFlip = true;     // Flips the chord when the ball hits a cyan block
-    private boolean magentaFlip = true;  // Flips the chord when the ball hits a magenta block
-
     public boolean simhit = false; // Returns true if the simulated ball collides with another object
 
 //=====================================================================================================//
@@ -54,7 +42,7 @@ public class CollisionDetection implements ContactListener {
 
     private UserData.Color blue  = UserData.Color.blue;
     private UserData.Color green = UserData.Color.green;
-    private UserData.Color red   = UserData.Color.red;
+    private UserData.Color yellow   = UserData.Color.yellow;
     private UserData.Color grey  = UserData.Color.grey;
 
     private UserData.Edge top   = UserData.Edge.top;
@@ -62,40 +50,6 @@ public class CollisionDetection implements ContactListener {
     private UserData.Edge left  = UserData.Edge.left;
     private UserData.Edge right = UserData.Edge.right;
     //===================================================================================================
-
-
-    /**
-     * Update all the times since a note was played.
-     * @param deltaTime The delta time of each frame
-     */
-    public void updateTimes(float deltaTime) {
-        timeSinceLastBlueNote += deltaTime;
-        timeSinceLastGreenNote += deltaTime;
-        timeSinceLastYellowNote += deltaTime;
-        timeSinceLastBoundNote += deltaTime;
-        timeSinceLastCyanNote += deltaTime;
-        timeSinceLastMagentaNote += deltaTime;
-    }
-
-    /**
-     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
-     * X direction.
-     * @param f The fixture of the dynamic body.
-     * @return True when the velocity is greather than threshold velocity.
-     */
-    private boolean thresholdVelocityX(Fixture f, float velX) {
-        return Math.abs(f.getBody().getLinearVelocity().x) > velX;
-    }
-
-    /**
-     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
-     * Y direction.
-     * @param f The fixture of the dynamic body.
-     * @return True when the velocity is greather than threshold velocity.
-     */
-    private boolean thresholdVelocityY(Fixture f, float velY) {
-         return Math.abs(f.getBody().getLinearVelocity().y) > velY;
-    }
 
     //              0   1     2     3
     // EDGES     : [TOP, BOT, LEFT, RIGHT]
@@ -137,23 +91,23 @@ public class CollisionDetection implements ContactListener {
             if(uda.type.equals(modifier)) {
                 if(uda.modifier.equals(accelerator)) {
                     if(uda.edge.equals(top)) {
-                        NoteBounce.accelerate(NoteBounce.ImpulseType.down);
+                        accelerate(ImpulseType.down);
                     } else if(uda.edge.equals(bot)) {
-                        NoteBounce.accelerate(NoteBounce.ImpulseType.up);
+                        accelerate(ImpulseType.up);
                     } else if(uda.edge.equals(left)) {
-                        NoteBounce.accelerate(NoteBounce.ImpulseType.right);
+                        accelerate(ImpulseType.right);
                     } else if(uda.edge.equals(right)) {
-                        NoteBounce.accelerate(NoteBounce.ImpulseType.left);
+                        accelerate(ImpulseType.left);
                     }
                 } else if(uda.modifier.equals(dampener)) {
                     if(uda.edge.equals(top)) {
-                        NoteBounce.dampen(NoteBounce.ImpulseType.up);
+                        dampen(ImpulseType.up);
                     } else if(uda.edge.equals(bot)) {
-                        NoteBounce.dampen(NoteBounce.ImpulseType.down);
+                        dampen(ImpulseType.down);
                     } else if(uda.edge.equals(left)) {
-                        NoteBounce.dampen(NoteBounce.ImpulseType.left);
+                        dampen(ImpulseType.right);
                     } else if(uda.edge.equals(right)) {
-                        NoteBounce.dampen(NoteBounce.ImpulseType.right);
+                        dampen(ImpulseType.left);
                     }
                 }
             }
@@ -184,7 +138,7 @@ public class CollisionDetection implements ContactListener {
                             notenum = 3;
                         }
                         break;
-                        case red: {
+                        case yellow: {
                             notenum = 5;
                         }
                         break;
@@ -275,5 +229,76 @@ public class CollisionDetection implements ContactListener {
 
     public void postSolve(Contact c, ContactImpulse ci) {
 
+    }
+
+    /**
+     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
+     * X direction.
+     * @param f The fixture of the dynamic body.
+     * @return True when the velocity is greather than threshold velocity.
+     */
+    private boolean thresholdVelocityX(Fixture f, float velX) {
+        return Math.abs(f.getBody().getLinearVelocity().x) > velX;
+    }
+
+    /**
+     * Tests whether a dynamic body is moving at a speed greater than a threshold velocity in the
+     * Y direction.
+     * @param f The fixture of the dynamic body.
+     * @return True when the velocity is greather than threshold velocity.
+     */
+    private boolean thresholdVelocityY(Fixture f, float velY) {
+        return Math.abs(f.getBody().getLinearVelocity().y) > velY;
+    }
+
+    public enum ImpulseType {
+        up,
+        down,
+        left,
+        right
+    }
+
+    void accelerate(ImpulseType type) {
+        float additionalImpulseForce = 2.2f;
+        if(NoteBounce.scalePercent != 1.0f) additionalImpulseForce *= (NoteBounce.scalePercent / 2);
+        Vector2 direction = new Vector2(0,0);
+        switch(type) {
+            case up: {
+                NoteBounce.ball.body.setLinearVelocity(NoteBounce.ball.body.getLinearVelocity().x, 0.0f);
+                direction.set(0.0f, additionalImpulseForce);
+            } break;
+            case down: {
+                NoteBounce.ball.body.setLinearVelocity(NoteBounce.ball.body.getLinearVelocity().x, 0.0f);
+                direction.set(0.0f, -additionalImpulseForce);
+            } break;
+            case left: {
+                NoteBounce.ball.body.setLinearVelocity(0.0f, NoteBounce.ball.body.getLinearVelocity().y);
+                direction.set(-additionalImpulseForce, 0.0f);
+            } break;
+            case right: {
+                NoteBounce.ball.body.setLinearVelocity(0.0f, NoteBounce.ball.body.getLinearVelocity().y);
+                direction.set(additionalImpulseForce, 0.0f);
+            } break;
+        }
+        NoteBounce.ball.body.applyLinearImpulse(direction, NoteBounce.ball.body.getWorldCenter(), true);
+    }
+
+    static void dampen(ImpulseType type) {
+		switch(type) {
+			case up: {
+                NoteBounce.ball.body.setLinearVelocity(NoteBounce.ball.body.getLinearVelocity().x, 0.0f);
+			} break;
+			case down: {
+                NoteBounce.ball.body.setLinearVelocity(NoteBounce.ball.body.getLinearVelocity().x, 0.0f);
+			} break;
+			case left: {
+                NoteBounce.ball.body.setLinearVelocity(0.0f, NoteBounce.ball.body.getLinearVelocity().y);
+			} break;
+			case right: {
+                NoteBounce.ball.body.setLinearVelocity(0.0f, NoteBounce.ball.body.getLinearVelocity().y);
+			} break;
+		}
+        NoteBounce.dampenType = type;
+        NoteBounce.didDampen = true;
     }
 }

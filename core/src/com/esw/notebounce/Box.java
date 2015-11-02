@@ -36,6 +36,7 @@ public class Box {
         body = NoteBounce.world.createBody(bodyDef);
 
         setColor(color);
+        setPos(v);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;

@@ -54,7 +54,7 @@ public class BodyEditorLoader {
      * parameter is used to retrieve the right fixture from the loaded file.
      * <br/><br/>
      *
-     * The body reference point (the red cross in the tool) is by default
+     * The body reference point (the yellow cross in the tool) is by default
      * located at the bottom left corner of the image. This reference point
      * will be put right over the BodyDef position point. Therefore, you should
      * place this reference point carefully to let you place your body in your

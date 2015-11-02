@@ -1,0 +1,139 @@
+{
+	"boxes":
+	[
+	],
+	"triangles":
+	[
+		{
+			"x":780.0,
+			"y":840.0,
+			"color":"green",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":540.0,
+			"y":840.0,
+			"color":"blue",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":1020.0,
+			"y":840.0,
+			"color":"yellow",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":1260.0,
+			"y":840.0,
+			"color":"grey",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":540.0,
+			"y":600.0,
+			"color":"blue",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":780.0,
+			"y":600.0,
+			"color":"green",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":1020.0,
+			"y":600.0,
+			"color":"yellow",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":1260.0,
+			"y":600.0,
+			"color":"grey",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":540.0,
+			"y":360.0,
+			"color":"blue",
+			"triangle":"botright",
+
+		},
+		{
+			"x":780.0,
+			"y":360.0,
+			"color":"green",
+			"triangle":"botright",
+
+		},
+		{
+			"x":1020.0,
+			"y":360.0,
+			"color":"yellow",
+			"triangle":"botright",
+
+		},
+		{
+			"x":1260.0,
+			"y":360.0,
+			"color":"grey",
+			"triangle":"botright",
+
+		},
+		{
+			"x":540.0,
+			"y":120.0,
+			"color":"blue",
+			"triangle":"topright",
+
+		},
+		{
+			"x":780.0,
+			"y":120.0,
+			"color":"green",
+			"triangle":"topright",
+
+		},
+		{
+			"x":1020.0,
+			"y":120.0,
+			"color":"yellow",
+			"triangle":"topright",
+
+		},
+		{
+			"x":1260.0,
+			"y":120.0,
+			"color":"grey",
+			"triangle":"topright",
+
+		}
+	],
+	"modifiers":
+	[
+	],
+	"goals":
+	[
+	],
+	"doors":
+	[
+	],
+	"switches":
+	[
+	],
+	"mines":
+	[
+	],
+	"guns":
+	[
+	],
+	"startgun":0
+}

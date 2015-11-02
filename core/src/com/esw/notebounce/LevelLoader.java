@@ -29,6 +29,11 @@ public class LevelLoader {
             o.sprite.getTexture().dispose();
         }
         NoteBounce.triangles.clear();
+        for(Modifier o : NoteBounce.modifiers) {
+            NoteBounce.world.destroyBody(o.body);
+            o.sprite.getTexture().dispose();
+        }
+        NoteBounce.modifiers.clear();
         for(Goal o : NoteBounce.goals) {
             NoteBounce.world.destroyBody(o.body);
             o.sprite.getTexture().dispose();
@@ -78,11 +83,6 @@ public class LevelLoader {
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
-            boolean g = jv.getBoolean("gravity");
-            String[] strings = new String[4];
-            for(int i = 0; i < strings.length; i++) {
-                strings[i] = jv.getString("m" + i);
-            }
             Box b = new Box(v, NoteBounce.scalePercent, color);
             NoteBounce.boxes.add(b);
         }
@@ -90,23 +90,31 @@ public class LevelLoader {
         //TRIANGLES
         array = json.get("triangles");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             UserData.TriangleType triangle = UserData.TriangleType.valueOf(jv.getString("triangle"));
             UserData.Color color = UserData.Color.valueOf(jv.getString("color"));
-            String[] strings = new String[4];
-            for(int i = 0; i < strings.length; i++) {
-                strings[i] = jv.getString("m" + i);
-            }
             Triangle o = new Triangle(v, NoteBounce.scalePercent, triangle, color);
             NoteBounce.triangles.add(o);
+        }
+        //===============================================================================================
+        // MODIFIERS
+        array = json.get("modifiers");
+        for(JsonValue jv : array.iterator()) {
+            Vector2 v = new Vector2(0,0);
+            v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
+            v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
+            UserData.ModifierType modifierType = UserData.ModifierType.valueOf(jv.getString("modifier"));
+            UserData.Edge edge = UserData.Edge.valueOf(jv.getString("edge"));
+            Modifier o = new Modifier(v, NoteBounce.scalePercent, modifierType, edge);
+            NoteBounce.modifiers.add(o);
         }
         //===============================================================================================
         //GOALS
         array = json.get("goals");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             Goal o = new Goal(v, NoteBounce.scalePercent);
@@ -116,7 +124,7 @@ public class LevelLoader {
         //DOORS
         array = json.get("doors");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             Door.State state = Door.State.valueOf(jv.getString("state"));
@@ -129,7 +137,7 @@ public class LevelLoader {
         //SWITCHES
         array = json.get("switches");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             int id = jv.getInt("id");
@@ -140,7 +148,7 @@ public class LevelLoader {
         //MINES
         array = json.get("mines");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             Mine o = new Mine(v, NoteBounce.scalePercent);
@@ -150,7 +158,7 @@ public class LevelLoader {
         //GUNS
         array = json.get("guns");
         for(JsonValue jv : array.iterator()) {
-            Vector2 v = new Vector2(0, 0);
+            Vector2 v = new Vector2(0,0);
             v.x = (jv.getFloat("x") * NoteBounce.scalePercent) + NoteBounce.bufferWidth;
             v.y = (jv.getFloat("y") * NoteBounce.scalePercent) + NoteBounce.bufferHeight;
             int id = jv.getInt("id");
@@ -161,8 +169,7 @@ public class LevelLoader {
 
         if(NoteBounce.guns[startgun] != null) {
             NoteBounce.ball = new Ball(NoteBounce.guns[startgun].center, NoteBounce.scalePercent);
-        }
-        else {
+        } else {
             NoteBounce.ball = new Ball((float)(NoteBounce.ScreenWidth / 2) + NoteBounce.bufferWidth,
                     (float)(NoteBounce.ScreenHeight / 2) + NoteBounce.bufferHeight, NoteBounce.scalePercent);
         }
@@ -207,7 +214,7 @@ public class LevelLoader {
 
     public static void saveLevel(String levelname) {
 
-        if(Edit.startgun == -1) { System.out.println("Error! No starting gun!"); return; }
+        if(Edit.startgun == -1) { System.out.println("WARNING! No starting gun!"); return; }
 
         FileHandle fileHandle = new FileHandle("levels/" + levelname + ".json");
         System.out.println("Saving: levels/" + levelname + ".json");
@@ -237,6 +244,17 @@ public class LevelLoader {
         }
         string += "\t],\n";
         //=======================================================================================
+        // MODIFIERS
+        string += "\t\"modifiers\":\n\t[\n";
+        for(int i = 0; i < NoteBounce.modifiers.size; i++) {
+            Modifier o = NoteBounce.modifiers.get(i);
+            if(o != null) {
+                string += o.toJson();
+                if(i != NoteBounce.modifiers.size - 1) string += ",\n";
+                else string += "\n";
+            }
+        }
+        string += "\t],\n";
         // GOALS
         string += "\t\"goals\":\n\t[\n";
         for(int i = 0; i < NoteBounce.goals.size; i++) {

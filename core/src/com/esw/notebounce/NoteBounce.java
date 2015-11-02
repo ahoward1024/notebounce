@@ -342,8 +342,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	 * Update all of the variables needed to calculate sprite positioning
 	 */
 	void update() {
-		// Snap the times
-		collisionDetector.updateTimes(deltaTime);
 
 		// If we have touched the screen or clicked we should update the power and the angle.
 		if(touch) {
@@ -709,6 +707,10 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		yval = 10;
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
+		if(ScreenWidth != 1920 && ScreenHeight != 1080) {
+			debugMessage.draw(batch, "PLEASE DO NOT EDIT LEVELS AT A RESOLUTION OTHER THAN 1920x1080", ScreenWidth / 2 - 300,
+					ScreenHeight / 2);
+		}
 		debugMessage.draw(batch, "Screen Width: " + ScreenWidth + " | Screen Height: " + ScreenHeight, (ScreenWidth / 2) - 30, ScreenHeight - yval); yval += 30;
 		debugMessage.draw(batch, "Scale Width: " + scaleWidth + " | Scale Height: " + scaleHeight, (ScreenWidth / 2) - 30,
 			ScreenHeight - yval); yval += 30;
@@ -845,58 +847,9 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		notes[i].play();
 	}
 
-	public enum ImpulseType {
-		up,
-		down,
-		left,
-		right
-	}
-	static void accelerate(ImpulseType type) {
-		float additionalImpulseForce = 2.2f;
-		if(scalePercent != 1.0f) additionalImpulseForce *= (scalePercent / 2);
-		Vector2 direction = new Vector2(0,0);
-		switch(type) {
-			case up: {
-				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
-				direction.set(0.0f, additionalImpulseForce);
-			} break;
-			case down: {
-				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
-				direction.set(0.0f, -additionalImpulseForce);
-			} break;
-			case left: {
-				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
-				direction.set(-additionalImpulseForce, 0.0f);
-			} break;
-			case right: {
-				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
-				direction.set(additionalImpulseForce, 0.0f);
-			} break;
-		}
-		ball.body.applyLinearImpulse(direction, ball.body.getWorldCenter(), true);
-	}
-
+	// !!! MOVE
 	static boolean didDampen = false;
-	static ImpulseType dampenType;
-	static void dampen(ImpulseType type) {
-//		switch(type) {
-//			case up: {
-//				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
-//			} break;
-//			case down: {
-//				ball.body.setLinearVelocity(ball.body.getLinearVelocity().x, 0.0f);
-//			} break;
-//			case left: {
-//				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
-//			} break;
-//			case right: {
-//				ball.body.setLinearVelocity(0.0f, ball.body.getLinearVelocity().y);
-//			} break;
-//		}
-		ball.body.setLinearVelocity(0.0f, 0.0f);
-		dampenType = type;
-		didDampen = true;
-	}
+	static CollisionDetection.ImpulseType dampenType;
 
 	public boolean keyDown (int keycode) { return false; }
 

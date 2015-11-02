@@ -1,24 +1,334 @@
 {
 	"boxes":
 	[
+		{
+			"x":0.0,
+			"y":0.0,
+			"color":"blue",
+
+		},
+		{
+			"x":1800.0,
+			"y":960.0,
+			"color":"blue",
+
+		},
+		{
+			"x":0.0,
+			"y":120.0,
+			"color":"green",
+
+		},
+		{
+			"x":0.0,
+			"y":240.0,
+			"color":"yellow",
+
+		},
+		{
+			"x":1800.0,
+			"y":840.0,
+			"color":"green",
+
+		},
+		{
+			"x":1800.0,
+			"y":720.0,
+			"color":"yellow",
+
+		},
+		{
+			"x":1800.0,
+			"y":600.0,
+			"color":"grey",
+
+		},
+		{
+			"x":0.0,
+			"y":360.0,
+			"color":"grey",
+
+		}
 	],
 	"triangles":
 	[
+		{
+			"x":960.0,
+			"y":600.0,
+			"color":"green",
+			"triangle":"topright",
+
+		},
+		{
+			"x":840.0,
+			"y":360.0,
+			"color":"green",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":1080.0,
+			"y":720.0,
+			"color":"grey",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":720.0,
+			"y":240.0,
+			"color":"grey",
+			"triangle":"topright",
+
+		},
+		{
+			"x":1200.0,
+			"y":120.0,
+			"color":"yellow",
+			"triangle":"botright",
+
+		},
+		{
+			"x":600.0,
+			"y":120.0,
+			"color":"yellow",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":1200.0,
+			"y":0.0,
+			"color":"blue",
+			"triangle":"botright",
+
+		},
+		{
+			"x":600.0,
+			"y":0.0,
+			"color":"blue",
+			"triangle":"botleft",
+
+		},
+		{
+			"x":1200.0,
+			"y":960.0,
+			"color":"blue",
+			"triangle":"topright",
+
+		},
+		{
+			"x":600.0,
+			"y":960.0,
+			"color":"blue",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":600.0,
+			"y":840.0,
+			"color":"yellow",
+			"triangle":"topleft",
+
+		},
+		{
+			"x":1200.0,
+			"y":840.0,
+			"color":"yellow",
+			"triangle":"topright",
+
+		}
+	],
+	"modifiers":
+	[
+		{
+			"x":840.0,
+			"y":600.0,
+			"modifier":"accelerator",
+			"edge":"top",
+
+		},
+		{
+			"x":960.0,
+			"y":360.0,
+			"modifier":"accelerator",
+			"edge":"bot",
+
+		},
+		{
+			"x":720.0,
+			"y":480.0,
+			"modifier":"dampener",
+			"edge":"left",
+
+		},
+		{
+			"x":1080.0,
+			"y":480.0,
+			"modifier":"dampener",
+			"edge":"right",
+
+		},
+		{
+			"x":900.0,
+			"y":0.0,
+			"modifier":"gravity",
+			"edge":"bot",
+
+		},
+		{
+			"x":900.0,
+			"y":960.0,
+			"modifier":"gravity",
+			"edge":"top",
+
+		}
 	],
 	"goals":
 	[
+		{
+			"x":0.0,
+			"y":960.0
+		},
+		{
+			"x":1800.0,
+			"y":0.0
+		}
 	],
 	"doors":
 	[
+		{
+			"x":120.0,
+			"y":840.0,
+			"state":"shut",
+			"plane":"vertical",
+			"id":"0"
+		},
+		{
+			"x":1680.0,
+			"y":120.0,
+			"state":"shut",
+			"plane":"vertical",
+			"id":"1"
+		},
+		{
+			"x":120.0,
+			"y":240.0,
+			"state":"open",
+			"plane":"vertical",
+			"id":"2"
+		},
+		{
+			"x":1680.0,
+			"y":720.0,
+			"state":"open",
+			"plane":"vertical",
+			"id":"3"
+		},
+		{
+			"x":120.0,
+			"y":600.0,
+			"state":"shut",
+			"plane":"horizontal",
+			"id":"4"
+		},
+		{
+			"x":1680.0,
+			"y":360.0,
+			"state":"shut",
+			"plane":"horizontal",
+			"id":"5"
+		},
+		{
+			"x":600.0,
+			"y":600.0,
+			"state":"open",
+			"plane":"horizontal",
+			"id":"7"
+		},
+		{
+			"x":1200.0,
+			"y":360.0,
+			"state":"open",
+			"plane":"horizontal",
+			"id":"7"
+		}
 	],
 	"switches":
 	[
+		{
+			"x":1680.0,
+			"y":840.0,
+			"id":0
+		},
+		{
+			"x":120.0,
+			"y":120.0,
+			"id":1
+		},
+		{
+			"x":1680.0,
+			"y":240.0,
+			"id":2
+		},
+		{
+			"x":120.0,
+			"y":720.0,
+			"id":3
+		},
+		{
+			"x":120.0,
+			"y":360.0,
+			"id":4
+		},
+		{
+			"x":1680.0,
+			"y":600.0,
+			"id":5
+		},
+		{
+			"x":600.0,
+			"y":360.0,
+			"id":7
+		},
+		{
+			"x":1200.0,
+			"y":600.0,
+			"id":7
+		}
 	],
 	"mines":
 	[
+		{
+			"x":720.0,
+			"y":360.0
+		},
+		{
+			"x":720.0,
+			"y":600.0
+		},
+		{
+			"x":1080.0,
+			"y":600.0
+		},
+		{
+			"x":1080.0,
+			"y":360.0
+		},
+		{
+			"x":900.0,
+			"y":720.0
+		},
+		{
+			"x":900.0,
+			"y":240.0
+		}
 	],
 	"guns":
 	[
+		{
+			"x":960.0,
+			"y":540.0,
+			"id":4
+		},
 	],
 	"startgun":0
 }

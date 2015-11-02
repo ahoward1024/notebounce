@@ -30,6 +30,7 @@ public class Triangle {
         this.scale = scale;
 
         setTriangle(triangle);
+        setPos(v);
     }
 
     public void setTriangle(UserData.TriangleType triangle) {

@@ -35,10 +35,10 @@ public class Modifier {
         center.x = sprite.getX() + ((sprite.getWidth() / 2) * scale);
         center.y = sprite.getY() + ((sprite.getHeight() / 2) * scale);
 
-        setFixture(edge, modifier);
+        setFixture();
     }
 
-    private void setFixture(UserData.Edge edge, UserData.ModifierType modifier) {
+    private void setFixture() {
 
         if(body != null) {
             NoteBounce.world.destroyBody(body);
@@ -58,9 +58,13 @@ public class Modifier {
         float base = (sprite.getHeight() / 100);
 
         BodyEditorLoader bodyEditorLoader = new BodyEditorLoader(Gdx.files.internal("fixtures/edges.json"));
-        UserData edgedata = new UserData(UserData.Type.modifier);
-        edgedata.modifier = UserData.ModifierType.none;
-        bodyEditorLoader.attachFixture(body, edge.name(), fixtureDef, base * scale, edgedata, edge);
+
+        // Create the large fixture that makes up the backside of the tile
+        UserData backsideData = new UserData(UserData.Type.modifier);
+        backsideData.modifier = UserData.ModifierType.none;
+        bodyEditorLoader.attachFixture(body, edge.name(), fixtureDef, base * scale, backsideData, edge);
+
+        // Create the small "active" edge of the fixture that will do the actual modification
         UserData modifierData = new UserData(UserData.Type.modifier);
         modifierData.modifier = modifier;
         bodyEditorLoader.attachFixture(body, edge.name() + "active", fixtureDef, base * scale, modifierData, edge);
@@ -75,6 +79,7 @@ public class Modifier {
 
     public void setModifier(UserData.ModifierType modifier) {
         this.modifier = modifier;
+        setFixture();
         Vector2 v = new Vector2(0,0);
         if(sprite != null) {
             v = new Vector2(sprite.getX(), sprite.getY());
@@ -88,7 +93,7 @@ public class Modifier {
 
     public void setEdge(UserData.Edge edge) {
         this.edge = edge;
-        setFixture(edge, modifier);
+        setFixture();
         Vector2 v = new Vector2(0,0);
         if(sprite != null) {
             v = new Vector2(sprite.getX(), sprite.getY());
@@ -101,7 +106,13 @@ public class Modifier {
     }
 
     public String toJson() {
-        return "";
+        String s = "\t\t{\n";
+        s += "\t\t\t\"x\":" + sprite.getX() + ",\n";
+        s += "\t\t\t\"y\":" + sprite.getY() + ",\n";
+        s += "\t\t\t\"modifier\":\"" + modifier + "\",\n";
+        s += "\t\t\t\"edge\":\"" + edge + "\",\n";
+        s += "\n\t\t}";
+        return s;
     }
 
 }
