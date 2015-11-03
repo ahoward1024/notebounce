@@ -707,7 +707,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		yval = 10;
 		debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
-		if(ScreenWidth != 1920 && ScreenHeight != 1080) {
+		if(edit && (ScreenWidth != 1920 && ScreenHeight != 1080)) {
 			debugMessage.draw(batch, "PLEASE DO NOT EDIT LEVELS AT A RESOLUTION OTHER THAN 1920x1080", ScreenWidth / 2 - 300,
 					ScreenHeight / 2);
 		}
