@@ -146,6 +146,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 	public static int scaleWidth = 1920;
 	public static int scaleHeight = 1080;
+
 	/**
 	 * Creates the game world.
 	 */
@@ -241,7 +242,20 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
-		// TODO(frankie): reset doors
+		for(int i = 0; i < switches.size; i++) {
+			DoorSwitch ds = switches.get(i);
+			if(!ds.active) {
+				Vector2 v = new Vector2(0,0);
+				v.x = ds.sprite.getX();
+				v.y = ds.sprite.getY();
+				ds.sprite = new Sprite(new Texture(Gdx.files.internal("art/switch.png")));
+				ds.sprite.setPosition(v.x, v.y);
+				Door d = doors.get(i);
+				if(d.state == Door.State.open) d.shut();
+				else d.open();
+				ds.active = true;
+			}
+		}
 	}
 
 	/**
@@ -447,6 +461,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 	}
 
 	boolean testing = true;
+	boolean showBox2D = false;
 	/**
 	 * Render all of the objects in the game world.
 	 */
@@ -469,6 +484,8 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 
 		if(Inputs.space || Inputs.rightsquare) LevelLoader.loadNextLevel();
 		else if(Inputs.leftsquare) LevelLoader.loadPreviousLevel();
+
+		if(Inputs.showBox2D()) showBox2D = !showBox2D;
 
 		if(!edit) {
 			Gdx.input.setCursorImage(null, 0, 0);
@@ -583,8 +600,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				ripple.getRotation());
 		}
 
-		// We have to set ALL of the ball's sprite's parameters because we are
-		// using the batch to draw it, not drawing it in the batch.
+		// Check whether the ball needs to be drawn first (under the gun) or drawn second (over the gun).
 		if(drawBallOver) {
 			// Now draw the gun so it is over the ball
 			for(Gun g : guns) {
@@ -592,13 +608,11 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 					g.sprite.draw(batch);
 				}
 			}
-
 			// Draw the ball second
 			if(ball != null) ball.sprite.draw(batch);
 		} else {
 			// Draw the ball first so it is under the gun
 			if(ball != null) ball.sprite.draw(batch);
-
 			// Now draw the gun so it is over the ball
 			for(Gun g : guns) {
 				if(g != null) {
@@ -607,7 +621,7 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 
-		if (showGoalHit) {
+		if(showGoalHit) {
 			debugMessage.setColor(com.badlogic.gdx.graphics.Color.RED);
 			debugMessage.draw(batch, "GOAL!", ScreenWidth / 2, ScreenHeight / 2);
 			if (goalTextTimer > 3.0f) { // Keep the text up for 10 seconds
@@ -620,6 +634,12 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		batch.end();
 
 		if(DEBUGBUILD) drawDebug();
+
+		if(edit || showBox2D) {
+			// DEBUG draw Box2D fixtures
+			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
+			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
+		}
 	}
 
 	void drawDebug() {
@@ -823,10 +843,6 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 				debugShapeRenderer.line(d,s);
 			}
 			debugShapeRenderer.end();
-
-			// DEBUG draw Box2D fixtures
-			debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS2METERS, PIXELS2METERS, 0);
-			box2DDebugRenderer.render(world, debugMatrix); // Render the Box2D debug shapes
 		}
 	}
 

@@ -249,4 +249,6 @@ class Inputs {
 
     public static boolean testing() { return Gdx.input.isKeyJustPressed(Input.Keys.SLASH); }
 
+    public static boolean showBox2D() { return Gdx.input.isKeyJustPressed(Input.Keys.U); }
+
 }
