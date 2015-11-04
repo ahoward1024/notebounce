@@ -242,12 +242,13 @@ public class NoteBounce extends ApplicationAdapter implements InputProcessor {
 		drawBallOver = false;
 		world.setGravity(new Vector2(0, originalGravity));
 		simcoords.clear();
+		// TODO(frankie): BUG FIX HERE
 		for(int i = 0; i < switches.size; i++) {
 			DoorSwitch ds = switches.get(i);
 			if(!ds.active) {
 				Vector2 v = new Vector2(0,0);
-				v.x = ds.sprite.getX();
-				v.y = ds.sprite.getY();
+				v.x = ds.sprite.getY();
+				v.y = ds.sprite.getX();
 				ds.sprite = new Sprite(new Texture(Gdx.files.internal("art/switch.png")));
 				ds.sprite.setPosition(v.x, v.y);
 				Door d = doors.get(i);
